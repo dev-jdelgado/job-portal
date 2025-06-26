@@ -15,6 +15,18 @@ router.post('/', async (req, res) => {
     }
 });
 
+// New route to get jobs posted by a specific employer
+router.get('/employer/:employerId', async (req, res) => {
+    const { employerId } = req.params;
+    try {
+        const [rows] = await db.execute('SELECT * FROM jobs WHERE employer_id = ? ORDER BY created_at DESC', [employerId]);
+        res.json(rows);
+    } catch (err) {
+        console.error('Error fetching employer jobs:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});0 
+
 
 router.get('/seeker/:id', async (req, res) => {
   const seekerId = req.params.id;

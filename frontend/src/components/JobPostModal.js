@@ -1,126 +1,194 @@
-import React, { useState, useEffect  } from 'react';
-import { Modal, Button, Form } from 'react-bootstrap';
-import axios from 'axios';
+"use client"
+
+import { useState } from "react"
+import { Modal, Button, Form, Row, Col, Alert } from "react-bootstrap"
+import axios from "axios"
 
 function JobPostModal({ show, handleClose, employerId, onJobPosted }) {
-    
-useEffect(() => {
-    if (show) {
-        setJobData({
-            title: '',
-            description: '',
-            education: '',
-            skills: []
-        });
-    }
-}, [show]);
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    employment_type: "Full-time",
+    applicant_type: "Entry Level",
+    education: "Bachelor's Degree",
+    skills: "",
+    location: "",
+    salary: "",
+  })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
 
-const [jobData, setJobData] = useState({
-    title: '',
-    description: '',
-    education: '',
-    skills: []
-});
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
 
-const skillsList = [
-    'React',
-    'Node.js',
-    'MySQL',
-    'JavaScript',
-    'HTML',
-    'CSS',
-    'Python',
-    'Java',
-    'PHP'
-];
-
-const education = [
-    "BS Information Technology", "BS Computer Science", "BS Business Administration",
-    "BS Accountancy", "BS Psychology", "BS Marketing", "BS Engineering"
-];
-
-const handleChange = (e) => {
-    setJobData({ ...jobData, [e.target.name]: e.target.value });
-};
-
-const handleSkillChange = (e) => {
-    const skill = e.target.value;
-    const isChecked = e.target.checked;
-    const updatedSkills = isChecked
-        ? [...jobData.skills, skill]
-        : jobData.skills.filter(s => s !== skill);
-
-    setJobData({ ...jobData, skills: updatedSkills });
-};
-
-const handleSubmit = async (e) => {
-    e.preventDefault();
     try {
-        await axios.post('http://localhost:5000/jobs', {
-            ...jobData,
-            skills: jobData.skills.join(', '), // store as comma-separated string
-            employer_id: employerId
-        });
-        onJobPosted();
-        handleClose();
+      await axios.post("http://localhost:5000/jobs", {
+        ...formData,
+        employer_id: employerId,
+      })
+
+      onJobPosted()
+      handleClose()
+
+      // Reset form
+      setFormData({
+        title: "",
+        description: "",
+        employment_type: "Full-time",
+        applicant_type: "Entry Level",
+        education: "Bachelor's Degree",
+        skills: "",
+        location: "",
+        salary: "",
+      })
     } catch (err) {
-        console.error('Error posting job:', err);
+      console.error("Error posting job:", err)
+      setError("Failed to post job. Please try again.")
+    } finally {
+      setLoading(false)
     }
-};
+  }
 
-return (
-    <Modal show={show} onHide={handleClose}>
-        <Form onSubmit={handleSubmit}>
-            <Modal.Header closeButton>
-                <Modal.Title>Post a Job</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                <Form.Group className="mb-3">
-                    <Form.Label>Job Title</Form.Label>
-                    <Form.Control type="text" name="title" onChange={handleChange} required />
-                </Form.Group>
+  return (
+    <Modal show={show} onHide={handleClose} size="lg" centered>
+      <Modal.Header closeButton>
+        <Modal.Title>Post a New Job</Modal.Title>
+      </Modal.Header>
+      <Form onSubmit={handleSubmit}>
+        <Modal.Body>
+          {error && (
+            <Alert variant="danger" className="mb-3">
+              {error}
+            </Alert>
+          )}
 
-                <Form.Group className="mb-3">
-                    <Form.Label>Description</Form.Label>
-                    <Form.Control as="textarea" rows={3} name="description" onChange={handleChange} required />
-                </Form.Group>
+          <Row>
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>Job Title *</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="e.g. Senior Software Engineer"
+                />
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>Location</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleInputChange}
+                  placeholder="e.g. New York, NY or Remote"
+                />
+              </Form.Group>
+            </Col>
+          </Row>
 
-                <Form.Group className="mb-3">
-                    <Form.Label>Education</Form.Label>
-                    <Form.Select name="education" onChange={handleChange} required>
-                    <option value="">Select Education</option>
-                    {education.map(level => (
-                        <option key={level} value={level}>{level}</option>
-                    ))}
-                    </Form.Select>
-                </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label>Job Description *</Form.Label>
+            <Form.Control
+              as="textarea"
+              rows={4}
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              required
+              placeholder="Describe the role, responsibilities, and requirements..."
+            />
+          </Form.Group>
 
-                <Form.Group className="mb-3">
-                    <Form.Label>Skills Needed</Form.Label>
-                    <div className="d-flex flex-wrap">
-                    {skillsList.map(skill => (
-                        <Form.Check
-                        key={skill}
-                        type="checkbox"
-                        id={skill}
-                        label={skill}
-                        value={skill}
-                        onChange={handleSkillChange}
-                        className="me-3 mb-2"
-                        />
-                    ))}
-                    </div>
-                </Form.Group>
-            </Modal.Body>
+          <Row>
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>Employment Type</Form.Label>
+                <Form.Select name="employment_type" value={formData.employment_type} onChange={handleInputChange}>
+                  <option value="Full-time">Full-time</option>
+                  <option value="Part-time">Part-time</option>
+                  <option value="Contract">Contract</option>
+                  <option value="Internship">Internship</option>
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>Experience Level</Form.Label>
+                <Form.Select name="applicant_type" value={formData.applicant_type} onChange={handleInputChange}>
+                  <option value="Entry Level">Entry Level</option>
+                  <option value="Mid Level">Mid Level</option>
+                  <option value="Senior Level">Senior Level</option>
+                  <option value="Executive">Executive</option>
+                </Form.Select>
+              </Form.Group>
+            </Col>
+          </Row>
 
-            <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose}>Cancel</Button>
-                <Button type="submit" variant="primary">Post Job</Button>
-            </Modal.Footer>
-        </Form>
+          <Row>
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>Education Requirement</Form.Label>
+                <Form.Select name="education" value={formData.education} onChange={handleInputChange}>
+                  <option value="High School">High School</option>
+                  <option value="Associate Degree">Associate Degree</option>
+                  <option value="Bachelor's Degree">Bachelor's Degree</option>
+                  <option value="Master's Degree">Master's Degree</option>
+                  <option value="PhD">PhD</option>
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col md={6}>
+              <Form.Group className="mb-3">
+                <Form.Label>Salary Range</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="salary"
+                  value={formData.salary}
+                  onChange={handleInputChange}
+                  placeholder="e.g. $80,000 - $120,000"
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Required Skills *</Form.Label>
+            <Form.Control
+              type="text"
+              name="skills"
+              value={formData.skills}
+              onChange={handleInputChange}
+              required
+              placeholder="e.g. JavaScript, React, Node.js, SQL"
+            />
+            <Form.Text className="text-muted">Separate skills with commas</Form.Text>
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose} disabled={loading}>
+            Cancel
+          </Button>
+          <Button type="submit" variant="primary" disabled={loading}>
+            {loading ? "Posting..." : "Post Job"}
+          </Button>
+        </Modal.Footer>
+      </Form>
     </Modal>
-  );
+  )
 }
 
-export default JobPostModal;
+export default JobPostModal
