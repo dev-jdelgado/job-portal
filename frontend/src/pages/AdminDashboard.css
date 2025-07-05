@@ -10,7 +10,6 @@
 
 /* Main Dashboard Styling */
 .dashboard-container {
-  background-color: var(--cream-bg);
   min-height: 100vh;
 }
 

@@ -1,48 +1,72 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import SeekerDashboard from './pages/SeekerDashboard';
-import EmployerDashboard from './pages/EmployerDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import PrivateRoute from './components/PrivateRoute';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
-import { useAuth } from './context/AuthContext';
 import { Navigate } from 'react-router-dom';
+import AdminCreateUser from './pages/AdminCreateUser';
+import JobDetails from './pages/JobDetails'
+import JobApplicantsPage from "./pages/JobApplicantsPage";
 
 
+
+// HomeRedirect component
 function HomeRedirect() {
   const { user } = useAuth();
-
   if (!user) {
     return <Navigate to="/login" replace />;
   }
-
   return <Navigate to={`/${user.role}-dashboard`} replace />;
 }
 
+// Wrapper component for App that uses hooks
+function AppRoutes() {
+  const location = useLocation();
+  const hideNavbar = location.pathname === '/login' || location.pathname === '/register';
+
+  return (
+    <>
+      {!hideNavbar && <Navbar />}
+      <Routes>
+        <Route path="/" element={<HomeRedirect />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+        <Route path="/seeker-dashboard" element={
+          <PrivateRoute allowedRoles={['seeker']}>
+            <SeekerDashboard />
+          </PrivateRoute>
+        } />
+        <Route path="/jobs/:id" element={<JobDetails />} />
+
+        <Route path="/admin-dashboard" element={
+          <PrivateRoute allowedRoles={['admin']}>
+            <AdminDashboard />
+          </PrivateRoute>
+        } />
+
+        <Route path="/admin/create-user" element={
+          <PrivateRoute allowedRoles={['admin']}>
+            <AdminCreateUser />
+          </PrivateRoute>
+          } />
+
+        <Route path="/admin/job/:jobId/applicants" element={<JobApplicantsPage />} />
+
+      </Routes>
+    </>
+  );
+}
+
+// Main App
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<HomeRedirect />} />
-
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-
-          <Route path="/seeker-dashboard" element={
-            <PrivateRoute allowedRoles={['seeker']}>
-              <SeekerDashboard />
-            </PrivateRoute>
-          } />
-
-          <Route path="/employer-dashboard" element={
-            <PrivateRoute allowedRoles={['employer']}>
-              <EmployerDashboard />
-            </PrivateRoute>
-          } />
-        </Routes>
+        <AppRoutes />
       </BrowserRouter>
     </AuthProvider>
   );

@@ -116,10 +116,16 @@ body {
 .controls-section {
   background: var(--white);
   border-radius: 16px;
-  padding: 2rem;
+  padding: 1rem 1.5rem;
   margin-bottom: 2rem;
   box-shadow: 0 4px 20px var(--shadow-light);
   border: 1px solid rgba(31, 116, 169, 0.1);
+  /*
+  position: sticky;
+  top: 5px;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  */
 }
 
 .section-header {
@@ -167,9 +173,7 @@ body {
 }
 
 /* Search Wrapper */
-.search-wrapper {
-  max-width: 400px;
-}
+
 
 .search-input-wrapper {
   position: relative;
@@ -177,7 +181,7 @@ body {
 
 .search-icon {
   position: absolute;
-  left: 1rem;
+  left: 0.8rem;
   top: 50%;
   transform: translateY(-50%);
   color: var(--ocean-blue);
@@ -185,17 +189,22 @@ body {
 }
 
 .search-input {
-  padding-left: 3rem !important;
+  padding-left: 2.3rem !important;
   border: 2px solid rgba(31, 116, 169, 0.2) !important;
   border-radius: 8px !important;
   font-size: 1rem !important;
   transition: all 0.3s ease !important;
   background: var(--white) !important;
+  width: 275px !important;
 }
 
 .search-input:focus {
   border-color: var(--ocean-blue) !important;
   box-shadow: 0 0 0 0.2rem rgba(31, 116, 169, 0.25) !important;
+}
+
+.filter-form {
+  width: auto !important;
 }
 
 /* Jobs Grid */
@@ -218,15 +227,17 @@ body {
   box-shadow: 0 12px 32px var(--shadow-medium) !important;
 }
 
+
+/*
 .strong-match-card {
   border-left: 4px solid #28a745 !important;
-  background: linear-gradient(135deg, rgba(40, 167, 69, 0.02) 0%, var(--white) 100%) !important;
 }
 
 .moderate-match-card {
   border-left: 4px solid var(--sun-yellow) !important;
-  background: linear-gradient(135deg, rgba(249, 216, 73, 0.02) 0%, var(--white) 100%) !important;
 }
+*/
+
 
 .job-card-body {
   padding: 1.5rem !important;
@@ -289,12 +300,33 @@ body {
   border: none !important;
 }
 
+.disability-badge {
+  background-color: #0095ff;
+  color: var(--white) !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  padding: 0.25rem 0.75rem !important;
+  border-radius: 20px !important;
+  border: none !important;
+}
+
+
+
 /* Job Description */
 .job-description {
   color: #555 !important;
   font-size: 0.95rem !important;
   line-height: 1.6 !important;
   margin-bottom: 1.5rem !important;
+}
+
+.multiline-truncate {
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* Change this to 3 or more lines if needed */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 6em; /* Optional, gives fallback support */
 }
 
 /* Job Details */

@@ -3,20 +3,39 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 exports.register = async (req, res) => {
-    const { name, email, password, role, education, skills } = req.body;
-    if (!['seeker', 'employer'].includes(role)) return res.status(400).json({ msg: 'Invalid role' });
+    const { name, email, password, role, education, skills, disabilityStatus } = req.body;
+  
+    if (role !== 'seeker') {
+      return res.status(403).json({ msg: 'Only seekers can register' });
+    }
+  
+    const pwdIdImage = req.file ? req.file.filename : null;
   
     const hashedPassword = await bcrypt.hash(password, 10);
+  
     try {
-        await db.execute(
-            'INSERT INTO users (name, email, password, role, education, skills) VALUES (?, ?, ?, ?, ?, ?)',
-            [name, email, hashedPassword, role, education || '', skills?.join(',') || '']
-        );
-        res.status(201).json({ msg: 'User registered' });
+      await db.execute(
+        `INSERT INTO users (name, email, password, role, education, skills, disability_status, pwd_id_image)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          name,
+          email,
+          hashedPassword,
+          role,
+          education || '',
+          skills || '',
+          disabilityStatus || 'Non-PWD',
+          pwdIdImage || ''
+        ]
+      );
+  
+      res.status(201).json({ msg: 'User registered' });
     } catch (err) {
-        res.status(500).json({ msg: 'Error registering user' });
+      console.error(err);
+      res.status(500).json({ msg: 'Error registering user' });
     }
 };
+  
 
 
 exports.login = async (req, res) => {
@@ -32,5 +51,25 @@ exports.login = async (req, res) => {
         res.json({ token, id: user.id, role: user.role, name: user.name });
     } catch (err) {
         res.status(500).json({ msg: 'Error logging in' });
+    }
+};
+
+
+exports.createAdminUser = async (req, res) => {
+    const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+        return res.status(400).json({ msg: 'All fields are required' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    try {
+        await db.execute(
+            'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
+            [name, email, hashedPassword, 'admin']
+        );
+        res.status(201).json({ msg: 'Admin user created' });
+    } catch (err) {
+        res.status(500).json({ msg: 'Error creating admin user' });
     }
 };

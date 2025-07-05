@@ -20,7 +20,7 @@ export default function Login() {
         if (res.data.role === 'seeker') {
             navigate('/seeker-dashboard');
         } else {
-            navigate('/employer-dashboard');
+            navigate('/admin-dashboard');
         }
     } catch (err) {
         setMsg(err.response?.data?.msg || 'Login failed');

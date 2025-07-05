@@ -1,7 +1,5 @@
-"use client"
-
 import { useState, useEffect } from "react"
-import { Button, Container, Toast, ToastContainer, Table, Card, Row, Col, Badge, Spinner, Alert } from "react-bootstrap"
+import { Button, Container, Toast, ToastContainer, Table, Card, Row, Col, Badge, Spinner, Alert, Modal } from "react-bootstrap"
 import {
   BsBriefcaseFill,
   BsPeopleFill,
@@ -10,17 +8,21 @@ import {
   BsPlusCircleFill,
   BsPencilSquare,
   BsTrash3Fill,
+  BsExclamationCircleFill, 
+  BsInfoCircleFill
 } from "react-icons/bs"
 import JobPostModal from "../components/JobPostModal"
 import { useAuth } from "../context/AuthContext"
 import axios from "axios"
-import styles from "./EmployerDashboard.css"
+import styles from "./AdminDashboard.css"
+import { Link } from 'react-router-dom';
 
-function EmployerDashboard() {
+
+function AdminDashboard() {
   const [showModal, setShowModal] = useState(false)
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState("")
-  const [employerJobs, setEmployerJobs] = useState([])
+  const [adminJobs, setAdminJobs] = useState([])
   const [jobStats, setJobStats] = useState({
     totalJobs: 0,
     activeJobs: 0,
@@ -30,75 +32,103 @@ function EmployerDashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const { user } = useAuth()
+  const [selectedJob, setSelectedJob] = useState(null)
+  const [startStep, setStartStep] = useState(1)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [jobToDelete, setJobToDelete] = useState(null)
+  const [toastVariant, setToastVariant] = useState("success")
+  const [toastIconType, setToastIconType] = useState("check")
 
-  const employerId = user?.id
+  const adminId = user?.id
 
-  const fetchEmployerJobs = async () => {
-    if (!employerId) return
-
-    setLoading(true)
-    setError(null)
-
+  const fetchAdminJobs = async () => {
+    if (!adminId) return;
+  
+    setLoading(true);
+    setError(null);
+  
     try {
-      const res = await axios.get(`http://localhost:5000/jobs/employer/${employerId}`)
-      setEmployerJobs(res.data)
-
-      // Calculate stats
+      const jobsRes = await axios.get(`http://localhost:5000/jobs/admin/${adminId}`);
+      setAdminJobs(jobsRes.data);
+  
+      const countRes = await axios.get(`http://localhost:5000/jobs/admin/${adminId}/applications/count`);
+      const totalApplications = countRes.data.total_applications;
+  
       const stats = {
-        totalJobs: res.data.length,
-        activeJobs: res.data.length, // Assuming all jobs are active for now
-        totalApplications: Math.floor(Math.random() * 100), // Mock data
-        recentViews: Math.floor(Math.random() * 500), // Mock data
-      }
-      setJobStats(stats)
+        totalJobs: jobsRes.data.length,
+        activeJobs: jobsRes.data.length, // you can add logic to filter inactive jobs
+        totalApplications,
+        recentViews: Math.floor(Math.random() * 500), // still mock
+      };
+  
+      setJobStats(stats);
     } catch (err) {
-      console.error("Error fetching employer jobs:", err)
-      setError("Failed to load your jobs. Please try again.")
+      console.error("Error fetching admin jobs or applications:", err);
+      setError("Failed to load your jobs. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
+  
 
   useEffect(() => {
-    fetchEmployerJobs()
-  }, [employerId])
+    fetchAdminJobs()
+  }, [adminId])
 
-  const handleJobPosted = () => {
-    setToastMessage("Job posted successfully!")
-    setShowToast(true)
-    fetchEmployerJobs()
-  }
-
-  const handleEditJob = (jobId) => {
-    // open an edit modal with pre-filled data
-    setToastMessage(`Edit functionality for job ${jobId} coming soon!`)
-    setShowToast(true)
-  }
-
-  const handleDeleteJob = async (jobId) => {
-    if (window.confirm("Are you sure you want to delete this job posting?")) {
-      try {
-        // Uncomment when backend is ready
-        // await axios.delete(`http://localhost:5000/jobs/${jobId}`);
-
-        // Simulate successful deletion
-        setEmployerJobs((prev) => prev.filter((job) => job.id !== jobId))
-        setToastMessage("Job deleted successfully!")
-        setShowToast(true)
-
-        // Update stats
-        setJobStats((prev) => ({
-          ...prev,
-          totalJobs: prev.totalJobs - 1,
-          activeJobs: prev.activeJobs - 1,
-        }))
-      } catch (err) {
-        console.error("Error deleting job:", err)
-        setToastMessage("Failed to delete job. Please try again.")
-        setShowToast(true)
-      }
+  const handleJobPosted = (type = "create") => {
+    if (type === "update") {
+      setToastMessage("Job updated successfully!")
+      setToastVariant("primary")
+      setToastIconType("info")
+    } else {
+      setToastMessage("Job posted successfully!")
+      setToastVariant("success")
+      setToastIconType("check") 
     }
+    setShowToast(true)
+    fetchAdminJobs()
   }
+
+  const handleEditJob = (job, step = 1) => {
+    setSelectedJob(job)
+    setStartStep(step)
+    setShowModal(true)
+  }
+
+  const handleDeleteJob = async () => {
+    if (!jobToDelete) return;
+  
+    try {
+      await axios.delete(`http://localhost:5000/jobs/${jobToDelete.id}`);
+      
+      setAdminJobs((prev) => prev.filter((job) => job.id !== jobToDelete.id));
+      setToastMessage("Job deleted successfully!");
+      setToastVariant("danger");
+      setToastIconType("exclamation");
+      setShowToast(true);
+  
+      setJobStats((prev) => ({
+        ...prev,
+        totalJobs: prev.totalJobs - 1,
+        activeJobs: prev.activeJobs - 1,
+      }));
+    } catch (err) {
+      console.error("Error deleting job:", err);
+  
+      const msg = err.response?.data?.error || "Failed to delete job. Please try again.";
+  
+      setToastMessage(msg);
+      setToastVariant("danger");
+      setToastIconType("exclamation");
+      setShowToast(true);
+    } finally {
+      setShowDeleteModal(false);
+      setJobToDelete(null);
+    }
+  };
+  
+  
+  
 
   const handleViewJob = (jobId) => {
     // will edit when the jobs posting is complete with details.
@@ -115,14 +145,26 @@ function EmployerDashboard() {
     case "part-time":
       return "info";
     case "contract":
-      return "warning";
+      return "success";
     case "internship":
       return "secondary";
     default:
       return "light";
-  }
-};
+    }
+  };
 
+  const getBadgeVariantDisability = (type) => {
+  if (typeof type !== "string") return "light"; // default/fallback
+
+  switch (type.toLowerCase()) {
+    case "non-pwd":
+      return "success"; 
+    case "pwd":
+      return "danger"; 
+    default:
+      return "light";
+    }
+  };
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -152,12 +194,22 @@ function EmployerDashboard() {
             <Col lg={8}>
               <h1 className={styles.dashboardTitle}>
                 <BsBriefcaseFill className="me-3" />
-                Employer Dashboard
+                Admin Dashboard
               </h1>
               <p className={styles.dashboardSubtitle}>Manage your job postings and track applications</p>
             </Col>
-            <Col lg={4} className="text-lg-end">
-              <Button onClick={() => setShowModal(true)} className={styles.btnPostJob} size="lg">
+            <Col lg={4} className="text-lg-end d-flex justify-content-end gap-3">
+
+
+              {user?.role === 'admin' && (
+                <div>
+                  <Link to="/admin/create-user" className="btn btn-primary">
+                    <BsPlusCircleFill className="me-2" />
+                    Add Admin
+                  </Link>
+                </div>
+              )}
+              <Button onClick={() => setShowModal(true)} className="btn btn-primary">
                 <BsPlusCircleFill className="me-2" />
                 Post New Job
               </Button>
@@ -166,7 +218,7 @@ function EmployerDashboard() {
         </Container>
       </div>
 
-      <Container>
+      <Container className="mb-5 pb-3">
         {error && (
           <Alert variant="danger" className="mb-4">
             {error}
@@ -231,18 +283,14 @@ function EmployerDashboard() {
             <h3 className={styles.jobsTableTitle}>Your Job Postings</h3>
             <p className={styles.jobsTableSubtitle}>Manage and track all your posted positions</p>
           </Card.Header>
-          <Card.Body className="p-0">
-            {employerJobs.length === 0 ? (
+          <Card.Body className="">
+            {adminJobs.length === 0 ? (
               <div className={styles.emptyState}>
-                <div className={styles.emptyStateIcon}>
+                <div className="d-flex align-items-center gap-2">
                   <BsBriefcaseFill />
+                  <h5 className="m-0">No Jobs Posted Yet</h5>
                 </div>
-                <h5>No Jobs Posted Yet</h5>
                 <p>Start by posting your first job to attract top talent!</p>
-                <Button onClick={() => setShowModal(true)} className={styles.btnPostJob}>
-                  <BsPlusCircleFill className="me-2" />
-                  Post Your First Job
-                </Button>
               </div>
             ) : (
               <Table responsive className={styles.jobsTable}>
@@ -250,18 +298,19 @@ function EmployerDashboard() {
                   <tr>
                     <th>Job Title</th>
                     <th>Type</th>
-                    <th>Level</th>
+                    <th>Status</th>
                     <th>Education</th>
                     <th>Skills</th>
+                    <th>Applicants</th>
                     <th>Posted</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {employerJobs.map((job) => (
+                  {adminJobs.map((job) => (
                     <tr key={job.id}>
                       <td>
-                        <div className={styles.jobTitle}>{job.title}</div>
+                        <div className='fw-semibold'>{job.title}</div>
                         {job.description && (
                           <div className={styles.jobDescription}>{job.description.substring(0, 100)}...</div>
                         )}
@@ -272,8 +321,8 @@ function EmployerDashboard() {
                         </Badge>
                       </td>
                       <td>
-                        <Badge bg="secondary" className={styles.badge}>
-                          {job.applicant_type}
+                        <Badge bg={getBadgeVariantDisability(job.disability_status)} className={styles.badge}>
+                          {job.disability_status}
                         </Badge>
                       </td>
                       <td>{job.education}</td>
@@ -282,11 +331,23 @@ function EmployerDashboard() {
                           {job.skills.length > 30 ? `${job.skills.substring(0, 30)}...` : job.skills}
                         </span>
                       </td>
+                      <td>
+                        <span>{job.applicant_count || 0}</span>
+                      </td>
                       <td>{formatDate(job.created_at)}</td>
                       <td>
-                        <div className={styles.actionButtons}>
+                        <div className={'${styles.actionButtons} d-flex gap-1'}>
                           <Button
-                            variant="outline-primary"
+                            variant="success"
+                            size="sm"
+                            as={Link}
+                            to={`/admin/job/${job.id}/applicants`}
+                            title="View Applicants"
+                          >
+                            <BsPeopleFill />
+                          </Button>
+                          <Button
+                            variant="primary"
                             size="sm"
                             className={styles.btnView}
                             onClick={() => handleViewJob(job.id)}
@@ -295,19 +356,21 @@ function EmployerDashboard() {
                             <BsEyeFill />
                           </Button>
                           <Button
-                            variant="outline-warning"
+                            variant="warning"
                             size="sm"
-                            className={styles.btnEdit}
-                            onClick={() => handleEditJob(job.id)}
-                            title="Edit Job"
+                            onClick={() => handleEditJob(job, 2)}
+                            title="Edit Skills"
                           >
                             <BsPencilSquare />
                           </Button>
                           <Button
-                            variant="outline-danger"
+                            variant="danger"
                             size="sm"
                             className={styles.btnDelete}
-                            onClick={() => handleDeleteJob(job.id)}
+                            onClick={() => {
+                              setJobToDelete(job)
+                              setShowDeleteModal(true)
+                            }}
                             title="Delete Job"
                           >
                             <BsTrash3Fill />
@@ -326,13 +389,15 @@ function EmployerDashboard() {
       {/* Job Post Modal */}
       <JobPostModal
         show={showModal}
-        handleClose={() => setShowModal(false)}
-        employerId={employerId}
+        handleClose={() => { setShowModal(false); setSelectedJob(null); }}
+        adminId={adminId}
         onJobPosted={handleJobPosted}
+        jobToEdit={selectedJob}
+        startStep={selectedJob ? 1 : 2}  // 👈 Automatically decide starting step
       />
 
       {/* Toast Notifications */}
-      <ToastContainer position="top-end" className="p-3">
+      <ToastContainer position="top-end" className="px-4 py-3">
         <Toast
           onClose={() => setShowToast(false)}
           show={showToast}
@@ -340,15 +405,36 @@ function EmployerDashboard() {
           autohide
           className={styles.successToast}
         >
-          <Toast.Header>
-            <BsCheckCircleFill className="me-2" />
-            <strong className="me-auto">Success</strong>
-          </Toast.Header>
-          <Toast.Body className="text-white">{toastMessage}</Toast.Body>
+          <Toast.Body className={`fs-5 text-white bg-${toastVariant} rounded d-flex align-items-center`}>
+          <span className="me-2 d-flex align-items-center">
+            {toastIconType === "check" && <BsCheckCircleFill />}
+            {toastIconType === "info" && <BsInfoCircleFill />}
+            {toastIconType === "exclamation" && <BsExclamationCircleFill />}
+          </span>
+          {toastMessage}
+          </Toast.Body>
         </Toast>
       </ToastContainer>
+
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Delete</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Are you sure you want to delete <strong>{jobToDelete?.title}</strong>?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={handleDeleteJob}>
+            Yes, Delete
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
     </Container>
   )
 }
 
-export default EmployerDashboard
+export default AdminDashboard
