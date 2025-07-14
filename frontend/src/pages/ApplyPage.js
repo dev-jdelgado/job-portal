@@ -16,10 +16,11 @@ function ApplyPage() {
   const seekerId = JSON.parse(localStorage.getItem("user"))?.id;
   const seekerData = JSON.parse(localStorage.getItem("user")) || {};
 
+
   // Form state
   const [formData, setFormData] = useState({
     coverLetter: "",
-    cvFile: null,
+    pdsFile: null,
     portfolioFile: null,
     expectedSalary: "",
     availabilityDate: "",
@@ -91,8 +92,8 @@ function ApplyPage() {
       return;
     }
 
-    if (!formData.cvFile) {
-      setSubmitError("CV/Resume file is required.");
+    if (!formData.pdsFile) {
+      setSubmitError("PDS file is required.");
       setSubmitting(false);
       return;
     }
@@ -106,8 +107,8 @@ function ApplyPage() {
       formDataToSend.append("availability_date", formData.availabilityDate);
       formDataToSend.append("additional_info", formData.additionalInfo);
       
-      if (formData.cvFile) {
-        formDataToSend.append("cv_file", formData.cvFile);
+      if (formData.pdsFile) {
+        formDataToSend.append("pds_file", formData.pdsFile);
       }
       
       if (formData.portfolioFile) {
@@ -236,94 +237,136 @@ function ApplyPage() {
                     </Col>
                   </Row>
 
-                  {/* Cover Letter */}
-                  <Form.Group className="mb-3">
-                    <Form.Label className="fw-bold">
-                      Cover Letter <span className="text-danger">*</span>
-                    </Form.Label>
-                    <Form.Control
-                      as="textarea"
-                      rows={6}
-                      name="coverLetter"
-                      value={formData.coverLetter}
-                      onChange={handleInputChange}
-                      placeholder="Write a compelling cover letter explaining why you're the perfect fit for this position..."
-                      required
-                    />
-                    <Form.Text className="text-muted">
-                      Tip: Mention specific skills from the job requirements and explain how your experience aligns with their needs.
-                    </Form.Text>
-                  </Form.Group>
+                  <Row>
+                    <Col md={6}>
+                      {/* Application Letter Upload */}
+                      <Form.Group className="mb-3">
+                        <Form.Label className="fw-bold">
+                          Application Letter <span className="text-danger">*</span>
+                        </Form.Label>
+                        <Form.Control
+                          type="file"
+                          name="pdsFile"
+                          accept=".pdf,.doc,.docx"
+                          onChange={handleFileChange}
+                          required
+                        />
+                        {/*
+                        <Form.Text className="text-muted">
+                          Accepted formats: PDF, DOC, DOCX (Max size: 5MB)
+                        </Form.Text>
+                        */}
+                      </Form.Group>
+                    </Col>
 
-                  {/* CV/Resume Upload */}
+                    <Col md={6}>
+                      {/* PDS Upload */}
+                      <Form.Group className="mb-3">
+                        <Form.Label className="fw-bold">
+                          Personal Data Sheet (PDS) <span className="text-danger">*</span>
+                        </Form.Label>
+                        <Form.Control
+                          type="file"
+                          name="pdsFile"
+                          accept=".pdf,.doc,.docx"
+                          onChange={handleFileChange}
+                          required
+                        />
+                        {/*
+                        <Form.Text className="text-muted">
+                          Accepted formats: PDF, DOC, DOCX (Max size: 5MB)
+                        </Form.Text>
+                        */}
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                  
+                  {/* Performance Rating */}
                   <Form.Group className="mb-3">
-                    <Form.Label className="fw-bold">
-                      CV/Resume <span className="text-danger">*</span>
-                    </Form.Label>
-                    <Form.Control
-                      type="file"
-                      name="cvFile"
-                      accept=".pdf,.doc,.docx"
-                      onChange={handleFileChange}
-                      required
-                    />
-                    <Form.Text className="text-muted">
-                      Accepted formats: PDF, DOC, DOCX (Max size: 5MB)
-                    </Form.Text>
-                  </Form.Group>
-
-                  {/* Portfolio Upload (Optional) */}
-                  <Form.Group className="mb-3">
-                    <Form.Label className="fw-bold">Portfolio/Work Samples (Optional)</Form.Label>
+                    <Form.Label className="fw-bold">Performance Rating (Last Rating)</Form.Label>
                     <Form.Control
                       type="file"
                       name="portfolioFile"
                       accept=".pdf,.doc,.docx,.zip,.rar"
                       onChange={handleFileChange}
                     />
+                    {/*
                     <Form.Text className="text-muted">
-                      Upload portfolio, work samples, or certificates (Max size: 10MB)
+                      Accepted formats: PDF, DOC, DOCX (Max size: 5MB)
                     </Form.Text>
+                    */}
                   </Form.Group>
 
-                  {/* Expected Salary */}
+                  {/* Authenticated Eligibility */}
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-bold">Authenticated Eligibility <span className="text-danger">*</span></Form.Label>
+                      <Form.Control
+                          type="file"
+                          name="portfolioFile"
+                          accept=".pdf,.doc,.docx,.zip,.rar"
+                          onChange={handleFileChange}
+                          required
+                        />
+                      {/*
+                      <Form.Text className="text-muted">
+                        Accepted formats: PDF, DOC, DOCX (Max size: 5MB)
+                      </Form.Text>
+                      */}
+                  </Form.Group>
+
                   <Row className="mb-3">
                     <Col md={6}>
-                      <Form.Group>
-                        <Form.Label className="fw-bold">Expected Salary (Monthly)</Form.Label>
+                      {/* Diploma */}
+                      <Form.Group className="mb-3">
+                        <Form.Label className="fw-bold">Diploma <span className="text-danger">*</span></Form.Label>
                         <Form.Control
-                          type="text"
-                          name="expectedSalary"
-                          value={formData.expectedSalary}
-                          onChange={handleInputChange}
-                          placeholder="e.g., PHP 25,000 - 30,000"
+                          type="file"
+                          name="portfolioFile"
+                          accept=".pdf,.doc,.docx,.zip,.rar"
+                          onChange={handleFileChange}
+                          required
                         />
+                        {/*
+                        <Form.Text className="text-muted">
+                          Accepted formats: PDF, DOC, DOCX (Max size: 5MB)
+                        </Form.Text>
+                        */}
                       </Form.Group>
                     </Col>
                     <Col md={6}>
-                      <Form.Group>
-                        <Form.Label className="fw-bold">Availability Date</Form.Label>
-                        <Form.Control
-                          type="date"
-                          name="availabilityDate"
-                          value={formData.availabilityDate}
-                          onChange={handleInputChange}
-                        />
+                      {/* TOR */}
+                      <Form.Group className="mb-3">
+                        <Form.Label className="fw-bold">Transcript of Records (TOR) <span className="text-danger">*</span></Form.Label>
+                          <Form.Control
+                            type="file"
+                            name="portfolioFile"
+                            accept=".pdf,.doc,.docx,.zip,.rar"
+                            onChange={handleFileChange}
+                            required
+                          />
+                          {/*
+                          <Form.Text className="text-muted">
+                            Accepted formats: PDF, DOC, DOCX (Max size: 5MB)
+                          </Form.Text>
+                          */}
                       </Form.Group>
                     </Col>
                   </Row>
 
-                  {/* Additional Information */}
-                  <Form.Group className="mb-4">
-                    <Form.Label className="fw-bold">Additional Information</Form.Label>
+                  {/* Relevant Trainings Rating */}
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fw-bold">Relevant Trainings</Form.Label>
                     <Form.Control
-                      as="textarea"
-                      rows={3}
-                      name="additionalInfo"
-                      value={formData.additionalInfo}
-                      onChange={handleInputChange}
-                      placeholder="Any additional information you'd like to share (certifications, achievements, etc.)"
+                      type="file"
+                      name="portfolioFile"
+                      accept=".pdf,.doc,.docx,.zip,.rar"
+                      onChange={handleFileChange}
                     />
+                      {/*
+                      <Form.Text className="text-muted">
+                        Accepted formats: PDF, DOC, DOCX (Max size: 5MB)
+                      </Form.Text>
+                      */}
                   </Form.Group>
 
                   {/* Error Display */}

@@ -67,14 +67,14 @@
   color: #333;
 }
 
-.resume-btn {
+.pds-btn {
   background-color: var(--sun-yellow);
   color: var(--navy-blue);
   border: none;
   font-weight: 600;
 }
 
-.resume-btn:hover {
+.pds-btn:hover {
   background-color: #e9c83a;
   color: var(--navy-blue);
 }

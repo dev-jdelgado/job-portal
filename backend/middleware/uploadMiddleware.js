@@ -18,17 +18,28 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ 
+const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
   fileFilter: (req, file, cb) => {
-    const filetypes = /jpeg|jpg|png/;
-    const mimetype = filetypes.test(file.mimetype);
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    if (mimetype && extname) {
+    const fieldName = file.fieldname;
+
+    // Define allowed MIME types for each field
+    const mimeTypes = {
+      profilePicture: ['image/jpeg', 'image/png', 'image/jpg'],
+      pds: [
+        'application/pdf',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      ],
+    };
+
+    const allowed = mimeTypes[fieldName];
+    if (allowed && allowed.includes(file.mimetype)) {
       return cb(null, true);
     }
-    cb(new Error('Only image files are allowed!'));
+
+    return cb(new Error(`Invalid file type for ${fieldName}`));
   },
 });
 

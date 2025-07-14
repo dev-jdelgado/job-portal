@@ -57,10 +57,10 @@ function ProfilePage() {
       formData.append('existingProfilePicture', profile.profile_picture_url || '');
     }
 
-    if (editData.resume) {
-      formData.append('resume', editData.resume);
+    if (editData.pds) {
+      formData.append('pds', editData.pds);
     } else {
-      formData.append('existingResume', profile.resume_url || '');
+      formData.append('existingPDS', profile.pds_url || '');
     }
 
     try {
@@ -91,15 +91,15 @@ function ProfilePage() {
         <Row>
           <Col md={4}>
             <Card className="profile-card text-center p-4">
-  <img
-    src={
-      profile.profile_picture_url
-        ? `http://localhost:5000${profile.profile_picture_url}`
-        : 'https://via.placeholder.com/150'
-    }
-    alt="Profile"
-    className="profile-picture"
-  />
+              <img
+                src={
+                  profile.profile_picture_url
+                    ? `http://localhost:5000${profile.profile_picture_url}`
+                    : 'https://via.placeholder.com/150'
+                }
+                alt="Profile"
+                className="profile-picture"
+              />
               <Card.Body className="text-center">
                 <Card.Title className="profile-name">{profile.name}</Card.Title>
                 <Card.Text className="profile-email">{profile.email}</Card.Text>
@@ -119,9 +119,9 @@ function ProfilePage() {
                 <p><strong>Skills:</strong> {profile.skills || 'Not specified'}</p>
                 <p><strong>Education:</strong> {profile.education || 'Not specified'}</p>
                 <p><strong>Disability Status:</strong> {profile.disability_status || 'Not specified'}</p>
-                {profile.resume_url && (
-                  <Button variant="secondary" href={`http://localhost:5000${profile.resume_url}`} target="_blank" className="resume-btn">
-                    View Resume
+                {profile.pds_url && (
+                  <Button variant="secondary" href={`http://localhost:5000${profile.pds_url}`} target="_blank" className="pds-btn">
+                    View PDS
                   </Button>
                 )}
               </Card.Body>
@@ -157,14 +157,29 @@ function ProfilePage() {
               <Form.Label>Education</Form.Label>
               <Form.Control type="text" name="education" value={editData.education || ''} onChange={handleInputChange} />
             </Form.Group>
+            
             <Form.Group className="mb-3">
               <Form.Label>Profile Picture</Form.Label>
+              {profile.profile_picture_url && (
+                <div className="mb-2 text-muted">
+                  Current file: <strong>{profile.profile_picture_url.split('/').pop().split('-').slice(1).join('-')}</strong>
+                </div>
+              )}
               <Form.Control type="file" name="profilePicture" onChange={handleFileChange} />
             </Form.Group>
+
             <Form.Group className="mb-3">
-              <Form.Label>Resume</Form.Label>
-              <Form.Control type="file" name="resume" onChange={handleFileChange} />
+              <Form.Label>Personal Data Sheet (PDF/Excel)</Form.Label>
+              {profile.pds_url && (
+                <div className="mb-2 text-muted">
+                  Current file: <strong>{profile.pds_url.split('/').pop().split('-').slice(1).join('-')}</strong>
+                </div>
+              )}
+              <Form.Control type="file" name="pds" onChange={handleFileChange} />
             </Form.Group>
+
+
+
             <Button variant="primary" type="submit" className="w-100 save-changes-btn">
               Save Changes
             </Button>
