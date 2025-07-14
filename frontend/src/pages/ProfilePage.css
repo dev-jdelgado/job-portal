@@ -1,0 +1,100 @@
+:root {
+  --navy-blue: #002D5A;
+  --sun-yellow: #F9D849;
+  --ocean-blue: #1F74A9;
+  --cream: #FFF5D1;
+  --white: #FFFFFF;
+  --text-dark: #000000;
+}
+
+.profile-page-wrapper {
+  background-color: var(--cream);
+  min-height: 100vh;
+}
+
+.profile-card, .details-card {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.profile-picture {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 2rem auto 1rem;
+  border: 5px solid var(--white);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.profile-name {
+  color: var(--navy-blue);
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.profile-email {
+  color: #555;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.edit-profile-btn {
+  background-color: var(--navy-blue);
+  border-color: var(--navy-blue);
+  font-weight: 600;
+  width: 80%;
+}
+
+.edit-profile-btn:hover {
+  background-color: var(--ocean-blue);
+  border-color: var(--ocean-blue);
+}
+
+.details-card {
+  padding: 1.5rem;
+}
+
+.section-title {
+  color: var(--ocean-blue);
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.bio-text {
+  line-height: 1.6;
+  color: #333;
+}
+
+.resume-btn {
+  background-color: var(--sun-yellow);
+  color: var(--navy-blue);
+  border: none;
+  font-weight: 600;
+}
+
+.resume-btn:hover {
+  background-color: #e9c83a;
+  color: var(--navy-blue);
+}
+
+.modal-header {
+  background-color: var(--navy-blue);
+  color: var(--white);
+}
+
+.modal-header .btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+.save-changes-btn {
+  background-color: var(--sun-yellow);
+  color: var(--navy-blue);
+  border: none;
+  font-weight: bold;
+}
+
+.save-changes-btn:hover {
+  background-color: #fadd62;
+}

@@ -10,7 +10,8 @@ import { Navigate } from 'react-router-dom';
 import AdminCreateUser from './pages/AdminCreateUser';
 import JobDetails from './pages/JobDetails'
 import JobApplicantsPage from "./pages/JobApplicantsPage";
-
+import ApplyPage from './pages/ApplyPage';
+import ProfilePage from './pages/ProfilePage';
 
 
 // HomeRedirect component
@@ -41,6 +42,7 @@ function AppRoutes() {
           </PrivateRoute>
         } />
         <Route path="/jobs/:id" element={<JobDetails />} />
+        <Route path="/apply/:id" element={<ApplyPage />} />
 
         <Route path="/admin-dashboard" element={
           <PrivateRoute allowedRoles={['admin']}>
@@ -55,6 +57,12 @@ function AppRoutes() {
           } />
 
         <Route path="/admin/job/:jobId/applicants" element={<JobApplicantsPage />} />
+        
+        <Route path="/profile" element={
+          <PrivateRoute allowedRoles={['seeker']}>
+            <ProfilePage />
+          </PrivateRoute>
+          } />
 
       </Routes>
     </>

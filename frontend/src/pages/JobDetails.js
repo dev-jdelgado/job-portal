@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom"
+import { useParams, Link } from "react-router-dom"
 import { useEffect, useState } from "react"
 import axios from "axios"
 import { Container, Spinner, Alert, Badge } from "react-bootstrap"
@@ -83,13 +83,21 @@ function JobDetails() {
                 <div className="d-flex align-items-center flex-column gap-4">
                     <h2 className="text-center fw-bold">{job.title}</h2>
                     <div className=" d-flex flex-column justify-content-center w-100">
-                        <button
-                            className={`btn ${applied ? "btn-danger" : "bg-success text-white"} rounded-5 py-2 px-5 fs-5 mx-auto`}
-                            onClick={handleApply}
-                            disabled={applied}
-                        >
-                            {applied ? "Already Applied!" : "Apply for This Job!"}
-                        </button>
+                        {applied ? (
+                            <button
+                                className="btn btn-danger rounded-5 py-2 px-5 fs-5 mx-auto"
+                                disabled
+                            >
+                                Already Applied!
+                            </button>
+                        ) : (
+                            <Link
+                                to={`/apply/${id}`}
+                                className="btn bg-success text-white rounded-5 py-2 px-5 fs-5 mx-auto text-decoration-none"
+                            >
+                                Apply for This Job!
+                            </Link>
+                        )}
                         {appliedAt && (
                             <p className="text-white mt-1 mb-0 mx-auto">
                                 You applied on <strong>{new Date(appliedAt).toLocaleString('en-US', {
