@@ -61,26 +61,6 @@ function ProfilePage() {
   const handleUpdate = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-<<<<<<< HEAD
-    formData.append('name', editData.name);
-    formData.append('email', editData.email);
-    formData.append('bio', editData.bio || '');
-    formData.append('skills', editData.skills || '');
-    formData.append('education', editData.education || '');
-    formData.append('disability_status', editData.disability_status || 'Non-PWD');
-    
-    if (editData.profilePicture) {
-      formData.append('profilePicture', editData.profilePicture);
-    } else {
-      formData.append('existingProfilePicture', profile.profile_picture_url || '');
-    }
-
-    if (editData.pds) {
-      formData.append('pds', editData.pds);
-    } else {
-      formData.append('existingPDS', profile.pds_url || '');
-    }
-=======
     // Append all fields to FormData
     Object.keys(editData).forEach(key => {
       // Don't append unchanged files or null/undefined values
@@ -92,7 +72,6 @@ function ProfilePage() {
         formData.append(key, editData[key]);
       }
     });
->>>>>>> 5fb2992a78103bae41572e9ddd28128ddb4176d4
 
     try {
       await axios.put(`http://localhost:5000/api/users/${user.id}`, formData, {
@@ -119,20 +98,6 @@ function ProfilePage() {
     <div className="profile-page-wrapper">
       <Container className="py-5">
         <Row>
-<<<<<<< HEAD
-          <Col md={4}>
-            <Card className="profile-card text-center p-4">
-              <img
-                src={
-                  profile.profile_picture_url
-                    ? `http://localhost:5000${profile.profile_picture_url}`
-                    : 'https://via.placeholder.com/150'
-                }
-                alt="Profile"
-                className="profile-picture"
-              />
-              <Card.Body className="text-center">
-=======
           <Col lg={4}>
             <Card className="profile-card text-center p-4 mb-4">
               <img
@@ -141,7 +106,6 @@ function ProfilePage() {
                 className="profile-picture"
               />
               <Card.Body>
->>>>>>> 5fb2992a78103bae41572e9ddd28128ddb4176d4
                 <Card.Title className="profile-name">{profile.name}</Card.Title>
                 <p><strong>Age:</strong> {calculateAge(profile.date_of_birth) || 'Not specified'}</p>
                 <Button variant="primary" className="edit-profile-btn" onClick={() => { setEditData(profile); setShowModal(true); }}>
@@ -191,54 +155,6 @@ function ProfilePage() {
         <Modal.Header closeButton><Modal.Title>Edit Profile</Modal.Title></Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleUpdate}>
-<<<<<<< HEAD
-            <Form.Group className="mb-3">
-              <Form.Label>Name</Form.Label>
-              <Form.Control type="text" name="name" value={editData.name || ''} onChange={handleInputChange} />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Email</Form.Label>
-              <Form.Control type="email" name="email" value={editData.email || ''} onChange={handleInputChange} />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Short Bio</Form.Label>
-              <Form.Control as="textarea" rows={3} name="bio" value={editData.bio || ''} onChange={handleInputChange} />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Skills (comma-separated)</Form.Label>
-              <Form.Control type="text" name="skills" value={editData.skills || ''} onChange={handleInputChange} />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Education</Form.Label>
-              <Form.Control type="text" name="education" value={editData.education || ''} onChange={handleInputChange} />
-            </Form.Group>
-            
-            <Form.Group className="mb-3">
-              <Form.Label>Profile Picture</Form.Label>
-              {profile.profile_picture_url && (
-                <div className="mb-2 text-muted">
-                  Current file: <strong>{profile.profile_picture_url.split('/').pop().split('-').slice(1).join('-')}</strong>
-                </div>
-              )}
-              <Form.Control type="file" name="profilePicture" onChange={handleFileChange} />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Personal Data Sheet (PDF/Excel)</Form.Label>
-              {profile.pds_url && (
-                <div className="mb-2 text-muted">
-                  Current file: <strong>{profile.pds_url.split('/').pop().split('-').slice(1).join('-')}</strong>
-                </div>
-              )}
-              <Form.Control type="file" name="pds" onChange={handleFileChange} />
-            </Form.Group>
-
-
-
-            <Button variant="primary" type="submit" className="w-100 save-changes-btn">
-              Save Changes
-            </Button>
-=======
             <Form.Group className="mb-3"><Form.Label>Name</Form.Label><Form.Control type="text" name="name" value={editData.name || ''} onChange={handleInputChange} /></Form.Group>
             <Form.Group className="mb-3"><Form.Label>Email</Form.Label><Form.Control type="email" name="email" value={editData.email || ''} onChange={handleInputChange} /></Form.Group>
             
@@ -254,7 +170,6 @@ function ProfilePage() {
             <Form.Group className="mb-3"><Form.Label>Resume (PDS)</Form.Label><Form.Control type="file" name="resume" accept=".xlsx, .xls" onChange={handleFileChange} /></Form.Group>
             
             <Button variant="primary" type="submit" className="w-100 save-changes-btn">Save Changes</Button>
->>>>>>> 5fb2992a78103bae41572e9ddd28128ddb4176d4
           </Form>
         </Modal.Body>
       </Modal>
