@@ -1,13 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db'); // Assuming your db connection is here
-const upload = require('../middleware/uploadMiddleware'); // Using existing upload middleware
+const db = require('../db'); 
+const upload = require('../middleware/uploadMiddleware');
+const fs = require('fs'); // Import File System for deleting old files
+const path = require('path'); // Import Path for joining file paths
 
-// GET user profile
+// GET user profile (this can remain the same, but let's add the new fields)
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const [rows] = await db.execute('SELECT id, name, email, skills, education, disability_status, bio, profile_picture_url, resume_url FROM users WHERE id = ?', [id]);
+    // UPDATED: Select all the new fields as well
+    const [rows] = await db.execute('SELECT id, name, email, skills, education, disability_status, bio, date_of_birth, address, phone_number, profile_picture_url, resume_url FROM users WHERE id = ?', [id]);
     if (rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -18,23 +21,71 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// UPDATE user profile
+
 router.put('/:id', upload.fields([{ name: 'profilePicture', maxCount: 1 }, { name: 'resume', maxCount: 1 }]), async (req, res) => {
   const { id } = req.params;
-  const { name, email, bio, skills, education, disability_status } = req.body;
-
-  // Paths for uploaded files
-  const profilePictureUrl = req.files.profilePicture ? `/uploads/${req.files.profilePicture[0].filename}` : req.body.existingProfilePicture;
-  const resumeUrl = req.files.resume ? `/uploads/${req.files.resume[0].filename}` : req.body.existingResume;
+  const { name, email, bio, skills, education, disability_status, date_of_birth, address, phone_number } = req.body;
 
   try {
-    const sql = `
-      UPDATE users 
-      SET name = ?, email = ?, bio = ?, skills = ?, education = ?, disability_status = ?, profile_picture_url = ?, resume_url = ?
-      WHERE id = ?
-    `;
-    await db.execute(sql, [name, email, bio, skills, education, disability_status, profilePictureUrl, resumeUrl, id]);
+    // --- Delete old files before updating ---
+    if (req.files.profilePicture || req.files.resume) {
+        const [currentUserResult] = await db.execute('SELECT profile_picture_url, resume_url FROM users WHERE id = ?', [id]);
+        const currentUser = currentUserResult[0];
+
+        if (currentUser) {
+          // If a new profile picture is uploaded and an old one exists, delete the old one.
+          if (req.files.profilePicture && currentUser.profile_picture_url) {
+            // FIX: Construct the correct absolute path by removing the leading slash from the stored URL
+            const oldPath = path.join(__dirname, '..', currentUser.profile_picture_url.substring(1));
+            fs.unlink(oldPath, err => {
+              if (err) console.error("Error deleting old picture:", err);
+            });
+          }
+          // If a new resume is uploaded and an old one exists, delete it.
+          if (req.files.resume && currentUser.resume_url) {
+            // FIX: Apply the same path correction here
+            const oldPath = path.join(__dirname, '..', currentUser.resume_url.substring(1));
+            fs.unlink(oldPath, err => {
+              if (err) console.error("Error deleting old resume:", err);
+            });
+          }
+        }
+    }
+
+    // --- Build the update object dynamically ---
+    const fieldsToUpdate = {};
+    if (name) fieldsToUpdate.name = name;
+    if (email) fieldsToUpdate.email = email;
+    if (bio) fieldsToUpdate.bio = bio;
+    if (skills) fieldsToUpdate.skills = skills;
+    if (education) fieldsToUpdate.education = education;
+    if (disability_status) fieldsToUpdate.disability_status = disability_status;
+    if (date_of_birth) fieldsToUpdate.date_of_birth = date_of_birth;
+    if (address) fieldsToUpdate.address = address;
+    if (phone_number) fieldsToUpdate.phone_number = phone_number;
+
+    if (req.files.profilePicture) {
+        fieldsToUpdate.profile_picture_url = `/uploads/${req.files.profilePicture[0].filename}`;
+    }
+    if (req.files.resume) {
+        fieldsToUpdate.resume_url = `/uploads/resumes/${req.files.resume[0].filename}`;
+    }
+    
+    if (Object.keys(fieldsToUpdate).length === 0) {
+        return res.status(400).json({ message: 'No new information provided to update.' });
+    }
+
+    // --- Construct and execute the dynamic SQL query ---
+    const fieldNames = Object.keys(fieldsToUpdate);
+    const sqlSetClause = fieldNames.map(field => `${field} = ?`).join(', ');
+    const values = [...Object.values(fieldsToUpdate), id];
+
+    const sql = `UPDATE users SET ${sqlSetClause} WHERE id = ?`;
+    
+    await db.execute(sql, values);
+    
     res.json({ message: 'Profile updated successfully' });
+
   } catch (err) {
     console.error('Error updating profile:', err);
     res.status(500).json({ error: 'Server error' });

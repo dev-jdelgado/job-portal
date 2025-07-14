@@ -98,3 +98,19 @@
 .save-changes-btn:hover {
   background-color: #fadd62;
 }
+
+
+.profile-tabs .nav-link {
+  color: var(--ocean-blue);
+  font-weight: 600;
+}
+
+.profile-tabs .nav-link.active {
+  color: var(--navy-blue);
+  background-color: var(--white);
+  border-color: #dee2e6 #dee2e6 var(--white);
+}
+
+.profile-tabs .nav-tabs {
+  border-bottom: 2px solid #dee2e6;
+}
