@@ -3,6 +3,19 @@ const router = express.Router();
 const db = require('../db');
 
 
+// Helper function to calculate age from date of birth
+function calculateAge(dateString) {
+  if (!dateString) return null;
+  const today = new Date();
+  const birthDate = new Date(dateString);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+}
+
 // ADD Job Post
 router.post('/', async (req, res) => {
   const { title, description, education, skills, admin_id, employment_type, disability_status } = req.body;
@@ -237,20 +250,58 @@ router.get('/applications/check', async (req, res) => {
 
 
 
-// GET all applicants for a specific job
+// GET all applicants for a specific job with MATCH SCORE
 router.get('/applicants/:jobId', async (req, res) => {
   const { jobId } = req.params;
 
   try {
-    const [rows] = await db.execute(`
-      SELECT u.name, u.email, u.education, u.skills, u.disability_status, a.applied_at, j.title AS job_title
+    // ... (1. Get job's requirements - this part is unchanged) ...
+    const [jobRows] = await db.execute('SELECT * FROM jobs WHERE id = ?', [jobId]);
+    if (jobRows.length === 0) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+    const job = jobRows[0];
+    const jobSkills = job.skills?.split(',').map(s => s.trim().toLowerCase()) || [];
+    const jobEducation = job.education?.toLowerCase() || '';
+    const jobDisabilityStatus = job.disability_status || 'Non-PWD';
+
+    // 2. Get all applicants for the job (UPDATE THIS QUERY)
+    const [applicants] = await db.execute(`
+      SELECT 
+        u.id, u.name, u.email, u.education, u.skills, u.disability_status, 
+        u.date_of_birth, u.address, u.phone_number, u.resume_url, -- ADDED new fields
+        a.applied_at, a.id AS applicationId, status,
+        j.title AS job_title
       FROM applications a
       JOIN users u ON a.seeker_id = u.id
       JOIN jobs j ON a.job_id = j.id
       WHERE a.job_id = ?
     `, [jobId]);
 
-    res.json(rows);
+    // 3. Calculate match score and age for each applicant
+    const rankedApplicants = applicants.map(applicant => {
+      const seekerSkills = applicant.skills?.split(',').map(s => s.trim().toLowerCase()) || [];
+      const seekerEducation = applicant.education?.toLowerCase() || '';
+      const seekerDisabilityStatus = applicant.disability_status || 'Non-PWD';
+
+      const skillMatchCount = seekerSkills.filter(skill => jobSkills.includes(skill)).length;
+      const educationMatch = jobEducation === seekerEducation ? 1 : 0;
+      let disabilityMatch = 0;
+      if (seekerDisabilityStatus === 'PWD' && jobDisabilityStatus === 'PWD') {
+        disabilityMatch = 1;
+      }
+      
+      const matchScore = (disabilityMatch * 1000) + (educationMatch * 1) + skillMatchCount;
+
+
+      return {
+        ...applicant,
+        matchScore,
+        age: calculateAge(applicant.date_of_birth), // ADDED age calculation
+      };
+    });
+
+    res.json(rankedApplicants);
   } catch (err) {
     console.error("Error fetching applicants:", err);
     res.status(500).json({ error: "Server error" });
