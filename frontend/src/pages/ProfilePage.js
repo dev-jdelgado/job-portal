@@ -166,8 +166,26 @@ function ProfilePage() {
             <Form.Group className="mb-3"><Form.Label>Short Bio</Form.Label><Form.Control as="textarea" rows={3} name="bio" value={editData.bio || ''} onChange={handleInputChange} /></Form.Group>
             <Form.Group className="mb-3"><Form.Label>Skills (comma-separated)</Form.Label><Form.Control type="text" name="skills" value={editData.skills || ''} onChange={handleInputChange} /></Form.Group>
             <Form.Group className="mb-3"><Form.Label>Education</Form.Label><Form.Control type="text" name="education" value={editData.education || ''} onChange={handleInputChange} /></Form.Group>
-            <Form.Group className="mb-3"><Form.Label>Profile Picture</Form.Label><Form.Control type="file" name="profilePicture" onChange={handleFileChange} /></Form.Group>
-            <Form.Group className="mb-3"><Form.Label>Resume (PDS)</Form.Label><Form.Control type="file" name="resume" accept=".xlsx, .xls" onChange={handleFileChange} /></Form.Group>
+            
+            <Form.Group className="mb-3">
+              <Form.Label>Profile Picture</Form.Label>
+              {profile.profile_picture_url && (
+                <div className="mb-2 text-muted">
+                  Current file: <strong>{profile.profile_picture_url.split('/').pop().split('-').slice(1).join('-')}</strong>
+                </div>
+              )}
+              <Form.Control type="file" name="profilePicture" onChange={handleFileChange} />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Personal Data Sheet (PDF/Excel)</Form.Label>
+              {profile.pds_url && (
+                <div className="mb-2 text-muted">
+                  Current file: <strong>{profile.pds_url.split('/').pop().split('-').slice(1).join('-')}</strong>
+                </div>
+              )}
+              <Form.Control type="file" name="pds" onChange={handleFileChange} />
+            </Form.Group>
             
             <Button variant="primary" type="submit" className="w-100 save-changes-btn">Save Changes</Button>
           </Form>
