@@ -19,12 +19,7 @@ function ApplyPage() {
 
   // Form state
   const [formData, setFormData] = useState({
-    coverLetter: "",
     pdsFile: null,
-    portfolioFile: null,
-    expectedSalary: "",
-    availabilityDate: "",
-    additionalInfo: ""
   });
 
   // Check if already applied
@@ -84,48 +79,35 @@ function ApplyPage() {
     e.preventDefault();
     setSubmitting(true);
     setSubmitError(null);
-
-    // Validate required fields
-    if (!formData.coverLetter.trim()) {
-      setSubmitError("Cover letter is required.");
-      setSubmitting(false);
-      return;
-    }
-
-    if (!formData.pdsFile) {
-      setSubmitError("PDS file is required.");
-      setSubmitting(false);
-      return;
-    }
-
+  
     try {
       const formDataToSend = new FormData();
       formDataToSend.append("job_id", job.id);
       formDataToSend.append("seeker_id", seekerId);
-      formDataToSend.append("cover_letter", formData.coverLetter);
-      formDataToSend.append("expected_salary", formData.expectedSalary);
-      formDataToSend.append("availability_date", formData.availabilityDate);
-      formDataToSend.append("additional_info", formData.additionalInfo);
-      
-      if (formData.pdsFile) {
-        formDataToSend.append("pds_file", formData.pdsFile);
-      }
-      
-      if (formData.portfolioFile) {
-        formDataToSend.append("portfolio_file", formData.portfolioFile);
-      }
-
-      const res = await axios.post("http://localhost:5000/jobs/applications/detailed", formDataToSend, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+  
+      // Append files only if they exist
+      const fileFields = [
+        "pdsFile",
+        "ApplicationLetterFile",
+        "performanceRatingFile",
+        "eligibilityFile",
+        "diplomaFile",
+        "torFile",
+        "trainingsFile"
+      ];
+  
+      fileFields.forEach((field) => {
+        if (formData[field]) {
+          formDataToSend.append(field, formData[field]);
+        }
       });
-
+  
+      const res = await axios.post("http://localhost:5000/jobs/applications/detailed", formDataToSend, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+  
       setSubmitSuccess(true);
-      setTimeout(() => {
-        navigate(`/job-details/${id}`);
-      }, 2000);
-
+      setTimeout(() => navigate(`/jobs/${id}`), 4000);
     } catch (err) {
       console.error("Application error:", err);
       setSubmitError(err.response?.data?.message || "Something went wrong while submitting your application.");
@@ -156,7 +138,7 @@ function ApplyPage() {
         <Alert variant="info">
           <Alert.Heading>Already Applied!</Alert.Heading>
           <p>You have already submitted an application for this job position.</p>
-          <Button variant="outline-primary" onClick={() => navigate(`/job-details/${id}`)}>
+          <Button variant="outline-primary" onClick={() => navigate(`/jobs/${id}`)}>
             View Job Details
           </Button>
         </Alert>
@@ -246,7 +228,7 @@ function ApplyPage() {
                         </Form.Label>
                         <Form.Control
                           type="file"
-                          name="pdsFile"
+                          name="ApplicationLetterFile"
                           accept=".pdf,.doc,.docx"
                           onChange={handleFileChange}
                           required
@@ -261,23 +243,25 @@ function ApplyPage() {
 
                     <Col md={6}>
                       {/* PDS Upload */}
-                      <Form.Group className="mb-3">
-                        <Form.Label className="fw-bold">
-                          Personal Data Sheet (PDS) <span className="text-danger">*</span>
-                        </Form.Label>
-                        <Form.Control
-                          type="file"
-                          name="pdsFile"
-                          accept=".pdf,.doc,.docx"
-                          onChange={handleFileChange}
-                          required
-                        />
-                        {/*
-                        <Form.Text className="text-muted">
-                          Accepted formats: PDF, DOC, DOCX (Max size: 5MB)
-                        </Form.Text>
-                        */}
-                      </Form.Group>
+                      <Form.Label className="fw-bold">Resume / PDS</Form.Label>
+                      <Form.Control
+                        type="file"
+                        name="pdsFile"
+                        accept=".pdf,.doc,.docx"
+                        onChange={handleFileChange}
+                      />
+                      {seekerData.pds_url && (
+                        <div className="mb-2">
+                          <span className="text-muted">Current file: </span>
+                          <a
+                            href={`http://localhost:5000/uploads/${seekerData.pds_url}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {seekerData.pds_url}
+                          </a>
+                        </div>
+                      )}
                     </Col>
                   </Row>
                   
@@ -286,7 +270,7 @@ function ApplyPage() {
                     <Form.Label className="fw-bold">Performance Rating (Last Rating)</Form.Label>
                     <Form.Control
                       type="file"
-                      name="portfolioFile"
+                      name="performanceRatingFile"
                       accept=".pdf,.doc,.docx,.zip,.rar"
                       onChange={handleFileChange}
                     />
@@ -302,7 +286,7 @@ function ApplyPage() {
                     <Form.Label className="fw-bold">Authenticated Eligibility <span className="text-danger">*</span></Form.Label>
                       <Form.Control
                           type="file"
-                          name="portfolioFile"
+                          name="eligibilityFile"
                           accept=".pdf,.doc,.docx,.zip,.rar"
                           onChange={handleFileChange}
                           required
@@ -321,7 +305,7 @@ function ApplyPage() {
                         <Form.Label className="fw-bold">Diploma <span className="text-danger">*</span></Form.Label>
                         <Form.Control
                           type="file"
-                          name="portfolioFile"
+                          name="diplomaFile"
                           accept=".pdf,.doc,.docx,.zip,.rar"
                           onChange={handleFileChange}
                           required
@@ -339,7 +323,7 @@ function ApplyPage() {
                         <Form.Label className="fw-bold">Transcript of Records (TOR) <span className="text-danger">*</span></Form.Label>
                           <Form.Control
                             type="file"
-                            name="portfolioFile"
+                            name="torFile"
                             accept=".pdf,.doc,.docx,.zip,.rar"
                             onChange={handleFileChange}
                             required
@@ -358,7 +342,7 @@ function ApplyPage() {
                     <Form.Label className="fw-bold">Relevant Trainings</Form.Label>
                     <Form.Control
                       type="file"
-                      name="portfolioFile"
+                      name="trainingsFile"
                       accept=".pdf,.doc,.docx,.zip,.rar"
                       onChange={handleFileChange}
                     />
@@ -381,7 +365,7 @@ function ApplyPage() {
                   <div className="d-flex justify-content-between">
                     <Button 
                       variant="outline-secondary" 
-                      onClick={() => navigate(`/job-details/${id}`)}
+                      onClick={() => navigate(`/jobs/${id}`)}
                       disabled={submitting}
                     >
                       Cancel

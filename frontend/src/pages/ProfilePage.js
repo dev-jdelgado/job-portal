@@ -60,17 +60,17 @@ function ProfilePage() {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    // Append all fields to FormData
-    Object.keys(editData).forEach(key => {
-      // Don't append unchanged files or null/undefined values
-      if (key === 'profilePicture' && editData.profilePicture) {
-        formData.append('profilePicture', editData.profilePicture);
-      } else if (key === 'resume' && editData.resume) {
-        formData.append('resume', editData.resume);
-      } else if (key !== 'profilePicture' && key !== 'resume' && editData[key] !== null && editData[key] !== undefined) {
-        formData.append(key, editData[key]);
-      }
+      const formData = new FormData();
+      // Append all fields to FormData
+      Object.keys(editData).forEach(key => {
+        // Don't append unchanged files or null/undefined values
+        if (key === 'profilePicture' && editData.profilePicture) {
+          formData.append('profilePicture', editData.profilePicture);
+        } else if (key === 'pds' && editData.pds) {
+          formData.append('pds', editData.pds);
+        } else if (key !== 'profilePicture' && key !== 'pds' && editData[key] !== null && editData[key] !== undefined) {
+          formData.append(key, editData[key]);
+        }
     });
 
     try {
@@ -129,9 +129,9 @@ function ProfilePage() {
                       <p><strong>Skills:</strong> {profile.skills || 'Not specified'}</p>
                       <p><strong>Education:</strong> {profile.education || 'Not specified'}</p>
                       <p><strong>Disability Status:</strong> {profile.disability_status || 'Not specified'}</p>
-                      {profile.resume_url && (
-                        <Button variant="secondary" href={`http://localhost:5000${profile.resume_url}`} target="_blank" className="resume-btn mt-3">
-                          View Resume
+                      {profile.pds_url && (
+                        <Button variant="secondary" href={`http://localhost:5000${profile.pds_url}`} target="_blank" className="pds-btn mt-3">
+                          View PDS
                         </Button>
                       )}
                     </div>

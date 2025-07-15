@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const upload = require('../middleware/uploadMiddleware');
 
 
 // Helper function to calculate age from date of birth
@@ -204,6 +205,45 @@ router.post('/applications', async (req, res) => {
   }
 });
 
+router.post('/applications/detailed', upload.fields([
+  { name: 'pdsFile' },
+  { name: 'ApplicationLetterFile' },
+  { name: 'performanceRatingFile' },
+  { name: 'eligibilityFile' },
+  { name: 'diplomaFile' },
+  { name: 'torFile' },
+  { name: 'trainingsFile' }
+]), async (req, res) => {
+  const { job_id, seeker_id } = req.body;
+
+  try {
+    const files = req.files || {};
+
+    await db.execute(
+      `INSERT INTO applications 
+        (job_id, seeker_id, pds_url, application_letter_url, performance_rating_url, eligibility_url, diploma_url, tor_url, trainings_url)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        job_id,
+        seeker_id,
+        files.pdsFile?.[0]?.filename || null,
+        files.ApplicationLetterFile?.[0]?.filename || null,
+        files.performanceRatingFile?.[0]?.filename || null,
+        files.eligibilityFile?.[0]?.filename || null,
+        files.diplomaFile?.[0]?.filename || null,
+        files.torFile?.[0]?.filename || null,
+        files.trainingsFile?.[0]?.filename || null
+      ]
+    );
+
+    res.status(201).json({ message: "Detailed application submitted successfully!" });
+  } catch (err) {
+    console.error("❌ Error submitting detailed application:", err.stack || err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
 
 // GET applications for a seeker
 router.get('/applications/seeker/:id', async (req, res) => {
@@ -269,7 +309,7 @@ router.get('/applicants/:jobId', async (req, res) => {
     const [applicants] = await db.execute(`
       SELECT 
         u.id, u.name, u.email, u.education, u.skills, u.disability_status, 
-        u.date_of_birth, u.address, u.phone_number, u.resume_url, -- ADDED new fields
+        u.date_of_birth, u.address, u.phone_number, u.pds_url, -- ADDED new fields
         a.applied_at, a.id AS applicationId, status,
         j.title AS job_title
       FROM applications a

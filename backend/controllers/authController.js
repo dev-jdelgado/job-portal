@@ -39,26 +39,29 @@ exports.register = async (req, res) => {
 
 
 exports.login = async (req, res) => {
-    const { email, password } = req.body;
-    try {
-        const [rows] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
-        const user = rows[0];
-        if (!user || !(await bcrypt.compare(password, user.password))) {
-        return res.status(401).json({ msg: 'Invalid credentials' });
-        }
+  const { email, password } = req.body;
+  try {
+      const [rows] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
+      const user = rows[0];
+      if (!user || !(await bcrypt.compare(password, user.password))) {
+          return res.status(401).json({ msg: 'Invalid credentials' });
+      }
 
-        const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.json({
+      const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+      res.json({
           token,
           id: user.id,
           role: user.role,
           name: user.name,
           email: user.email,
-        });
-    } catch (err) {
-        res.status(500).json({ msg: 'Error logging in' });
-    }
+          pds_url: user.pds_url || null, // 👈 include this!
+      });
+  } catch (err) {
+      res.status(500).json({ msg: 'Error logging in' });
+  }
 };
+
 
 
 exports.createAdminUser = async (req, res) => {

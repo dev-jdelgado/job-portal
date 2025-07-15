@@ -18,28 +18,32 @@ const storage = multer.diskStorage({
   },
 });
 
+// Allowed types per field
+const allowedTypes = {
+  profilePicture: ['image/jpeg', 'image/jpg', 'image/png'],
+  default: [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/zip',
+    'application/x-rar-compressed'
+  ]
+};
+
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
   fileFilter: (req, file, cb) => {
-    const fieldName = file.fieldname;
+    const field = file.fieldname;
+    const mime = file.mimetype;
 
-    // Define allowed MIME types for each field
-    const mimeTypes = {
-      profilePicture: ['image/jpeg', 'image/png', 'image/jpg'],
-      pds: [
-        'application/pdf',
-        'application/vnd.ms-excel',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      ],
-    };
+    const validTypes = allowedTypes[field] || allowedTypes.default;
 
-    const allowed = mimeTypes[fieldName];
-    if (allowed && allowed.includes(file.mimetype)) {
+    if (validTypes.includes(mime)) {
       return cb(null, true);
     }
 
-    return cb(new Error(`Invalid file type for ${fieldName}`));
+    return cb(new Error(`Invalid file type for ${field}. Type: ${mime}`));
   },
 });
 

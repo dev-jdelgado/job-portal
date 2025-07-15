@@ -148,9 +148,12 @@ function SeekerDashboard() {
               <h2 className="section-title">{showAll ? "All Job Listings" : "Matching Job Listings"}</h2>
             </div>
             <div className="d-flex gap-3">
-              <Button className="" variant="primary" onClick={() => setShowApplications(!showApplications)}>
-                {showApplications ? "Back to Job Listings" : "View My Applications"}
+            <Link to="/job-applications">
+              <Button className="" variant="primary">
+                View My Applications
               </Button>
+            </Link>
+
             </div>
 
 

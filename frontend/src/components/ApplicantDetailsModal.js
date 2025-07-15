@@ -55,11 +55,11 @@ export const ApplicantDetailsModal = ({ show, onHide, applicant }) => {
             <p className="mb-1"><Icon className="bi bi-calendar-check" />Applied On</p>
             <strong>{new Date(applicant.applied_at).toLocaleString()}</strong>
             <hr />
-            {/* --- NEW SECTION for Resume Download --- */}
-            {applicant.resume_url && (
+            {/* --- NEW SECTION for PDS Download --- */}
+            {applicant.pds_url && (
               <div className="d-grid">
-                <Button as="a" href={applicant.resume_url} target="_blank" rel="noopener noreferrer" variant="primary">
-                  <Icon className="bi bi-download" /> Download Resume
+                <Button as="a" href={applicant.pds_url} target="_blank" rel="noopener noreferrer" variant="primary">
+                  <Icon className="bi bi-download" /> Download PDS
                 </Button>
               </div>
             )}

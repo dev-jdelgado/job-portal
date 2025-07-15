@@ -12,6 +12,7 @@ import JobDetails from './pages/JobDetails'
 import JobApplicantsPage from "./pages/JobApplicantsPage";
 import ApplyPage from './pages/ApplyPage';
 import ProfilePage from './pages/ProfilePage';
+import JobApplicationsPage from './pages/JobApplicationsPage';
 
 
 // HomeRedirect component
@@ -62,7 +63,13 @@ function AppRoutes() {
           <PrivateRoute allowedRoles={['seeker']}>
             <ProfilePage />
           </PrivateRoute>
-          } />
+        } />
+
+        <Route path="/job-applications" element={
+          <PrivateRoute allowedRoles={['seeker']}>
+            <JobApplicationsPage />
+          </PrivateRoute>
+        } />
 
       </Routes>
     </>
