@@ -2,6 +2,9 @@ import { useState } from "react"
 import { Modal, Button, Form, Row, Col, Alert } from "react-bootstrap"
 import axios from "axios"
 import { useEffect } from "react"
+import config from '../config';
+
+const API_URL = config.API_URL;
 
 const IT_skillOptions = [
   "HTML/CSS", "JavaScript", "React.js/Angular/Vue.js", "Node.js/Express", "Python/Django / Flask", "Java/Spring",
@@ -109,9 +112,9 @@ function JobPostModal({ show, handleClose, adminId, onJobPosted, jobToEdit, star
       }
   
       if (jobToEdit) {
-        await axios.put(`http://localhost:5000/jobs/${jobToEdit.id}`, payload)
+        await axios.put(`${API_URL}/jobs/${jobToEdit.id}`, payload)
       } else {
-        await axios.post("http://localhost:5000/jobs", payload)
+        await axios.post("${API_URL}/jobs", payload)
       }
   
       onJobPosted(jobToEdit ? "update" : "create")

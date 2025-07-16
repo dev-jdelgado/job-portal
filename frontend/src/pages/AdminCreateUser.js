@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+import config from '../config';
+
+const API_URL = config.API_URL;
 
 export default function AdminCreateUser() {
     const { user } = useAuth();
@@ -20,7 +23,7 @@ export default function AdminCreateUser() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:5000/api/auth/admin/create-user', form, {
+            await axios.post(`${API_URL}/api/auth/admin/create-user`, form, {
                 headers: { Authorization: `Bearer ${user.token}` }
             });
             setMsg("Admin user created!");

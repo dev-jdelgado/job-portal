@@ -305,12 +305,15 @@ router.get('/applicants/:jobId', async (req, res) => {
     const jobEducation = job.education?.toLowerCase() || '';
     const jobDisabilityStatus = job.disability_status || 'Non-PWD';
 
-    // 2. Get all applicants for the job (UPDATE THIS QUERY)
+    // In GET /applicants/:jobId
     const [applicants] = await db.execute(`
       SELECT 
         u.id, u.name, u.email, u.education, u.skills, u.disability_status, 
-        u.date_of_birth, u.address, u.phone_number, u.pds_url, -- ADDED new fields
-        a.applied_at, a.id AS applicationId, status,
+        u.date_of_birth, u.address, u.phone_number,
+        a.pds_url, a.application_letter_url, a.diploma_url, a.tor_url,
+        a.eligibility_url, a.performance_rating_url, a.trainings_url,
+        a.applied_at, a.id AS applicationId, a.status,
+        a.job_id AS jobId,
         j.title AS job_title
       FROM applications a
       JOIN users u ON a.seeker_id = u.id

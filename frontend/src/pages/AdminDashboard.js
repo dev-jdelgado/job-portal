@@ -16,6 +16,9 @@ import { useAuth } from "../context/AuthContext"
 import axios from "axios"
 import styles from "./AdminDashboard.css"
 import { Link } from 'react-router-dom';
+import config from '../config';
+
+const API_URL = config.API_URL;
 
 
 function AdminDashboard() {
@@ -48,10 +51,10 @@ function AdminDashboard() {
     setError(null);
   
     try {
-      const jobsRes = await axios.get(`http://localhost:5000/jobs/admin/${adminId}`);
+      const jobsRes = await axios.get(`${API_URL}/jobs/admin/${adminId}`);
       setAdminJobs(jobsRes.data);
   
-      const countRes = await axios.get(`http://localhost:5000/jobs/admin/${adminId}/applications/count`);
+      const countRes = await axios.get(`${API_URL}/jobs/admin/${adminId}/applications/count`);
       const totalApplications = countRes.data.total_applications;
   
       const stats = {
@@ -99,7 +102,7 @@ function AdminDashboard() {
     if (!jobToDelete) return;
   
     try {
-      await axios.delete(`http://localhost:5000/jobs/${jobToDelete.id}`);
+      await axios.delete(`${API_URL}/jobs/${jobToDelete.id}`);
       
       setAdminJobs((prev) => prev.filter((job) => job.id !== jobToDelete.id));
       setToastMessage("Job deleted successfully!");

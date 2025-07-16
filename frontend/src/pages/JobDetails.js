@@ -2,6 +2,9 @@ import { useParams, Link } from "react-router-dom"
 import { useEffect, useState } from "react"
 import axios from "axios"
 import { Container, Spinner, Alert, Badge } from "react-bootstrap"
+import config from '../config';
+
+const API_URL = config.API_URL;
 
 function JobDetails() {
     const { id } = useParams()
@@ -19,7 +22,7 @@ function JobDetails() {
     useEffect(() => {
         const fetchJob = async () => {
             try {
-                const res = await axios.get(`http://localhost:5000/jobs/${id}`);
+                const res = await axios.get(`${API_URL}/jobs/${id}`);
                 setJob(res.data);
             } catch (err) {
                 setError("Job not found.");
@@ -31,7 +34,7 @@ function JobDetails() {
     
         const checkIfApplied = async () => {
             try {
-              const res = await axios.get(`http://localhost:5000/jobs/applications/check`, {
+              const res = await axios.get(`${API_URL}/jobs/applications/check`, {
                 params: {
                   job_id: id,
                   seeker_id: seekerId,
@@ -58,23 +61,6 @@ function JobDetails() {
     if (error) {
         return <Container className="mt-5"><Alert variant="danger">{error}</Alert></Container>
     }
-
-    const handleApply = async () => {
-        try {
-          const res = await axios.post("http://localhost:5000/jobs/applications", {
-            job_id: job.id,
-            seeker_id: seekerId,
-          });
-      
-          setApplied(true);
-          setApplyError(null);
-        } catch (err) {
-          console.error("Application error:", err);
-          setApplyError(err.response?.data?.message || "Something went wrong.");
-        }
-    };
-      
-
       
     return (
     <div>

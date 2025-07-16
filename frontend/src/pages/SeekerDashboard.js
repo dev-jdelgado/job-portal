@@ -3,6 +3,9 @@ import axios from "axios"
 import { Card, Container, Row, Col, Button, Form, Badge } from "react-bootstrap"
 import { Link } from 'react-router-dom';
 import "./SeekerDashboard.css"
+import config from '../config';
+
+const API_URL = config.API_URL;
 
 function SeekerDashboard() {
   const [matchingJobs, setMatchingJobs] = useState([])
@@ -14,7 +17,6 @@ function SeekerDashboard() {
   const [filterDisability, setFilterDisability] = useState('')
   const [seekerDisability, setSeekerDisability] = useState("")
   const [applications, setApplications] = useState([]);
-  const [showApplications, setShowApplications] = useState(false);
   
 
   const seekerId = JSON.parse(localStorage.getItem("user"))?.id
@@ -22,7 +24,7 @@ function SeekerDashboard() {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/jobs/seeker/${seekerId}`)
+        const res = await axios.get(`${API_URL}/jobs/seeker/${seekerId}`)
         setMatchingJobs(res.data.matchingJobs)
         setAllJobs(res.data.allJobs)
         const seeker = res.data.seeker
@@ -39,7 +41,7 @@ function SeekerDashboard() {
 
     const fetchApplications = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/jobs/applications/seeker/${seekerId}`);
+        const res = await axios.get(`${API_URL}/jobs/applications/seeker/${seekerId}`);
         setApplications(res.data);
       } catch (err) {
         console.error("Error fetching applications:", err);
@@ -147,16 +149,6 @@ function SeekerDashboard() {
               <i className="fas fa-filter section-icon"></i>
               <h2 className="section-title">{showAll ? "All Job Listings" : "Matching Job Listings"}</h2>
             </div>
-            <div className="d-flex gap-3">
-            <Link to="/job-applications">
-              <Button className="" variant="primary">
-                View My Applications
-              </Button>
-            </Link>
-
-            </div>
-
-
           </div>
 
           {/* Enhanced Search Bar */}
@@ -202,33 +194,6 @@ function SeekerDashboard() {
         </div>
 
         {/* Jobs Grid */}
-        {showApplications ? (
-          <Row>
-            {applications.length === 0 ? (
-              <Col xs={12}>
-                <div className="no-jobs-wrapper">
-                  <div className="no-jobs-icon"><i className="fas fa-file-alt"></i></div>
-                  <h3 className="no-jobs-title">No Applications Found</h3>
-                  <p className="no-jobs-text">You haven’t applied for any jobs yet.</p>
-                </div>
-              </Col>
-            ) : (
-              applications.map((app) => (
-                <Col md={6} lg={4} key={app.id} className="mb-4">
-                  <Card className="job-card h-100">
-                    <Card.Body>
-                      <Card.Title>{app.title}</Card.Title>
-                      <Card.Text>{app.description.slice(0, 120)}...</Card.Text>
-                      <div className="mt-2">
-                        <p><strong>Applied on:</strong> {new Date(app.applied_at).toLocaleDateString()}</p>
-                      </div>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              ))
-            )}
-          </Row>
-        ) : (
           <Row className="jobs-grid">
           {jobsToShow.length === 0 ? (
             <Col xs={12}>
@@ -330,7 +295,6 @@ function SeekerDashboard() {
               })
             )}
           </Row>
-        )}
       </Container>
     </div>
   )

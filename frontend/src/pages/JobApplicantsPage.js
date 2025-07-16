@@ -4,6 +4,10 @@ import { Container, Spinner, Alert, Button, ButtonGroup, Row, Col } from "react-
 import axios from "axios";
 import { ApplicantCard } from "../components/ApplicantCard";
 import { ApplicantDetailsModal } from "../components/ApplicantDetailsModal";
+import config from '../config';
+
+const API_URL = config.API_URL;
+
 
 function JobApplicantsPage() {
   const { jobId } = useParams();
@@ -18,12 +22,12 @@ function JobApplicantsPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/jobs/applicants/${jobId}`);
+        const res = await axios.get(`${API_URL}/jobs/applicants/${jobId}`);
         setApplicants(res.data);
         if (res.data.length > 0) {
           setJobTitle(res.data[0].job_title);
         } else {
-          const jobRes = await axios.get(`http://localhost:5000/jobs/${jobId}`);
+          const jobRes = await axios.get(`${API_URL}/jobs/${jobId}`);
           setJobTitle(jobRes.data.title);
         }
       } catch (err) {
@@ -40,7 +44,7 @@ function JobApplicantsPage() {
       app.applicationId === applicationId ? { ...app, status: newStatus } : app
     ));
     try {
-      await axios.put(`http://localhost:5000/jobs/applications/${applicationId}/status`, { status: newStatus });
+      await axios.put(`${API_URL}/jobs/applications/${applicationId}/status`, { status: newStatus });
     } catch (err) {
       setApplicants(applicants);
       alert("Failed to update status.");

@@ -2,6 +2,9 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Container, Spinner, Alert, Form, Button, Card, Row, Col } from "react-bootstrap";
 import axios from "axios";
+import config from '../config';
+
+const API_URL = config.API_URL;
 
 function ApplyPage() {
   const { id } = useParams();
@@ -28,7 +31,7 @@ function ApplyPage() {
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/jobs/${id}`);
+        const res = await axios.get(`${API_URL}/jobs/${id}`);
         setJob(res.data);
       } catch (err) {
         setError("Job not found.");
@@ -40,7 +43,7 @@ function ApplyPage() {
 
     const checkIfApplied = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/jobs/applications/check`, {
+        const res = await axios.get(`${API_URL}/jobs/applications/check`, {
           params: {
             job_id: id,
             seeker_id: seekerId,
@@ -102,7 +105,7 @@ function ApplyPage() {
         }
       });
   
-      const res = await axios.post("http://localhost:5000/jobs/applications/detailed", formDataToSend, {
+      const res = await axios.post(`${API_URL}/jobs/applications/detailed`, formDataToSend, {
         headers: { "Content-Type": "multipart/form-data" },
       });
   
@@ -243,25 +246,21 @@ function ApplyPage() {
 
                     <Col md={6}>
                       {/* PDS Upload */}
-                      <Form.Label className="fw-bold">Resume / PDS</Form.Label>
-                      <Form.Control
-                        type="file"
-                        name="pdsFile"
-                        accept=".pdf,.doc,.docx"
-                        onChange={handleFileChange}
-                      />
-                      {seekerData.pds_url && (
-                        <div className="mb-2">
-                          <span className="text-muted">Current file: </span>
-                          <a
-                            href={`http://localhost:5000/uploads/${seekerData.pds_url}`}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            {seekerData.pds_url}
-                          </a>
-                        </div>
-                      )}
+                      <Form.Group className="mb-3">
+                        <Form.Label className="fw-bold">PDS/Resume <span className="text-danger">*</span></Form.Label>
+                        <Form.Control
+                          type="file"
+                          name="pdsFile"
+                          accept=".pdf,.doc,.docx,.zip,.rar"
+                          onChange={handleFileChange}
+                          required
+                        />
+                        {/*
+                        <Form.Text className="text-muted">
+                          Accepted formats: PDF, DOC, DOCX (Max size: 5MB)
+                        </Form.Text>
+                        */}
+                      </Form.Group>
                     </Col>
                   </Row>
                   
@@ -364,7 +363,7 @@ function ApplyPage() {
                   {/* Submit Buttons */}
                   <div className="d-flex justify-content-between">
                     <Button 
-                      variant="outline-secondary" 
+                      variant="danger" 
                       onClick={() => navigate(`/jobs/${id}`)}
                       disabled={submitting}
                     >

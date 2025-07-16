@@ -18,13 +18,12 @@ export const ApplicantCard = ({ applicant, onStatusUpdate, onViewDetails }) => {
 
   return (
     <Card border={getBorderVariant(applicant.status)} className="mb-3 shadow-sm">
-      <Card.Header className="d-flex justify-content-between align-items-center">
-        <Card.Title as="h5" className="mb-0">{applicant.name}</Card.Title>
-        
-      </Card.Header>
-
       {/* Replaced <Stack> with <Row> and <Col> for a table-like layout */}
       <Card.Body>
+        <Row className="mb-2">
+          <Col sm={4} md={3} as="strong"><Icon className="bi bi-envelope"/>Name</Col>
+          <Col sm={8} md={9}>{applicant.name}</Col>
+        </Row>
         <Row className="mb-2">
           <Col sm={4} md={3} as="strong"><Icon className="bi bi-envelope"/>Email</Col>
           <Col sm={8} md={9}>{applicant.email}</Col>
@@ -45,7 +44,7 @@ export const ApplicantCard = ({ applicant, onStatusUpdate, onViewDetails }) => {
           <Col sm={4} md={3} as="strong"><Icon className="bi bi-tags"/>Skills</Col>
           <Col sm={8} md={9}>
             {skills.length > 0 ? skills.map((skill, i) => (
-              <Badge key={i} bg="secondary" className="me-1 mb-1 fw-normal">{skill}</Badge>
+              <Badge key={i} bg="primary" className="me-1 mb-1 fw-normal">{skill}</Badge>
             )) : <span className="text-muted">No skills listed</span>}
           </Col>
         </Row>

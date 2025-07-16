@@ -1,8 +1,9 @@
-"use client"
-
 import { useState, useRef, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
+import config from '../config';
+
+const API_URL = config.API_URL;
 
 const Navbar = () => {
   const { user, logout } = useAuth()
@@ -31,7 +32,7 @@ const Navbar = () => {
     const fetchUserProfile = async () => {
       if (user?.id) {
         try {
-          const response = await fetch(`http://localhost:5000/api/users/${user.id}`)
+          const response = await fetch(`${API_URL}/api/users/${user.id}`)
           if (response.ok) {
             const profileData = await response.json()
             setProfilePicture(profileData.profile_picture_url)
@@ -208,7 +209,7 @@ const Navbar = () => {
       if (profilePicture.startsWith("http")) {
         return profilePicture
       }
-      return `http://localhost:5000${profilePicture}`
+      return `${API_URL}/uploads/${user.id}/profile/${profilePicture}`
     }
     return null
   }

@@ -10,7 +10,7 @@ router.get('/:id', async (req, res) => {
   const { id } = req.params;
   try {
     // UPDATED: Select all the new fields as well
-    const [rows] = await db.execute('SELECT id, name, email, skills, education, disability_status, bio, date_of_birth, address, phone_number, profile_picture_url, pds_url FROM users WHERE id = ?', [id]);
+    const [rows] = await db.execute('SELECT id, name, email, skills, education, disability_status, bio, date_of_birth, address, phone_number, profile_picture_url FROM users WHERE id = ?', [id]);
     if (rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -29,7 +29,7 @@ router.put('/:id', upload.fields([{ name: 'profilePicture', maxCount: 1 }, { nam
   try {
     // --- Delete old files before updating ---
     if (req.files.profilePicture || req.files.pds) {
-        const [currentUserResult] = await db.execute('SELECT profile_picture_url, pds_url FROM users WHERE id = ?', [id]);
+        const [currentUserResult] = await db.execute('SELECT profile_picture_url FROM users WHERE id = ?', [id]);
         const currentUser = currentUserResult[0];
 
         if (currentUser) {
@@ -39,14 +39,6 @@ router.put('/:id', upload.fields([{ name: 'profilePicture', maxCount: 1 }, { nam
             const oldPath = path.join(__dirname, '..', currentUser.profile_picture_url.substring(1));
             fs.unlink(oldPath, err => {
               if (err) console.error("Error deleting old picture:", err);
-            });
-          }
-          // If a new pds is uploaded and an old one exists, delete it.
-          if (req.files.pds && currentUser.pds_url) {
-            // FIX: Apply the same path correction here
-            const oldPath = path.join(__dirname, '..', currentUser.pds_url.substring(1));
-            fs.unlink(oldPath, err => {
-              if (err) console.error("Error deleting old pds:", err);
             });
           }
         }
@@ -65,10 +57,7 @@ router.put('/:id', upload.fields([{ name: 'profilePicture', maxCount: 1 }, { nam
     if (phone_number) fieldsToUpdate.phone_number = phone_number;
 
     if (req.files.profilePicture) {
-        fieldsToUpdate.profile_picture_url = `/uploads/${req.files.profilePicture[0].filename}`;
-    }
-    if (req.files.pds) {
-        fieldsToUpdate.pds_url = `/uploads/pdss/${req.files.pds[0].filename}`;
+        fieldsToUpdate.profile_picture_url = `${req.files.profilePicture[0].filename}`;
     }
     
     if (Object.keys(fieldsToUpdate).length === 0) {

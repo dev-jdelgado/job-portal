@@ -3,7 +3,9 @@ import axios from 'axios';
 import { Container, Row, Col, Card, Button, Modal, Form, Spinner, Alert, Tabs, Tab } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import './ProfilePage.css';
+import config from '../config';
 
+const API_URL = config.API_URL;
 // Helper function to calculate age from date of birth
 const calculateAge = (dob) => {
   if (!dob) return null;
@@ -28,7 +30,7 @@ function ProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/users/${user.id}`);
+        const res = await axios.get(`${API_URL}/api/users/${user.id}`);
         // Format date for the form input
         const profileData = {
           ...res.data,
@@ -66,20 +68,18 @@ function ProfilePage() {
         // Don't append unchanged files or null/undefined values
         if (key === 'profilePicture' && editData.profilePicture) {
           formData.append('profilePicture', editData.profilePicture);
-        } else if (key === 'pds' && editData.pds) {
-          formData.append('pds', editData.pds);
-        } else if (key !== 'profilePicture' && key !== 'pds' && editData[key] !== null && editData[key] !== undefined) {
+        } else if (key !== 'profilePicture' && editData[key] !== null && editData[key] !== undefined) {
           formData.append(key, editData[key]);
         }
     });
 
     try {
-      await axios.put(`http://localhost:5000/api/users/${user.id}`, formData, {
+      await axios.put(`${API_URL}/api/users/${user.id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setShowModal(false);
       // Refresh profile data after update
-      const res = await axios.get(`http://localhost:5000/api/users/${user.id}`);
+      const res = await axios.get(`${API_URL}/api/users/${user.id}`);
       const updatedProfileData = {
           ...res.data,
           date_of_birth: res.data.date_of_birth ? res.data.date_of_birth.split('T')[0] : '',
@@ -101,7 +101,7 @@ function ProfilePage() {
           <Col lg={4}>
             <Card className="profile-card text-center p-4 mb-4">
               <img
-                src={profile.profile_picture_url ? `http://localhost:5000${profile.profile_picture_url}` : 'https://via.placeholder.com/150'}
+                src={profile.profile_picture_url ? `${API_URL}/uploads/${profile.id}/profile/${profile.profile_picture_url}` : 'https://via.placeholder.com/150'}
                 alt="Profile"
                 className="profile-picture"
               />
@@ -129,11 +129,6 @@ function ProfilePage() {
                       <p><strong>Skills:</strong> {profile.skills || 'Not specified'}</p>
                       <p><strong>Education:</strong> {profile.education || 'Not specified'}</p>
                       <p><strong>Disability Status:</strong> {profile.disability_status || 'Not specified'}</p>
-                      {profile.pds_url && (
-                        <Button variant="secondary" href={`http://localhost:5000${profile.pds_url}`} target="_blank" className="pds-btn mt-3">
-                          View PDS
-                        </Button>
-                      )}
                     </div>
                   </Tab>
                   <Tab eventKey="contact" title="Contact Details">
@@ -175,16 +170,6 @@ function ProfilePage() {
                 </div>
               )}
               <Form.Control type="file" name="profilePicture" onChange={handleFileChange} />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Personal Data Sheet (PDF/Excel)</Form.Label>
-              {profile.pds_url && (
-                <div className="mb-2 text-muted">
-                  Current file: <strong>{profile.pds_url.split('/').pop().split('-').slice(1).join('-')}</strong>
-                </div>
-              )}
-              <Form.Control type="file" name="pds" onChange={handleFileChange} />
             </Form.Group>
             
             <Button variant="primary" type="submit" className="w-100 save-changes-btn">Save Changes</Button>

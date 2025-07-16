@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { Card, Container, Row, Col } from "react-bootstrap";
 import axios from "axios";
 import "./SeekerDashboard.css"; // reuse styles
+import config from '../config';
+
+const API_URL = config.API_URL;
 
 function JobApplicationsPage() {
   const [applications, setApplications] = useState([]);
@@ -10,7 +13,7 @@ function JobApplicationsPage() {
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/jobs/applications/seeker/${seekerId}`);
+        const res = await axios.get(`${API_URL}/jobs/applications/seeker/${seekerId}`);
         setApplications(res.data);
       } catch (err) {
         console.error("Error fetching applications:", err);
