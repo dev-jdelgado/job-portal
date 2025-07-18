@@ -2,15 +2,14 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db'); 
 const upload = require('../middleware/uploadMiddleware');
-const fs = require('fs'); // Import File System for deleting old files
-const path = require('path'); // Import Path for joining file paths
+const fs = require('fs'); 
+const path = require('path'); 
 
-// GET user profile (this can remain the same, but let's add the new fields)
+
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    // UPDATED: Select all the new fields as well
-    const [rows] = await db.execute('SELECT id, name, email, skills, education, disability_status, bio, date_of_birth, address, phone_number, profile_picture_url FROM users WHERE id = ?', [id]);
+    const [rows] = await db.execute('SELECT id, name, email, is_verified, skills, education, disability_status, bio, date_of_birth, address, phone_number, profile_picture_url FROM users WHERE id = ?', [id]);
     if (rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -64,7 +63,7 @@ router.put('/:id', upload.fields([{ name: 'profilePicture', maxCount: 1 }, { nam
         return res.status(400).json({ message: 'No new information provided to update.' });
     }
 
-    // --- Construct and execute the dynamic SQL query ---
+    // Construct and execute the dynamic SQL query 
     const fieldNames = Object.keys(fieldsToUpdate);
     const sqlSetClause = fieldNames.map(field => `${field} = ?`).join(', ');
     const values = [...Object.values(fieldsToUpdate), id];

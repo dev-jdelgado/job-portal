@@ -1,50 +1,81 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { login as loginAPI } from '../services/API';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [msg, setMsg] = useState('');
-  const navigate = useNavigate();
-  const { login } = useAuth();
+  const [email, setEmail] = useState(''); //
+  const [password, setPassword] = useState(''); //
+  const [msg, setMsg] = useState(''); //
+  const navigate = useNavigate(); //
+  const { login } = useAuth(); //
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => { //
+    e.preventDefault(); //
     try {
-        const res = await loginAPI({ email, password });
-        login(res.data); // save to context + localStorage
+        const res = await loginAPI({ email, password }); //
+        login(res.data); //
 
-        // Redirect based on role
-        if (res.data.role === 'seeker') {
-            navigate('/seeker-dashboard');
+        if (res.data.role === 'seeker') { //
+            navigate('/seeker-dashboard'); //
         } else {
-            navigate('/admin-dashboard');
+            navigate('/admin-dashboard'); //
         }
     } catch (err) {
-        setMsg(err.response?.data?.msg || 'Login failed');
+        setMsg(err.response?.data?.msg || 'Login failed'); //
     }
   };
 
   return (
-    <div className="container mt-5 col-md-4">
-        <h2 className="mb-4 text-center">Login</h2>
-        {msg && <div className="alert alert-danger">{msg}</div>}
+    <div style={styles.container}>
+      <div style={styles.card}>
+        <div style={styles.header}>
+            <h2 style={styles.title}>Welcome Back!</h2>
+            <p style={styles.subtitle}>Sign in to continue to your dashboard.</p>
+        </div>
+
+        {msg && <div style={styles.alert}>{msg}</div>}
+        
         <form onSubmit={handleSubmit}>
-            <div className="mb-3">
-            <label>Email</label>
-            <input type="text" className="form-control" value={email}
-                onChange={(e) => setEmail(e.target.value)} required />
+            <div style={styles.formGroup}>
+              <label style={styles.label} htmlFor="email">Email</label>
+              <input type="email" id="email" style={styles.input} value={email}
+                  onChange={(e) => setEmail(e.target.value)} required />
             </div>
-            <div className="mb-3">
-            <label>Password</label>
-            <input type="password" className="form-control" value={password}
-                onChange={(e) => setPassword(e.target.value)} required />
+            
+            <div style={styles.formGroup}>
+                <div style={styles.labelContainer}>
+                    <label style={styles.label} htmlFor="password">Password</label>
+                </div>
+              <input type="password" id="password" style={styles.input} value={password}
+                  onChange={(e) => setPassword(e.target.value)} required />
+                  <Link to="/forgot-password" style={styles.forgotLink}>Forgot password?</Link>
             </div>
-            <button className="btn btn-primary w-100">Login</button>
-            <p className="mt-3 text-center">No account? <a href="/register">Register</a></p>
+
+            <button style={styles.button}>Sign In</button>
+            
+            <p style={styles.footerText}>
+                Don't have an account? <Link to="/register" style={styles.link}>Register</Link>
+            </p>
         </form>
+      </div>
     </div>
   );
 }
+
+const styles = {
+    container: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f9fafb' },
+    card: { backgroundColor: 'white', padding: '2rem 2.5rem', borderRadius: '0.75rem', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)', maxWidth: '450px', width: '100%' },
+    header: { textAlign: 'center', marginBottom: '2rem' },
+    title: { fontSize: '1.875rem', fontWeight: 'bold', color: '#111827' },
+    subtitle: { color: '#6b7280', marginTop: '0.5rem' },
+    alert: { backgroundColor: '#fee2e2', color: '#b91c1c', padding: '0.75rem 1rem', borderRadius: '0.375rem', marginBottom: '1.5rem', textAlign: 'center' },
+    formGroup: { marginBottom: '1.25rem' },
+    labelContainer: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' },
+    label: { fontWeight: '500', color: '#374151' },
+    input: { display: 'block', width: '100%', padding: '0.65rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', boxSizing: 'border-box' },
+    forgotLink: { fontSize: '0.875rem', color: '#3b82f6', textDecoration: 'none' },
+    button: { width: '100%', padding: '0.75rem', borderRadius: '0.375rem', fontSize: '1rem', fontWeight: '500', color: 'white', backgroundColor: '#3b82f6', border: 'none', cursor: 'pointer', marginTop: '0.5rem' },
+    footerText: { marginTop: '2rem', textAlign: 'center', color: '#6b7280' },
+    link: { color: '#3b82f6', textDecoration: 'none', fontWeight: '500' }
+};

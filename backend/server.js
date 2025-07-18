@@ -23,7 +23,8 @@ app.use('/api/users', userRoutes);
 const path = require('path');
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-
+const accountRoutes = require('./routes/account');
+app.use('/api/account', accountRoutes);
 
 
 const PORT = process.env.PORT || 5000;

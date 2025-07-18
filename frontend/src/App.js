@@ -13,6 +13,10 @@ import JobApplicantsPage from "./pages/JobApplicantsPage";
 import ApplyPage from './pages/ApplyPage';
 import ProfilePage from './pages/ProfilePage';
 import JobApplicationsPage from './pages/JobApplicationsPage';
+import AccountSettingsPage from './pages/AccountSettingsPage'; 
+import EmailVerificationHandler from './pages/EmailVerificationHandler'; 
+import ForgotPasswordPage from './pages/ForgotPasswordPage'; 
+import ResetPasswordPage from './pages/ResetPasswordPage'; 
 
 
 // HomeRedirect component
@@ -27,8 +31,11 @@ function HomeRedirect() {
 // Wrapper component for App that uses hooks
 function AppRoutes() {
   const location = useLocation();
-  const hideNavbar = location.pathname === '/login' || location.pathname === '/register';
-
+  const hideNavbar = location.pathname === '/login' 
+                    || location.pathname === '/register'
+                    || location.pathname === '/forgot-password' 
+                    || location.pathname.startsWith('/reset-password') 
+                    || location.pathname.startsWith('/verify-email');
   return (
     <>
       {!hideNavbar && <Navbar />}
@@ -36,6 +43,11 @@ function AppRoutes() {
         <Route path="/" element={<HomeRedirect />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+
+        <Route path="/verify-email/:token" element={<EmailVerificationHandler />} />
 
         <Route path="/seeker-dashboard" element={
           <PrivateRoute allowedRoles={['seeker']}>
@@ -68,6 +80,12 @@ function AppRoutes() {
         <Route path="/job-applications" element={
           <PrivateRoute allowedRoles={['seeker']}>
             <JobApplicationsPage />
+          </PrivateRoute>
+        } />
+
+        <Route path="/account-settings" element={
+          <PrivateRoute allowedRoles={['seeker', 'admin']}>
+            <AccountSettingsPage />
           </PrivateRoute>
         } />
 
