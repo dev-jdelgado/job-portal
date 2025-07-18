@@ -1,7 +1,9 @@
+require("dotenv").config();
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const upload = require('../middleware/uploadMiddleware');
+const nodemailer = require("nodemailer");
 
 
 // Helper function to calculate age from date of birth
@@ -16,6 +18,16 @@ function calculateAge(dateString) {
   }
   return age;
 }
+
+// Set up nodemailer
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS,
+  },
+});
+
 
 // ADD Job Post
 router.post('/', async (req, res) => {
@@ -215,10 +227,10 @@ router.post('/applications/detailed', upload.fields([
   { name: 'trainingsFile' }
 ]), async (req, res) => {
   const { job_id, seeker_id } = req.body;
+  const files = req.files || {};
 
   try {
-    const files = req.files || {};
-
+    // 1. Insert application
     await db.execute(
       `INSERT INTO applications 
         (job_id, seeker_id, pds_url, application_letter_url, performance_rating_url, eligibility_url, diploma_url, tor_url, trainings_url)
@@ -236,13 +248,62 @@ router.post('/applications/detailed', upload.fields([
       ]
     );
 
-    res.status(201).json({ message: "Detailed application submitted successfully!" });
+    // 2. Get seeker info
+    const [[seeker]] = await db.execute('SELECT name, email, phone_number FROM users WHERE id = ?', [seeker_id]);
+
+    // 3. Get job title
+    const [[job]] = await db.execute('SELECT title FROM jobs WHERE id = ?', [job_id]);
+
+    // 4. Insert in-app notification
+    await db.execute('INSERT INTO notifications (user_id, message) VALUES (?, ?)', [
+      seeker_id,
+      `You successfully applied for "${job.title}".`
+    ]);
+
+    // 5. Send email
+    await transporter.sendMail({
+      from: process.env.GMAIL_USER,
+      to: seeker.email,
+      subject: 'Application Confirmation',
+      text: `Hi ${seeker.name},\n\nYour application for the position "${job.title}" has been received. Thank you!`,
+    });
+
+    res.status(201).json({ message: "Application submitted successfully!" });
   } catch (err) {
-    console.error("❌ Error submitting detailed application:", err.stack || err);
+    console.error("Error:", err.stack || err);
     res.status(500).json({ error: "Server error" });
   }
 });
 
+// Remove Notification When Clicked
+router.post('/notifications/mark-read/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await db.execute('UPDATE notifications SET is_read = 1 WHERE id = ?', [id]);
+    res.sendStatus(200);
+  } catch (err) {
+    console.error('Error marking notification as read:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET notifications for a user
+router.get('/notifications/:userId', async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const [rows] = await db.execute(
+      'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 10',
+      [userId]
+    );
+
+    res.json(rows);
+  } catch (err) {
+    console.error("Error fetching notifications:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 
 // GET applications for a seeker
@@ -373,6 +434,33 @@ router.get('/admin/:adminId/applications/count', async (req, res) => {
 });
 
 
+// UPDATE application status (shortlist/reject)
+router.put('/applications/:applicationId/status', async (req, res) => {
+  const { applicationId } = req.params;
+  const { status } = req.body;
+
+  // Optional: Validate status value
+  const validStatuses = ['shortlisted', 'rejected', 'pending'];
+  if (!validStatuses.includes(status)) {
+    return res.status(400).json({ error: 'Invalid status value.' });
+  }
+
+  try {
+    const [result] = await db.execute(
+      'UPDATE applications SET status = ? WHERE id = ?',
+      [status, applicationId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Application not found.' });
+    }
+
+    res.json({ message: 'Application status updated successfully.' });
+  } catch (err) {
+    console.error('Error updating application status:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 
 module.exports = router;

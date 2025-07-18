@@ -114,7 +114,7 @@ function JobPostModal({ show, handleClose, adminId, onJobPosted, jobToEdit, star
       if (jobToEdit) {
         await axios.put(`${API_URL}/jobs/${jobToEdit.id}`, payload)
       } else {
-        await axios.post("${API_URL}/jobs", payload)
+        await axios.post(`${API_URL}/jobs`, payload)
       }
   
       onJobPosted(jobToEdit ? "update" : "create")

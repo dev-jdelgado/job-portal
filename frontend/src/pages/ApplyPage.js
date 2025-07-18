@@ -110,7 +110,10 @@ function ApplyPage() {
       });
   
       setSubmitSuccess(true);
-      setTimeout(() => navigate(`/jobs/${id}`), 4000);
+      setTimeout(() => {
+        window.location.href = `/jobs/${id}`;
+      }, 4000);
+
     } catch (err) {
       console.error("Application error:", err);
       setSubmitError(err.response?.data?.message || "Something went wrong while submitting your application.");

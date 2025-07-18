@@ -9,8 +9,11 @@ const Navbar = () => {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [isNotifDropdownOpen, setNotifDropdownOpen] = useState(false)
   const [profilePicture, setProfilePicture] = useState(null)
   const dropdownRef = useRef(null)
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const handleLogout = () => {
     logout()
@@ -26,6 +29,22 @@ const Navbar = () => {
       .toUpperCase()
       .slice(0, 2)
   }
+
+  // Fetch Notification
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const res = await fetch(`${API_URL}/jobs/notifications/${user?.id}`);
+        const data = await res.json();
+        setNotifications(data);
+        setUnreadCount(data.filter(n => !n.is_read).length);
+      } catch (err) {
+        console.error("Error fetching notifications:", err);
+      }
+    };
+  
+    if (user?.id) fetchNotifications();
+  }, [user?.id]);
 
   // Fetch user profile picture
   useEffect(() => {
@@ -71,7 +90,7 @@ const Navbar = () => {
   }
 
   const containerStyle = {
-    maxWidth: "1200px",
+    maxWidth: "1320px",
     margin: "0 auto",
     display: "flex",
     alignItems: "center",
@@ -116,7 +135,7 @@ const Navbar = () => {
 
   const profileImageStyle = {
     width: "100%",
-    height: "100%",
+    height: "100%", 
     objectFit: "cover",
     borderRadius: "50%",
   }
@@ -126,7 +145,7 @@ const Navbar = () => {
     top: "100%",
     right: 0,
     marginTop: "0.25rem",
-    width: "240px",
+    width: "300px",
     background: "white",
     border: "1px solid #e5e7eb",
     borderRadius: "0.5rem",
@@ -221,7 +240,77 @@ const Navbar = () => {
           Job Portal
         </Link>
 
-        <div style={{ display: "flex", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+
+          <div style={{ position: "relative", marginRight: "1rem" }} ref={dropdownRef}>
+            <button
+              onClick={() => setNotifDropdownOpen(!isNotifDropdownOpen)}
+              style={{
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                position: "relative"
+              }}
+            >
+              <i className="fas fa-bell" style={{ fontSize: "20px", color: "#111827" }}></i>
+              {unreadCount > 0 && (
+                <span style={{
+                  position: "absolute", top: "-5px", right: "-8px",
+                  backgroundColor: "red", color: "white",
+                  borderRadius: "50%", padding: "2px 6px",
+                  fontSize: "10px", fontWeight: "bold"
+                }}>
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+
+            {isNotifDropdownOpen && (
+              <div style={{
+                position: "absolute",
+                right: 0,
+                marginTop: "0.5rem",
+                backgroundColor: "white",
+                border: "1px solid #e5e7eb",
+                borderRadius: "0.5rem",
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                width: "300px",
+                maxHeight: "400px",
+                overflowY: "auto",
+                zIndex: 50
+              }}>
+                <div style={{ padding: "0.5rem", fontWeight: "bold", borderBottom: "1px solid #e5e7eb" }}>
+                  Notifications
+                </div>
+                {notifications.length === 0 ? (
+                  <div style={{ padding: "0.75rem", color: "#6b7280", fontSize: "0.875rem" }}>
+                    No new notifications
+                  </div>
+                ) : (
+                  notifications.map((notification, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        padding: "0.75rem",
+                        borderBottom: "1px solid #f3f4f6",
+                        backgroundColor: notification.is_read ? "white" : "#d6ebff",
+                        fontSize: "0.875rem",
+                        cursor: "pointer"
+                      }}
+                      onClick={() => {
+                        // Mark as read (optional)
+                        fetch(`${API_URL}/jobs/notifications/mark-read/${notification.id}`, { method: "POST" });
+                        setNotifDropdownOpen(false);
+                      }}
+                    >
+                      {notification.message}
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+
           {user ? (
             <div style={{ position: "relative" }} ref={dropdownRef}>
               <button
@@ -258,7 +347,7 @@ const Navbar = () => {
                   </div>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                  <span style={{ fontSize: "0.875rem", fontWeight: "500", color: "#111827" }}>Hi, {user.name}</span>
+                  <span style={{ fontSize: "0.875rem", fontWeight: "500", color: "#111827" }}>{user.name}</span>
                 </div>
                 <svg
                   style={{
