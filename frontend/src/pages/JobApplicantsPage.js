@@ -4,6 +4,7 @@ import { Container, Spinner, Alert, Button, ButtonGroup, Row, Col } from "react-
 import axios from "axios";
 import { ApplicantCard } from "../components/ApplicantCard";
 import { ApplicantDetailsModal } from "../components/ApplicantDetailsModal";
+import { InterviewScheduleModal } from "../components/InterviewScheduleModal"; 
 import config from '../config';
 
 const API_URL = config.API_URL;
@@ -18,6 +19,10 @@ function JobApplicantsPage() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [selectedAppId, setSelectedAppId] = useState(null);
+  const [statusLoadingId, setStatusLoadingId] = useState(null);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,17 +44,50 @@ function JobApplicantsPage() {
 
     fetchData();
   }, [jobId]);
+
+
   const handleStatusUpdate = async (applicationId, newStatus) => {
-    setApplicants(applicants.map(app =>
-      app.applicationId === applicationId ? { ...app, status: newStatus } : app
-    ));
+    if (newStatus === 'shortlisted') {
+      setSelectedAppId(applicationId);
+      setShowScheduleModal(true);
+      return;
+    }
+  
+    setStatusLoadingId(applicationId); // Start loading
+  
     try {
       await axios.put(`${API_URL}/jobs/applications/${applicationId}/status`, { status: newStatus });
+      setApplicants(applicants.map(app =>
+        app.applicationId === applicationId ? { ...app, status: newStatus } : app
+      ));
     } catch (err) {
-      setApplicants(applicants);
       alert("Failed to update status.");
+    } finally {
+      setStatusLoadingId(null); // Stop loading
     }
   };
+  
+  const handleConfirmSchedule = async (interviewDate) => {
+    setStatusLoadingId(selectedAppId); // Start loading
+  
+    try {
+      await axios.put(`${API_URL}/jobs/applications/${selectedAppId}/status`, {
+        status: 'shortlisted',
+        interviewTime: interviewDate.toISOString(),
+      });
+  
+      setApplicants(applicants.map(app =>
+        app.applicationId === selectedAppId ? { ...app, status: 'shortlisted' } : app
+      ));
+    } catch (err) {
+      alert("Failed to schedule interview.");
+    } finally {
+      setStatusLoadingId(null); // Stop loading
+      setShowScheduleModal(false);
+    }
+  };
+  
+  
 
   const handleShowModal = (applicant) => {
     setSelectedApplicant(applicant);
@@ -97,6 +135,7 @@ function JobApplicantsPage() {
                   applicant={applicant}
                   onStatusUpdate={handleStatusUpdate}
                   onViewDetails={handleShowModal}
+                  isLoading={statusLoadingId === applicant.applicationId}
                 />
               </Col>
             ))
@@ -112,6 +151,11 @@ function JobApplicantsPage() {
         show={showModal}
         onHide={handleCloseModal}
         applicant={selectedApplicant}
+      />
+      <InterviewScheduleModal
+        show={showScheduleModal}
+        onHide={() => setShowScheduleModal(false)}
+        onConfirm={handleConfirmSchedule}
       />
     </>
   );

@@ -445,7 +445,9 @@ router.get('/admin/:adminId/applications/count', async (req, res) => {
 // UPDATE application status (shortlist/reject)
 router.put('/applications/:applicationId/status', async (req, res) => {
   const { applicationId } = req.params;
-  const { status } = req.body;
+  const { status, interviewTime } = req.body;
+  const { createMeetEvent } = require('../services/googleCalendarService');
+
 
   const validStatuses = ['shortlisted', 'rejected', 'pending'];
   if (!validStatuses.includes(status)) {
@@ -477,22 +479,52 @@ router.put('/applications/:applicationId/status', async (req, res) => {
     }
 
     // 3. Send email
+    let meetLink = null;
+
+    if (status === 'shortlisted') {
+      // Use custom interview time or default to now
+      const eventTime = interviewTime ? new Date(interviewTime) : new Date();
+    
+      meetLink = await createMeetEvent(
+        `Interview for ${applicant.job_title}`,
+        `Interview with ${applicant.name} for ${applicant.job_title}`,
+        applicant.email,
+        eventTime
+      );
+    }
+    
+    // Compose unified email
     const subject = `Update on your job application for ${applicant.job_title}`;
+    const formattedDateTime = new Date(interviewTime).toLocaleString('en-PH', {
+      timeZone: 'Asia/Manila',
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    
     const html = status === 'shortlisted'
       ? `
         <p>Hi <strong>${applicant.name}</strong>,</p>
         <p>Congratulations! You have been <strong>shortlisted</strong> for the <strong>${applicant.job_title}</strong> role.</p>
-        <p>We’ll be reaching out soon regarding the next steps.</p>
+        <p>We’re excited to invite you to an interview scheduled on:</p>
+        <p><strong>${formattedDateTime}</strong></p>
+        <p>Please use the link below to join via Google Meet:</p>
+        <p><a href="${meetLink}">${meetLink}</a></p>
+        <p>We’ll be in touch if there are any updates or changes. Good luck!</p>
         <p>Best regards,<br/>HR Team</p>
-      `
+      `    
       : `
         <p>Hi <strong>${applicant.name}</strong>,</p>
         <p>Thank you for applying for the <strong>${applicant.job_title}</strong> position.</p>
-        <p>We appreciate your interest, but unfortunately you have not been shortlisted at this time.</p>
+        <p>We appreciate your interest, but unfortunately you have not been selected at this time.</p>
         <p>We wish you the best in your job search.</p>
         <p>Best regards,<br/>HR Team</p>
       `;
-
+    
+    // Send final email
     await transporter.sendMail({
       from: process.env.GMAIL_USER,
       to: applicant.email,

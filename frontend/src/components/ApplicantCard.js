@@ -1,10 +1,10 @@
 import React from 'react';
-import { Card, Badge, Button, ButtonGroup, Row, Col } from 'react-bootstrap';
+import { Card, Badge, Button, ButtonGroup, Row, Col, Spinner } from 'react-bootstrap';
 
 // The Icon component remains the same
 const Icon = ({ className }) => <i className={className} style={{ marginRight: '8px' }}></i>;
 
-export const ApplicantCard = ({ applicant, onStatusUpdate, onViewDetails }) => {
+export const ApplicantCard = ({ applicant, onStatusUpdate, onViewDetails, isLoading }) => {
 
   const getBorderVariant = (status) => {
     switch (status) {
@@ -71,14 +71,32 @@ export const ApplicantCard = ({ applicant, onStatusUpdate, onViewDetails }) => {
               <Button
                 variant="outline-success"
                 onClick={() => onStatusUpdate(applicant.applicationId, 'shortlisted')}
+                disabled={isLoading}
               >
-                <Icon className="bi bi-check-circle" /> Shortlist
+                {isLoading ? (
+                  <>
+                    <Spinner animation="border" size="sm" /> Loading...
+                  </>
+                ) : (
+                  <>
+                    <Icon className="bi bi-check-circle" /> Shortlist
+                  </>
+                )}
               </Button>
               <Button
                 variant="outline-danger"
                 onClick={() => onStatusUpdate(applicant.applicationId, 'rejected')}
+                disabled={isLoading}
               >
-                <Icon className="bi bi-x-circle" /> Reject
+                {isLoading ? (
+                  <>
+                    <Spinner animation="border" size="sm" /> Loading...
+                  </>
+                ) : (
+                  <>
+                    <Icon className="bi bi-x-circle" /> Reject
+                  </>
+                )}
               </Button>
             </ButtonGroup>
           )}
