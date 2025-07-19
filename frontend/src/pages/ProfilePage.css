@@ -41,16 +41,10 @@
 }
 
 .edit-profile-btn {
-  background-color: var(--navy-blue);
-  border-color: var(--navy-blue);
   font-weight: 600;
   width: 80%;
 }
 
-.edit-profile-btn:hover {
-  background-color: var(--ocean-blue);
-  border-color: var(--ocean-blue);
-}
 
 .details-card {
   padding: 1.5rem;
@@ -89,16 +83,8 @@
 }
 
 .save-changes-btn {
-  background-color: var(--sun-yellow);
-  color: var(--navy-blue);
-  border: none;
   font-weight: bold;
 }
-
-.save-changes-btn:hover {
-  background-color: #fadd62;
-}
-
 
 .profile-tabs .nav-link {
   color: var(--ocean-blue);

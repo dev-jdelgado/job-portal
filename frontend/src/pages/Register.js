@@ -109,7 +109,7 @@ export default function Register() {
                             <label style={styles.label}>Password</label>
                             <input name="password" type="password" style={styles.input} value={form.password} onChange={handleChange} required />
                         </div>
-                        <button type="button" style={styles.button} onClick={handleNext}>Next: Education & Skills</button>
+                        <button type="button" className='navy-blue-btn' style={styles.button} onClick={handleNext}>Next: Education & Skills</button>
                     </>
                     )}
 
@@ -150,7 +150,7 @@ export default function Register() {
                         </div>
                         <div style={styles.buttonGroup}>
                             <button type="button" style={styles.secondaryButton} onClick={handleBack}>Back</button>
-                            <button type="button" style={styles.button} onClick={handleNext}>Next: Disability Info</button>
+                            <button type="button" className='navy-blue-btn' style={styles.button} onClick={handleNext}>Next: Disability Info</button>
                         </div>
                     </>
                     )}
@@ -174,7 +174,7 @@ export default function Register() {
                         )}
                         <div style={styles.buttonGroup}>
                             <button type="button" style={styles.secondaryButton} onClick={handleBack}>Back</button>
-                            <button type="submit" style={{...styles.button, backgroundColor: '#16a34a'}}>Complete Registration</button>
+                            <button type="submit" className='navy-blue-btn' style={{...styles.button}}>Complete Registration</button>
                         </div>
                     </>
                     )}
@@ -187,23 +187,126 @@ export default function Register() {
 }
 
 const styles = {
-    container: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f9fafb', padding: '2rem 0' },
-    card: { backgroundColor: 'white', padding: '2rem 2.5rem', borderRadius: '0.75rem', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)', maxWidth: '700px', width: '100%' },
-    header: { textAlign: 'center', marginBottom: '1.5rem' },
-    title: { fontSize: '1.875rem', fontWeight: 'bold', color: '#111827' },
-    subtitle: { color: '#6b7280', marginTop: '0.5rem' },
-    progressContainer: { width: '100%', backgroundColor: '#e5e7eb', borderRadius: '9999px', height: '24px', marginBottom: '2rem', overflow: 'hidden' },
-    progressBar: { backgroundColor: '#3b82f6', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', transition: 'width 0.4s ease-in-out', borderRadius: '9999px' },
-    formGroup: { marginBottom: '1.25rem' },
-    label: { display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#374151' },
-    input: { display: 'block', width: '100%', padding: '0.65rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', boxSizing: 'border-box' },
-    button: { width: '100%', padding: '0.75rem', borderRadius: '0.375rem', fontSize: '1rem', fontWeight: '500', color: 'white', backgroundColor: '#3b82f6', border: 'none', cursor: 'pointer', },
-    buttonGroup: { display: 'flex', justifyContent: 'space-between', gap: '1rem', marginTop: '1.5rem' },
-    secondaryButton: { flex: 1, padding: '0.75rem', borderRadius: '0.375rem', fontSize: '1rem', fontWeight: '500', color: '#374151', backgroundColor: '#e5e7eb', border: 'none', cursor: 'pointer' },
-    skillsContainer: { border: '1px solid #e5e7eb', borderRadius: '0.5rem', padding: '1rem', maxHeight: '300px', overflowY: 'auto' },
-    skillCategoryTitle: { fontSize: '1rem', fontWeight: '600', color: '#111827', borderBottom: '1px solid #f3f4f6', paddingBottom: '0.5rem', marginBottom: '1rem' },
-    skillGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '0.5rem' },
-    checkboxWrapper: { display: 'flex', alignItems: 'center' },
-    footerText: { marginTop: '2rem', textAlign: 'center', color: '#6b7280' },
-    link: { color: '#3b82f6', textDecoration: 'none', fontWeight: '500' }
+    container: { 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '100vh', 
+        backgroundColor: '#f9fafb', 
+        padding: '2rem 0' 
+    },
+    card: { 
+        backgroundColor: 'white', 
+        padding: '2rem 2.5rem', 
+        borderRadius: '0.75rem', 
+        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)', 
+        maxWidth: '700px', 
+        width: '100%' 
+    },
+    header: { 
+        textAlign: 'center', 
+        marginBottom: '1.5rem' 
+    },
+    title: { 
+        fontSize: '1.875rem', 
+        fontWeight: 'bold', 
+        color: '#111827' 
+    },
+    subtitle: { 
+        color: '#6b7280', 
+        marginTop: '0.5rem' 
+    },
+    progressContainer: { 
+        width: '100%', 
+        backgroundColor: '#e5e7eb', 
+        borderRadius: '9999px',
+        height: '24px', 
+        marginBottom: '2rem', 
+        overflow: 'hidden' 
+    },
+    progressBar: { 
+        backgroundColor: '#002D5A', 
+        color: 'white', display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        height: '100%', 
+        transition: 'width 0.4s ease-in-out', 
+        borderRadius: '9999px' 
+    },
+    formGroup: { 
+        marginBottom: '1.25rem' 
+    },
+    label: { 
+        display: 'block', 
+        marginBottom: '0.5rem', 
+        fontWeight: '500', 
+        color: '#374151' 
+    },
+    input: { 
+        display: 'block', 
+        width: '100%', 
+        padding: '0.65rem 0.75rem', 
+        border: '1px solid #d1d5db', 
+        borderRadius: '0.375rem', 
+        boxSizing: 'border-box' 
+    },
+    button: { 
+        width: '100%', 
+        padding: '0.75rem', 
+        borderRadius: '0.375rem', 
+        fontSize: '1rem', 
+        fontWeight: '500', 
+        cursor: 'pointer', 
+        transition: 'all 0.3s ease',
+    },
+    buttonGroup: { 
+        display: 'flex', 
+        justifyContent: 'space-between',
+        gap: '1rem', 
+        marginTop: '1.5rem' 
+    },
+    secondaryButton: { 
+        flex: 1, 
+        padding: '0.75rem', 
+        borderRadius: '0.375rem', 
+        fontSize: '1rem', 
+        fontWeight: '500', 
+        color: '#374151', 
+        backgroundColor: '#e5e7eb', 
+        border: 'none', 
+        cursor: 'pointer' 
+    },
+    skillsContainer: { 
+        border: '1px solid #e5e7eb', 
+        borderRadius: '0.5rem', 
+        padding: '1rem', 
+        maxHeight: '300px', 
+        overflowY: 'auto' 
+    },
+    skillCategoryTitle: { 
+        fontSize: '1rem', 
+        fontWeight: '600', 
+        color: '#111827', 
+        borderBottom: '1px solid #f3f4f6', 
+        paddingBottom: '0.5rem', 
+        marginBottom: '1rem' 
+    },
+    skillGrid: { 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', 
+        gap: '0.5rem' 
+    },
+    checkboxWrapper: { 
+        display: 'flex', 
+        alignItems: 'center' 
+    },
+    footerText: {
+        marginTop: '2rem', 
+        textAlign: 'center', 
+        color: '#6b7280' },
+    link: { 
+        color: '#002D5A', 
+        textDecoration: 'none', 
+        fontWeight: '500' 
+    }
 };

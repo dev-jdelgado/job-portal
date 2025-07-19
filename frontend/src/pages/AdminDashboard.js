@@ -206,13 +206,13 @@ function AdminDashboard() {
 
               {user?.role === 'admin' && (
                 <div>
-                  <Link to="/admin/create-user" className="btn btn-primary">
+                  <Link to="/admin/create-user" className="btn navy-blue-btn">
                     <BsPlusCircleFill className="me-2" />
                     Add Admin
                   </Link>
                 </div>
               )}
-              <Button onClick={() => setShowModal(true)} className="btn btn-primary">
+              <Button onClick={() => setShowModal(true)} className="btn navy-blue-btn">
                 <BsPlusCircleFill className="me-2" />
                 Post New Job
               </Button>
@@ -341,7 +341,7 @@ function AdminDashboard() {
                       <td>
                         <div className={'${styles.actionButtons} d-flex gap-1'}>
                           <Button
-                            variant="success"
+                            className="navy-blue-btn"
                             size="sm"
                             as={Link}
                             to={`/admin/job/${job.id}/applicants`}
@@ -349,8 +349,8 @@ function AdminDashboard() {
                           >
                             <BsPeopleFill />
                           </Button>
+                          {/*
                           <Button
-                            variant="primary"
                             size="sm"
                             className={styles.btnView}
                             onClick={() => handleViewJob(job.id)}
@@ -358,8 +358,9 @@ function AdminDashboard() {
                           >
                             <BsEyeFill />
                           </Button>
+                          */}
                           <Button
-                            variant="warning"
+                            className="navy-blue-btn"
                             size="sm"
                             onClick={() => handleEditJob(job, 2)}
                             title="Edit Skills"
@@ -367,9 +368,8 @@ function AdminDashboard() {
                             <BsPencilSquare />
                           </Button>
                           <Button
-                            variant="danger"
                             size="sm"
-                            className={styles.btnDelete}
+                            className="navy-blue-btn"
                             onClick={() => {
                               setJobToDelete(job)
                               setShowDeleteModal(true)

@@ -108,7 +108,7 @@ function ProfilePage() {
               <Card.Body>
                 <Card.Title className="profile-name">{profile.name}</Card.Title>
                 <p><strong>Age:</strong> {calculateAge(profile.date_of_birth) || 'Not specified'}</p>
-                <Button variant="primary" className="edit-profile-btn" onClick={() => { setEditData(profile); setShowModal(true); }}>
+                <Button className="edit-profile-btn navy-blue-btn" onClick={() => { setEditData(profile); setShowModal(true); }}>
                   Edit Profile
                 </Button>
               </Card.Body>
@@ -172,7 +172,7 @@ function ProfilePage() {
               <Form.Control type="file" name="profilePicture" onChange={handleFileChange} />
             </Form.Group>
             
-            <Button variant="primary" type="submit" className="w-100 save-changes-btn">Save Changes</Button>
+            <Button variant="primary" type="submit" className="w-100 save-changes-btn navy-blue-btn">Save Changes</Button>
           </Form>
         </Modal.Body>
       </Modal>

@@ -114,7 +114,7 @@ const AccountSettingsPage = () => {
           <div style={styles.cardBody}>
             <p><strong>Email:</strong> {userInfo.email}</p>
             <div style={styles.statusContainer}>
-              <p><strong>Status:</strong></p>
+              <p className='m-0'><strong>Status:</strong></p>
               {userInfo.is_verified ? (
                 <span style={{ ...styles.statusBadge, ...styles.verified }}>Verified</span>
               ) : (
@@ -122,7 +122,7 @@ const AccountSettingsPage = () => {
               )}
             </div>
             {!userInfo.is_verified && (
-              <button style={styles.button} onClick={handleSendVerification} disabled={isSending}>
+              <button className='navy-blue-btn' style={styles.button} onClick={handleSendVerification} disabled={isSending}>
                 {isSending ? 'Sending...' : 'Send Verification Email'}
               </button>
             )}
@@ -148,7 +148,7 @@ const AccountSettingsPage = () => {
               <label style={styles.label} htmlFor="confirmPassword">Confirm New Password</label>
               <input type="password" id="confirmPassword" name="confirmPassword" style={styles.input} value={passwordData.confirmPassword} onChange={handlePasswordChange} required />
             </div>
-            <button type="submit" style={styles.button} disabled={isChangingPassword}>
+            <button className='navy-blue-btn' type="submit" style={styles.button} disabled={isChangingPassword}>
               {isChangingPassword ? 'Changing...' : 'Change Password'}
             </button>
             {passwordMessage && <p style={styles.message}>{passwordMessage}</p>}
@@ -161,20 +161,81 @@ const AccountSettingsPage = () => {
 
 
 const styles = {
-    container: { maxWidth: '800px', margin: '2rem auto', padding: '0 1rem' },
-    header: { textAlign: 'center', marginBottom: '2rem', color: '#111827' },
-    card: { border: '1px solid #e5e7eb', borderRadius: '0.5rem', marginBottom: '1.5rem', backgroundColor: 'white' },
-    cardHeader: { fontSize: '1.25rem', padding: '1rem', borderBottom: '1px solid #e5e7eb', margin: 0 },
-    cardBody: { padding: '1.5rem' },
-    statusContainer: { display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' },
-    statusBadge: { padding: '0.25rem 0.75rem', borderRadius: '9999px', fontSize: '0.875rem', fontWeight: '500' },
-    verified: { backgroundColor: '#d1fae5', color: '#065f46' },
-    notVerified: { backgroundColor: '#fee2e2', color: '#991b1b' },
-    button: { padding: '0.6rem 1.2rem', borderRadius: '0.375rem', fontSize: '0.875rem', fontWeight: '500', color: 'white', backgroundColor: '#3b82f6', border: 'none', cursor: 'pointer', transition: 'background-color 0.2s' },
-    message: { marginTop: '1rem', color: '#374151', fontSize: '0.875rem' },
-    formGroup: { marginBottom: '1rem' },
-    label: { display: 'block', marginBottom: '0.5rem', fontWeight: '500', color: '#374151' },
-    input: { width: '100%', padding: '0.5rem 0.75rem', border: '1px solid #d1d5db', borderRadius: '0.375rem', boxSizing: 'border-box' },
+    container: { 
+      maxWidth: '800px', 
+      margin: '2rem auto', 
+      padding: '0 1rem' 
+    },
+    header: { 
+      textAlign: 'center', 
+      marginBottom: '2rem', 
+      color: '#111827' 
+    },
+    card: {
+      border: '1px solid #e5e7eb', 
+      borderRadius: '0.5rem', 
+      marginBottom: '1.5rem', 
+      backgroundColor: 'white' 
+    },
+    cardHeader: { 
+      fontSize: '1.25rem', 
+      padding: '1rem', 
+      borderBottom: '1px solid #e5e7eb', 
+      margin: 0 
+    },
+    cardBody: { 
+      padding: '1.5rem' 
+    },
+    statusContainer: { 
+      display: 'flex', 
+      alignItems: 'center', 
+      gap: '0.5rem',
+      marginBottom: '1rem', 
+      alignItems: 'center',
+    },
+    statusBadge: { 
+      padding: '0.1rem 0.75rem', 
+      borderRadius: '9999px', 
+      fontSize: '0.875rem', 
+      fontWeight: '500' 
+    },
+    verified: { 
+      backgroundColor: '#d1fae5', 
+      color: '#065f46' 
+    },
+    notVerified: { 
+      backgroundColor: '#fee2e2', 
+      color: '#991b1b' 
+    },
+    button: { 
+      padding: '0.6rem 1.2rem', 
+      borderRadius: '0.375rem', 
+      fontSize: '0.875rem', 
+      fontWeight: '500', 
+      cursor: 'pointer', 
+      transition: 'background-color 0.2s' 
+    },
+    message: { 
+      marginTop: '1rem', 
+      color: '#374151', 
+      fontSize: '0.875rem' 
+    },
+    formGroup: { 
+      marginBottom: '1rem' 
+    },
+    label: { 
+      display: 'block', 
+      marginBottom: '0.5rem', 
+      fontWeight: '500', 
+      color: '#374151' 
+    },
+    input: { 
+      width: '100%', 
+      padding: '0.5rem 0.75rem', 
+      border: '1px solid #d1d5db', 
+      borderRadius: '0.375rem',
+      boxSizing: 'border-box' 
+    },
 };
 
 export default AccountSettingsPage;

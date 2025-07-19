@@ -1,6 +1,7 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Container, Spinner, Alert, Form, Button, Card, Row, Col } from "react-bootstrap";
+import { Toast, ToastContainer } from "react-bootstrap";
 import axios from "axios";
 import config from '../config';
 
@@ -18,6 +19,8 @@ function ApplyPage() {
 
   const seekerId = JSON.parse(localStorage.getItem("user"))?.id;
   const seekerData = JSON.parse(localStorage.getItem("user")) || {};
+
+  const [showToast, setShowToast] = useState(false);
 
 
   // Form state
@@ -109,7 +112,7 @@ function ApplyPage() {
         headers: { "Content-Type": "multipart/form-data" },
       });
   
-      setSubmitSuccess(true);
+      setShowToast(true);
       setTimeout(() => {
         window.location.href = `/jobs/${id}`;
       }, 4000);
@@ -152,19 +155,32 @@ function ApplyPage() {
     );
   }
 
-  if (submitSuccess) {
-    return (
-      <Container className="mt-5">
-        <Alert variant="success">
-          <Alert.Heading>Application Submitted Successfully!</Alert.Heading>
-          <p>Your application has been sent to the employer. You will be redirected to the job details page shortly.</p>
-        </Alert>
-      </Container>
-    );
-  }
-
   return (
     <div style={{ backgroundColor: "#FFF5D1", minHeight: "100vh" }}>
+      <ToastContainer
+        position="top-end"
+        className="p-3"
+        style={{
+          position: "fixed",
+          top: "1rem",
+          right: "1rem",
+          zIndex: 9999
+        }}
+      >
+        <Toast
+          onClose={() => setShowToast(false)}
+          show={showToast}
+          delay={3000}
+          autohide
+          bg="success"
+        >
+          <Toast.Body className="text-white fs-5">
+            Application submitted successfully! Redirecting to job details...
+          </Toast.Body>
+        </Toast>
+      </ToastContainer>
+
+
       <div className="py-4" style={{ backgroundColor: "#002D5A" }}>
         <Container>
           <h2 className="text-white text-center fw-bold mb-0">Apply for Position</h2>
@@ -375,10 +391,8 @@ function ApplyPage() {
                     <Button
                       type="submit"
                       disabled={submitting}
+                      className="navy-blue-btn"
                       style={{ 
-                        backgroundColor: "#F9D849", 
-                        borderColor: "#F9D849",
-                        color: "#000",
                         fontWeight: "bold"
                       }}
                     >

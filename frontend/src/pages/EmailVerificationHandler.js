@@ -41,8 +41,8 @@ const EmailVerificationHandler = () => {
         {isSuccess && (
           <p>You can now log in to your account with full access.</p>
         )}
-        <Link to="/login" style={styles.button}>
-          Go to Login
+        <Link to="/seeker-dashboard" style={styles.button}>
+          Go to Dashboard
         </Link>
       </div>
     </div>

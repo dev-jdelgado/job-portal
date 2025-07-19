@@ -53,7 +53,7 @@ export default function AdminCreateUser() {
                     <input name="password" type="password" className="form-control" value={form.password}
                         onChange={handleChange} required />
                 </div>
-                <button className="btn btn-primary w-100">Create Admin</button>
+                <button className="btn navy-blue-btn w-100">Create Admin</button>
             </form>
         </div>
     );

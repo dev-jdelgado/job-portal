@@ -121,7 +121,7 @@ router.get('/seeker/:id', async (req, res) => {
 
   try {
     // Get seeker info
-    const [seekerRows] = await db.execute('SELECT skills, education, disability_status FROM users WHERE id = ?', [seekerId]);
+    const [seekerRows] = await db.execute('SELECT skills, education, disability_status, is_verified FROM users WHERE id = ?', [seekerId]);
     if (seekerRows.length === 0) return res.status(404).json({ message: 'Seeker not found' });
 
     const seeker = seekerRows[0];
@@ -265,8 +265,16 @@ router.post('/applications/detailed', upload.fields([
       from: process.env.GMAIL_USER,
       to: seeker.email,
       subject: 'Application Confirmation',
-      text: `Hi ${seeker.name},\n\nYour application for the position "${job.title}" has been received. Thank you!`,
+      html: `
+        <p style="margin: 0;">Hi <strong>${seeker.name}</strong>,</p><br>
+        <p style="margin: 0;">Your application for the position "<strong>${job.title}</strong>" has been received. Thank you so much for applying with us! We truly appreciate the time and effort you’ve put into it.</p><br>
+        <p style="margin: 0;">Our HR Team will be reviewing your application soon, and you can expect to hear from one of our team members via email or a phone call to guide you through the next steps.</p><br>
+        <p style="margin: 0;">We truly appreciate your interest in applying, and we can’t wait to learn more about you!</p><br>
+        <p style="margin: 0;">Warm Regards,</p>
+        <p style="margin: 0;">HR</p>
+      `,
     });
+    
 
     res.status(201).json({ message: "Application submitted successfully!" });
   } catch (err) {
@@ -439,28 +447,77 @@ router.put('/applications/:applicationId/status', async (req, res) => {
   const { applicationId } = req.params;
   const { status } = req.body;
 
-  // Optional: Validate status value
   const validStatuses = ['shortlisted', 'rejected', 'pending'];
   if (!validStatuses.includes(status)) {
     return res.status(400).json({ error: 'Invalid status value.' });
   }
 
   try {
-    const [result] = await db.execute(
+    // 1. Update application status
+    const [updateResult] = await db.execute(
       'UPDATE applications SET status = ? WHERE id = ?',
       [status, applicationId]
     );
 
-    if (result.affectedRows === 0) {
+    if (updateResult.affectedRows === 0) {
       return res.status(404).json({ error: 'Application not found.' });
     }
 
-    res.json({ message: 'Application status updated successfully.' });
+    // 2. Get applicant and job info
+    const [[applicant]] = await db.execute(`
+      SELECT a.seeker_id, u.name, u.email, j.title AS job_title
+      FROM applications a
+      JOIN users u ON a.seeker_id = u.id
+      JOIN jobs j ON a.job_id = j.id
+      WHERE a.id = ?
+    `, [applicationId]);
+
+    if (!applicant) {
+      return res.status(404).json({ error: 'Applicant not found.' });
+    }
+
+    // 3. Send email
+    const subject = `Update on your job application for ${applicant.job_title}`;
+    const html = status === 'shortlisted'
+      ? `
+        <p>Hi <strong>${applicant.name}</strong>,</p>
+        <p>Congratulations! You have been <strong>shortlisted</strong> for the <strong>${applicant.job_title}</strong> role.</p>
+        <p>We’ll be reaching out soon regarding the next steps.</p>
+        <p>Best regards,<br/>HR Team</p>
+      `
+      : `
+        <p>Hi <strong>${applicant.name}</strong>,</p>
+        <p>Thank you for applying for the <strong>${applicant.job_title}</strong> position.</p>
+        <p>We appreciate your interest, but unfortunately you have not been shortlisted at this time.</p>
+        <p>We wish you the best in your job search.</p>
+        <p>Best regards,<br/>HR Team</p>
+      `;
+
+    await transporter.sendMail({
+      from: process.env.GMAIL_USER,
+      to: applicant.email,
+      subject,
+      html,
+    });
+
+    // 4. Send in-app notification
+    const notificationMessage =
+      status === 'shortlisted'
+        ? `You have been shortlisted for "${applicant.job_title}".`
+        : `Your application for "${applicant.job_title}" was not successful.`;
+
+    await db.execute(
+      'INSERT INTO notifications (user_id, message) VALUES (?, ?)',
+      [applicant.seeker_id, notificationMessage]
+    );
+
+    res.json({ message: 'Status updated, email and notification sent.' });
   } catch (err) {
     console.error('Error updating application status:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
+
 
 
 module.exports = router;

@@ -11,3 +11,15 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.navy-blue-btn {
+  background: #002D5A !important;
+  color: white !important;
+  border: 2px solid #002D5A !important;
+}
+
+.navy-blue-btn:hover {
+  background: white !important;
+  color: #002D5A !important;
+  border-color: #002D5A !important;
+}

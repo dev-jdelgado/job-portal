@@ -1,13 +1,18 @@
 import { useEffect, useState } from "react"
 import axios from "axios"
 import { Card, Container, Row, Col, Button, Form, Badge } from "react-bootstrap"
-import { Link } from 'react-router-dom';
+import { useAuth } from "../context/AuthContext";
+import { Link } from "react-router-dom";
+import VerifyEmailModal from "../components/VerifyEmailModal";
+import IncompleteProfileModal from "../components/IncompleteProfileModal";
 import "./SeekerDashboard.css"
 import config from '../config';
 
 const API_URL = config.API_URL;
 
 function SeekerDashboard() {
+  const { user } = useAuth();
+  const [showIncompleteProfileModal, setShowIncompleteProfileModal] = useState(false);
   const [matchingJobs, setMatchingJobs] = useState([])
   const [allJobs, setAllJobs] = useState([])
   const [showAll, setShowAll] = useState(false)
@@ -17,28 +22,67 @@ function SeekerDashboard() {
   const [filterDisability, setFilterDisability] = useState('')
   const [seekerDisability, setSeekerDisability] = useState("")
   const [applications, setApplications] = useState([]);
-  
-
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [isVerified, setIsVerified] = useState(true);
   const seekerId = JSON.parse(localStorage.getItem("user"))?.id
 
   useEffect(() => {
+
+    const checkProfileCompletion = async () => {
+      if (!user?.id) return;
+      try {
+        const res = await axios.get(`${API_URL}/api/users/${user.id}`);
+        const profile = res.data;
+        
+        // Define required fields
+        const requiredFields = [
+          profile.name,
+          profile.skills,
+          profile.education,
+          profile.phone_number,
+          profile.address,
+          profile.bio
+        ];
+    
+        const isIncomplete = requiredFields.some(field => !field || field.trim() === "");
+    
+        if (isIncomplete) {
+          setShowIncompleteProfileModal(true);
+        }
+      } catch (err) {
+        console.error("Error checking profile completion:", err);
+      }
+    };
+
     const fetchJobs = async () => {
       try {
         const res = await axios.get(`${API_URL}/jobs/seeker/${seekerId}`)
         setMatchingJobs(res.data.matchingJobs)
         setAllJobs(res.data.allJobs)
         const seeker = res.data.seeker
+  
+        // Check verification
+        if (seeker?.is_verified === 0) {
+          setIsVerified(false);
+          setShowVerifyModal(true); // This comes first
+        } else {
+          checkProfileCompletion(); // Only check if verified
+        }
+        
+        checkProfileCompletion();
+  
         if (seeker?.skills) {
           setSeekerSkills(seeker.skills.split(",").map((s) => s.trim().toLowerCase()))
         }
         if (seeker?.disability_status) {
           setSeekerDisability(seeker.disability_status)
         }
+        console.log(seeker)
       } catch (err) {
         console.error("Error fetching jobs:", err)
       }
     }
-
+  
     const fetchApplications = async () => {
       try {
         const res = await axios.get(`${API_URL}/jobs/applications/seeker/${seekerId}`);
@@ -49,9 +93,9 @@ function SeekerDashboard() {
     };
     
     fetchApplications();
-
-    fetchJobs()
+    fetchJobs();
   }, [seekerId])
+  
 
 
   // Count skill matches
@@ -282,7 +326,7 @@ function SeekerDashboard() {
                             </div>
                           </div>
 
-                          <Link to={`/jobs/${job.id}`} className="btn btn-primary w-100 mt-3">
+                          <Link to={`/jobs/${job.id}`} className="btn navy-blue-btn w-100 mt-3">
                             <i className="fas fa-eye me-2"></i>
                             View Details
                           </Link>
@@ -296,6 +340,23 @@ function SeekerDashboard() {
             )}
           </Row>
       </Container>
+      <VerifyEmailModal 
+        show={showVerifyModal} 
+        onClose={() => {
+          setShowVerifyModal(false);
+          // After closing verify modal, then allow incomplete modal to show
+          if (!isVerified && showIncompleteProfileModal) {
+            setTimeout(() => setShowIncompleteProfileModal(true), 100); 
+          }
+        }} 
+      />
+
+      <IncompleteProfileModal 
+        show={!showVerifyModal && showIncompleteProfileModal}
+      />
+
+
+
     </div>
   )
 }
