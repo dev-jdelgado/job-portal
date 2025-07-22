@@ -342,12 +342,16 @@ router.get('/applications/check', async (req, res) => {
 
   try {
     const [rows] = await db.execute(
-      'SELECT applied_at FROM applications WHERE job_id = ? AND seeker_id = ?',
+      'SELECT applied_at, status FROM applications WHERE job_id = ? AND seeker_id = ?',
       [job_id, seeker_id]
     );
-
+    
     if (rows.length > 0) {
-      return res.json({ applied: true, applied_at: rows[0].applied_at });
+      return res.json({ 
+        applied: true, 
+        applied_at: rows[0].applied_at,
+        status: rows[0].status || 'applied',
+      });
     }
 
     res.json({ applied: false });
@@ -449,7 +453,7 @@ router.put('/applications/:applicationId/status', async (req, res) => {
   const { createMeetEvent } = require('../services/googleCalendarService');
 
 
-  const validStatuses = ['shortlisted', 'rejected', 'pending'];
+  const validStatuses = ['shortlisted', 'interviewed', 'selected', 'rejected'];
   if (!validStatuses.includes(status)) {
     return res.status(400).json({ error: 'Invalid status value.' });
   }
@@ -481,67 +485,83 @@ router.put('/applications/:applicationId/status', async (req, res) => {
     // 3. Send email
     let meetLink = null;
 
-    if (status === 'shortlisted') {
-      // Use custom interview time or default to now
-      const eventTime = interviewTime ? new Date(interviewTime) : new Date();
+    let subject = '';
+    let html = '';
+    let notificationMessage = '';
     
+    if (status === 'shortlisted') {
+      const eventTime = interviewTime ? new Date(interviewTime) : new Date();
       meetLink = await createMeetEvent(
         `Interview for ${applicant.job_title}`,
         `Interview with ${applicant.name} for ${applicant.job_title}`,
         applicant.email,
         eventTime
       );
-    }
     
-    // Compose unified email
-    const subject = `Update on your job application for ${applicant.job_title}`;
-    const formattedDateTime = new Date(interviewTime).toLocaleString('en-PH', {
-      timeZone: 'Asia/Manila',
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+      const formattedDateTime = eventTime.toLocaleString('en-PH', {
+        timeZone: 'Asia/Manila',
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
     
-    const html = status === 'shortlisted'
-      ? `
+      subject = `You're shortlisted for ${applicant.job_title}`;
+      html = `
         <p>Hi <strong>${applicant.name}</strong>,</p>
-        <p>Congratulations! You have been <strong>shortlisted</strong> for the <strong>${applicant.job_title}</strong> role.</p>
-        <p>We’re excited to invite you to an interview scheduled on:</p>
-        <p><strong>${formattedDateTime}</strong></p>
-        <p>Please use the link below to join via Google Meet:</p>
-        <p><a href="${meetLink}">${meetLink}</a></p>
-        <p>We’ll be in touch if there are any updates or changes. Good luck!</p>
+        <p>Congratulations! You've been <strong>shortlisted</strong> for the <strong>${applicant.job_title}</strong> role.</p>
+        <p>Your interview is scheduled on <strong>${formattedDateTime}</strong>.</p>
+        <p>Join via Google Meet: <a href="${meetLink}">${meetLink}</a></p>
         <p>Best regards,<br/>HR Team</p>
-      `    
-      : `
+      `;
+      notificationMessage = `You have been shortlisted for "${applicant.job_title}". Check your email for the interview schedule.`;
+    
+    } else if (status === 'interviewed') {
+      subject = `Interview Update - ${applicant.job_title}`;
+      html = `
         <p>Hi <strong>${applicant.name}</strong>,</p>
-        <p>Thank you for applying for the <strong>${applicant.job_title}</strong> position.</p>
-        <p>We appreciate your interest, but unfortunately you have not been selected at this time.</p>
+        <p>Thank you for attending the interview for the <strong>${applicant.job_title}</strong> position.</p>
+        <p>We appreciate your time and interest. We'll contact you about the next steps.</p>
+        <p>Best regards,<br/>HR Team</p>
+      `;
+      notificationMessage = `You were marked as interviewed for "${applicant.job_title}".`;
+    
+    } else if (status === 'selected') {
+      subject = `Congratulations! You're selected for the position ${applicant.job_title}`;
+      html = `
+        <p>Hi <strong>${applicant.name}</strong>,</p>
+        <p>We're thrilled to inform you that you’ve been <strong>selected</strong> for the <strong>${applicant.job_title}</strong> position.</p>
+        <p>We will be reaching out with further instructions shortly.</p>
+        <p>Congratulations again!</p>
+        <p>Best regards,<br/>HR Team</p>
+      `;
+      notificationMessage = `🎉 Congratulations! You’ve been selected for "${applicant.job_title}".`;
+    
+    } else if (status === 'rejected') {
+      subject = `Application Update - ${applicant.job_title}`;
+      html = `
+        <p>Hi <strong>${applicant.name}</strong>,</p>
+        <p>Thank you for applying for <strong>${applicant.job_title}</strong>. Unfortunately, you were not selected at this time.</p>
         <p>We wish you the best in your job search.</p>
         <p>Best regards,<br/>HR Team</p>
       `;
+      notificationMessage = `Your application for "${applicant.job_title}" was rejected.`;
+    }
     
-    // Send final email
-    await transporter.sendMail({
-      from: process.env.GMAIL_USER,
-      to: applicant.email,
-      subject,
-      html,
+    await transporter.sendMail({ 
+      from: process.env.GMAIL_USER, 
+      to: applicant.email, 
+      subject, 
+      html 
     });
 
-    // 4. Send in-app notification
-    const notificationMessage =
-      status === 'shortlisted'
-        ? `You have been shortlisted for "${applicant.job_title}".`
-        : `Your application for "${applicant.job_title}" was not successful.`;
-
     await db.execute(
-      'INSERT INTO notifications (user_id, message) VALUES (?, ?)',
+      'INSERT INTO notifications (user_id, message) VALUES (?, ?)', 
       [applicant.seeker_id, notificationMessage]
     );
+
 
     res.json({ message: 'Status updated, email and notification sent.' });
   } catch (err) {

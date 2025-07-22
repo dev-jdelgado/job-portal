@@ -34,16 +34,25 @@ function JobApplicationsPage() {
   const filteredApplications = applications.filter(app => 
     (selectedTab === "applied" && app.status === "applied") ||
     (selectedTab === "shortlisted" && app.status === "shortlisted") ||
-    (selectedTab === "interview" && app.status === "interview") ||
+    (selectedTab === "interviewed" && app.status === "interviewed") ||
+    (selectedTab === "selected" && app.status === "selected") ||
     (selectedTab === "rejected" && app.status === "rejected")
   );
+
+  const statusCounts = {
+    applied: applications.filter(app => app.status === "applied").length,
+    shortlisted: applications.filter(app => app.status === "shortlisted").length,
+    interviewed: applications.filter(app => app.status === "interviewed").length,
+    selected: applications.filter(app => app.status === "selected").length,
+    rejected: applications.filter(app => app.status === "rejected").length,
+  }
 
   const getStatusBadge = (status) => {
     const statusConfig = {
       applied: { variant: "dark", text: "Applied" },
-      shortlisted: { variant: "warning", text: "Shortlisted" },
-      interview: { variant: "primary", text: "Interviewed" },
-      accepted: { variant: "success", text: "Accepted" },
+      shortlisted: { variant: "success", text: "Shortlisted" },
+      interviewed: { variant: "success", text: "Interviewed" },
+      selected: { variant: "success", text: "Selected" },
       rejected: { variant: "danger", text: "Rejected" },
     }
 
@@ -107,17 +116,20 @@ function JobApplicationsPage() {
       </div>
 
       <Container className="applications-container">
-        <Tabs
-          activeKey={selectedTab}
-          onSelect={(k) => setSelectedTab(k)}
-          className="mb-4"
-          justify
-        >
-          <Tab eventKey="applied" title="Applied" />
-          <Tab eventKey="shortlisted" title="Shortlisted" />
-          <Tab eventKey="interview" title="Interviewed" />
-          <Tab eventKey="rejected" title="Rejected" />
-        </Tabs>
+        
+      <Tabs
+        activeKey={selectedTab}
+        onSelect={(k) => setSelectedTab(k)}
+        className="mb-4"
+        justify
+      >
+        <Tab eventKey="applied" title={`Applied (${statusCounts.applied})`} />
+        <Tab eventKey="shortlisted" title={`Shortlisted (${statusCounts.shortlisted})`} />
+        <Tab eventKey="interviewed" title={`Interviewed (${statusCounts.interviewed})`} />
+        <Tab eventKey="selected" title={`Selected (${statusCounts.selected})`} />
+        <Tab eventKey="rejected" title={`Rejected (${statusCounts.rejected})`} />
+      </Tabs>
+
 
         {filteredApplications.length === 0 ? (
           <div className="no-applications-wrapper">

@@ -1,107 +1,180 @@
-import React from 'react';
-import { Card, Badge, Button, ButtonGroup, Row, Col, Spinner } from 'react-bootstrap';
+import React, { useState } from 'react';
+import { Card, Button, ButtonGroup, Row, Col, Spinner, Form, Modal } from 'react-bootstrap';
+
 
 // The Icon component remains the same
 const Icon = ({ className }) => <i className={className} style={{ marginRight: '8px' }}></i>;
 
 export const ApplicantCard = ({ applicant, onStatusUpdate, onViewDetails, isLoading }) => {
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingAction, setPendingAction] = useState({ applicationId: null, status: '' });
+
+  const handleConfirm = () => {
+    if (pendingAction.applicationId && pendingAction.status) {
+      onStatusUpdate(pendingAction.applicationId, pendingAction.status);
+    }
+    setShowConfirmModal(false);
+    setPendingAction({ applicationId: null, status: '' });
+  };
 
   const getBorderVariant = (status) => {
     switch (status) {
       case 'shortlisted': return 'success';
+      case 'interviewed': return 'success';
+      case 'selected': return 'success';
       case 'rejected': return 'danger';
-      default: return 'light';
+      default: return 'secondary';
     }
   };
-
-  const skills = applicant.skills ? applicant.skills.split(',').map(s => s.trim()) : [];
 
   return (
     <div>
       <Card border={getBorderVariant(applicant.status)} className="mb-3 shadow-sm">
         {/* Replaced <Stack> with <Row> and <Col> for a table-like layout */}
         <Card.Body>
-          <Row className="mb-2">
+          <Row className="mb-1">
             <Col sm={4} md={3} as="strong"><Icon className="bi bi-envelope"/>Name</Col>
             <Col sm={8} md={9}>{applicant.name}</Col>
           </Row>
-          <Row className="mb-2">
+          <Row className="mb-1">
             <Col sm={4} md={3} as="strong"><Icon className="bi bi-envelope"/>Email</Col>
             <Col sm={8} md={9}>{applicant.email}</Col>
           </Row>
-          <Row className="mb-2">
-            <Col sm={4} md={3} as="strong"><Icon className="bi bi-mortarboard"/>Education</Col>
-            <Col sm={8} md={9}>{applicant.education}</Col>
-          </Row>
-          <Row className="mb-2">
-            <Col sm={4} md={3} as="strong"><Icon className="bi bi-person-badge"/>Disability</Col>
-            <Col sm={8} md={9}>
-              <Badge bg={applicant.disability_status === 'PWD' ? 'info' : 'secondary'}>
-                {applicant.disability_status}
-              </Badge>
-            </Col>
-          </Row>
-          <Row>
-            <Col sm={4} md={3} as="strong"><Icon className="bi bi-tags"/>Skills</Col>
-            <Col sm={8} md={9}>
-              {skills.length > 0 ? skills.map((skill, i) => (
-                <Badge key={i} bg="primary" className="me-1 mb-1 fw-normal">{skill}</Badge>
-              )) : <span className="text-muted">No skills listed</span>}
-            </Col>
+          <Row className="mb-1">
+            <Col sm={4} md={3} as="strong"><Icon className="bi bi-envelope"/>Applied:</Col>
+            <Col sm={8} md={9}>{new Date(applicant.applied_at).toLocaleDateString()}</Col>
           </Row>
         </Card.Body>
 
         <Card.Footer className="d-flex justify-content-between align-items-center bg-white">
-          <small className="text-muted">
-            Applied: {new Date(applicant.applied_at).toLocaleDateString()}
-          </small>
           <Button variant="outline-primary" size="sm" onClick={() => onViewDetails(applicant)}>
             <Icon className="bi bi-eye-fill"/> View Details
           </Button>
+
           {applicant.status === 'shortlisted' ? (
-            <span className="text-success fw-semibold">
-              <Icon className="bi bi-check-circle-fill" /> Applicant is shortlisted
-            </span>
+            <div className="d-flex align-items-center gap-2">
+              <span className="text-success fw-semibold">
+                <Icon className="bi bi-check-circle-fill" /> Shortlisted
+              </span>
+              <Form.Select
+                size="sm"
+                value={applicant.nextStatus || ''}
+                disabled={isLoading}
+                onChange={(e) => {
+                  const selectedStatus = e.target.value;
+                  if (selectedStatus) {
+                    setPendingAction({ applicationId: applicant.applicationId, status: selectedStatus });
+                    setShowConfirmModal(true);
+                  }
+                }}
+                style={{ maxWidth: '180px', position: 'relative' }}
+              >
+                <option value="">Update Status</option>
+                <option value="interviewed">Interviewed</option>
+                <option value="rejected">Reject</option>
+              </Form.Select>
+              {isLoading && <Spinner animation="border" size="sm" className="ms-2" />}
+            </div>
+          ) : applicant.status === 'interviewed' ? (
+            <div className="d-flex align-items-center gap-2">
+              <span className="text-success fw-semibold">
+                <Icon className="bi bi-check-circle-fill" /> Interviewed
+              </span>
+              <Form.Select
+                size="sm"
+                value={applicant.nextStatus || ''}
+                disabled={isLoading}
+                onChange={(e) => {
+                  const selectedStatus = e.target.value;
+                  if (selectedStatus) {
+                    setPendingAction({ applicationId: applicant.applicationId, status: selectedStatus });
+                    setShowConfirmModal(true);
+                  }
+                }}
+                style={{ maxWidth: '180px', position: 'relative' }}
+              >
+                <option value="">Update Status</option>
+                <option value="selected">Select</option>
+                <option value="rejected">Reject</option>
+              </Form.Select>
+              {isLoading && <Spinner animation="border" size="sm" className="ms-2" />}
+            </div>
+          ) : applicant.status === 'selected' ? (
+            <div className="d-flex align-items-center gap-2">
+              <span className="text-success fw-semibold">
+                <Icon className="bi bi-check-circle-fill" /> Applicated has been Selected
+              </span>
+            </div>
           ) : applicant.status === 'rejected' ? (
             <span className="text-danger fw-semibold">
-              <Icon className="bi bi-x-circle-fill" /> Applicant has been rejected
+              <Icon className="bi bi-x-circle-fill" /> Applicant has been Rejected
             </span>
           ) : (
             <ButtonGroup size="sm">
               <Button
                 variant="outline-success"
-                onClick={() => onStatusUpdate(applicant.applicationId, 'shortlisted')}
+                onClick={() => {
+                  setPendingAction({ applicationId: applicant.applicationId, status: 'shortlisted' });
+                  setShowConfirmModal(true);
+                }}
                 disabled={isLoading}
               >
-                {isLoading ? (
-                  <>
-                    <Spinner animation="border" size="sm" /> Loading...
-                  </>
-                ) : (
-                  <>
-                    <Icon className="bi bi-check-circle" /> Shortlist
-                  </>
-                )}
+                <Icon className="bi bi-check-circle" /> Shortlist
               </Button>
               <Button
                 variant="outline-danger"
-                onClick={() => onStatusUpdate(applicant.applicationId, 'rejected')}
+                onClick={() => {
+                  setPendingAction({ applicationId: applicant.applicationId, status: 'rejected' });
+                  setShowConfirmModal(true);
+                }}
                 disabled={isLoading}
               >
-                {isLoading ? (
-                  <>
-                    <Spinner animation="border" size="sm" /> Loading...
-                  </>
-                ) : (
-                  <>
-                    <Icon className="bi bi-x-circle" /> Reject
-                  </>
-                )}
+                <Icon className="bi bi-check-circle" /> Reject
               </Button>
+              {isLoading && <Spinner animation="border" size="sm" className="ms-2" />}
             </ButtonGroup>
           )}
         </Card.Footer>
       </Card>
+
+      <Modal show={showConfirmModal} onHide={() => setShowConfirmModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Action</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {
+            pendingAction.status === 'shortlisted' ? (
+              'Are you sure you want to shortlist this applicant?'
+            ) : pendingAction.status === 'rejected' ? ( 
+              'Are you sure you want to reject this applicant?'
+            ) : pendingAction.status === 'interviewed' ? ( 
+              'Are you done interviewing this applicant?'
+            ) : (
+              'Are you sure you want to select this applicant?'
+            )
+          }
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowConfirmModal(false)}>
+            Cancel
+          </Button>
+          <Button variant={pendingAction.status === 'rejected' ? 'danger' : 'success'} onClick={handleConfirm}>
+            {
+              pendingAction.status === 'shortlisted' ? ( 
+                "Shortlist Applicant" 
+              ) : 
+              pendingAction.status === 'selected' ? ( 
+                "Select Applicant" 
+              ) :
+              pendingAction.status === 'interviewed' ? ( 
+                "Applicant Interviewed" 
+              ) : ( 
+                "Reject Applicant" 
+              )
+            }
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
     
   );

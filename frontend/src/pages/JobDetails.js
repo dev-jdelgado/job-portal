@@ -16,8 +16,9 @@ function JobDetails() {
 
     const [applied, setApplied] = useState(false);
     const [applyError, setApplyError] = useState(null);
-
     const [appliedAt, setAppliedAt] = useState(null);
+    const [applicationStatus, setApplicationStatus] = useState(null);
+
 
     useEffect(() => {
         const fetchJob = async () => {
@@ -43,7 +44,8 @@ function JobDetails() {
           
               if (res.data.applied) {
                 setApplied(true);
-                setAppliedAt(res.data.applied_at); // ← Set the date
+                setAppliedAt(res.data.applied_at);
+                setApplicationStatus(res.data.status || 'applied');
               }
             } catch (err) {
               console.error("Error checking if already applied:", err);
@@ -101,6 +103,51 @@ function JobDetails() {
                             <i className="fas fa-exclamation-circle me-2"></i>{applyError}
                             </p>
                         )}
+                        
+                        {applied && (
+                        <div className="mt-3 mx-auto text-center">
+                            <h5 className="text-white mb-3">Application Status Tracker</h5>
+                            <div className="d-flex justify-content-center gap-3 flex-wrap">
+                            {['applied', 'shortlisted', 'interviewed', 'selected', 'rejected'].map((step, i) => {
+                                const statusOrder = {
+                                applied: 1,
+                                shortlisted: 2,
+                                interviewed: 3,
+                                selected: 4,
+                                rejected: 4, // final status
+                                };
+
+                                const current = statusOrder[applicationStatus] || 0;
+                                const stepValue = statusOrder[step] || 0;
+
+                                const isActive = stepValue <= current;
+                                const isCurrent = stepValue === current;
+
+                                return (
+                                <div key={step} className="text-center d-flex flex-column justify-content-center align-items-center" style={{ maxWidth: '70px', width: '70px' }}>
+                                    <div
+                                        className={`rounded-circle d-flex align-items-center justify-content-center mb-1`}
+                                        style={{
+                                            width: '50px',
+                                            height: '50px',
+                                            backgroundColor: isActive ? (isCurrent ? '#198754' : '#198754') : '#dee2e6',
+                                            color: isActive ? '#fff' : '#6c757d',
+                                            fontWeight: 'bold',
+                                            fontSize: '1.1rem',
+                                        }}
+                                    >
+                                    {i + 1}
+                                    </div>
+                                    <small 
+                                        className={`text-${isActive ? 'white' : 'secondary'}`}>{step.charAt(0).toUpperCase() + step.slice(1)}
+                                    </small>
+                                </div>
+                                );
+                            })}
+                            </div>
+                        </div>
+                        )}
+
                     </div>
                     
                 </div>

@@ -120,10 +120,22 @@ function JobApplicantsPage() {
         </div>
 
         <div className="mb-4">
-          <ButtonGroup>
-            <Button variant={filterStatus === 'all' ? 'primary' : 'outline-primary'} onClick={() => setFilterStatus('all')}>All ({applicants.length})</Button>
-            <Button variant={filterStatus === 'shortlisted' ? 'success' : 'outline-success'} onClick={() => setFilterStatus('shortlisted')}>Shortlisted ({applicants.filter(a => a.status === 'shortlisted').length})</Button>
-            <Button variant={filterStatus === 'rejected' ? 'danger' : 'outline-danger'} onClick={() => setFilterStatus('rejected')}>Rejected ({applicants.filter(a => a.status === 'rejected').length})</Button>
+          <ButtonGroup className="flex-wrap" style={{ gap:'1px'}}>
+            <Button variant={filterStatus === 'all' ? 'primary' : 'outline-primary'} onClick={() => setFilterStatus('all')}>
+              All ({applicants.length})
+            </Button>
+            <Button variant={filterStatus === 'shortlisted' ? 'success' : 'outline-success'} onClick={() => setFilterStatus('shortlisted')}>
+              Shortlisted ({applicants.filter(a => a.status === 'shortlisted').length})
+            </Button>
+            <Button variant={filterStatus === 'interviewed' ? 'success' : 'outline-success'} onClick={() => setFilterStatus('interviewed')}>
+              Interviewed ({applicants.filter(a => a.status === 'interviewed').length})
+            </Button>
+            <Button variant={filterStatus === 'selected' ? 'success' : 'outline-success'} onClick={() => setFilterStatus('selected')}>
+              Selected ({applicants.filter(a => a.status === 'selected').length})
+            </Button>
+            <Button variant={filterStatus === 'rejected' ? 'danger' : 'outline-danger'} onClick={() => setFilterStatus('rejected')}>
+              Rejected ({applicants.filter(a => a.status === 'rejected').length})
+            </Button>
           </ButtonGroup>
         </div>
 

@@ -29,6 +29,10 @@ export const ApplicantDetailsModal = ({ show, onHide, applicant }) => {
             <hr />
             {/* --- NEW SECTION for Personal Info --- */}
             <Row className="mb-2">
+              <Col sm={2} as="strong">Name</Col>
+              <Col sm={10}>{applicant.name}</Col>
+            </Row>
+            <Row className="mb-2">
               <Col sm={2} as="strong">Age</Col>
               <Col sm={10}>{applicant.age ? `${applicant.age} years old` : 'Not Provided'}</Col>
             </Row>
