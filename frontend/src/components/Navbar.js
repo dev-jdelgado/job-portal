@@ -435,18 +435,6 @@ const Navbar = () => {
                         </svg>
                         Job Applications
                       </Link>
-                      <Link
-                        to="/saved-jobs"
-                        style={dropdownItemStyle}
-                        onClick={() => setIsDropdownOpen(false)}
-                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f3f4f6"; e.currentTarget.style.color = "#111827"; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#374151"; }}
-                      >
-                        <svg style={{ flexShrink: 0 }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                        </svg>
-                        Saved Jobs
-                      </Link>
                     </>
                   )}
 
