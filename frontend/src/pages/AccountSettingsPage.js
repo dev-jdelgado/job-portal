@@ -107,7 +107,7 @@ const AccountSettingsPage = () => {
     <div style={styles.container}>
       <h1 style={styles.header}>Account Settings</h1>
       
-      {/* Email Verification Card */}
+      {user?.role !== 'admin' && (
       <div style={styles.card}>
         <h2 style={styles.cardHeader}>Email Verification</h2>
         {userInfo && (
@@ -130,6 +130,7 @@ const AccountSettingsPage = () => {
           </div>
         )}
       </div>
+      )}
 
       {/* Change Password Card */}
       <div style={styles.card}>
