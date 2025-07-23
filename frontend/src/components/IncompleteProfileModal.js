@@ -8,7 +8,8 @@ function IncompleteProfileModal({ show }) {
         <Modal.Title>Complete Your Profile</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <p>To maximize your job matching experience, please complete your profile.</p>
+        <p>Thank you for verifying your account.</p>
+        <p>Lastly to maximize your job matching experience, please complete your profile.</p>
         <p>This includes information like your bio, contact details, and more.</p>
       </Modal.Body>
       <Modal.Footer>
