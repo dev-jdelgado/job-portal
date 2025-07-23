@@ -94,8 +94,6 @@ router.delete('/:id', async (req, res) => {
 });
 
 
-
-
 // GET jobs posted by a specific admin
 router.get('/admin/:adminId', async (req, res) => {
     const { adminId } = req.params;
@@ -115,7 +113,7 @@ router.get('/admin/:adminId', async (req, res) => {
 });0 
 
 
-// REGISTER Seekers
+// GET matching jobs for a seeker
 router.get('/seeker/:id', async (req, res) => {
   const seekerId = req.params.id;
 

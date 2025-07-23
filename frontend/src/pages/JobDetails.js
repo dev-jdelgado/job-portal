@@ -105,16 +105,17 @@ function JobDetails() {
                         )}
                         
                         {applied && (
-                        <div className="mt-3 mx-auto text-center">
-                            <h5 className="text-white mb-3">Application Status Tracker</h5>
-                            <div className="d-flex justify-content-center gap-3 flex-wrap">
-                            {['applied', 'shortlisted', 'interviewed', 'selected', 'rejected'].map((step, i) => {
+                        <div className="mt-4 mx-auto text-center">
+                            <h5 className="text-white mb-4">Application Status Tracker</h5>
+                            <div className="d-flex align-items-center justify-content-center flex-wrap gap-2">
+
+                            {['applied', 'shortlisted', 'interviewed', 'selected', 'rejected'].map((step, i, steps) => {
                                 const statusOrder = {
                                 applied: 1,
                                 shortlisted: 2,
                                 interviewed: 3,
                                 selected: 4,
-                                rejected: 4, // final status
+                                rejected: 4, // final state
                                 };
 
                                 const current = statusOrder[applicationStatus] || 0;
@@ -124,9 +125,10 @@ function JobDetails() {
                                 const isCurrent = stepValue === current;
 
                                 return (
-                                <div key={step} className="text-center d-flex flex-column justify-content-center align-items-center" style={{ maxWidth: '70px', width: '70px' }}>
-                                    <div
-                                        className={`rounded-circle d-flex align-items-center justify-content-center mb-1`}
+                                <div key={step} className="d-flex align-items-center">
+                                    <div>
+                                        <div
+                                        className="rounded-circle d-flex align-items-center justify-content-center mx-auto"
                                         style={{
                                             width: '50px',
                                             height: '50px',
@@ -135,18 +137,33 @@ function JobDetails() {
                                             fontWeight: 'bold',
                                             fontSize: '1.1rem',
                                         }}
-                                    >
-                                    {i + 1}
+                                        >
+                                        {i + 1}
+                                        </div>
+
+                                        <div className="text-white small mt-1 text-center" style={{ width: "80px" }}>
+                                        {step.charAt(0).toUpperCase() + step.slice(1)}
+                                        </div>
                                     </div>
-                                    <small 
-                                        className={`text-${isActive ? 'white' : 'secondary'}`}>{step.charAt(0).toUpperCase() + step.slice(1)}
-                                    </small>
+                                    
+                                    {i < steps.length - 1 && (
+                                    <div
+                                        style={{
+                                        height: '3px',
+                                        width: '40px',
+                                        marginBottom: '20px',
+                                        backgroundColor: statusOrder[steps[i + 1]] <= current ? '#198754' : '#dee2e6',
+                                        }}
+                                    ></div>
+                                    )}
                                 </div>
                                 );
                             })}
+
                             </div>
                         </div>
                         )}
+
 
                     </div>
                     

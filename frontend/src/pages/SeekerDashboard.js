@@ -344,12 +344,13 @@ function SeekerDashboard() {
         show={showVerifyModal} 
         onClose={() => {
           setShowVerifyModal(false);
-          // After closing verify modal, then allow incomplete modal to show
           if (!isVerified && showIncompleteProfileModal) {
             setTimeout(() => setShowIncompleteProfileModal(true), 100); 
           }
         }} 
+        name={user?.name}
       />
+
 
       <IncompleteProfileModal 
         show={!showVerifyModal && showIncompleteProfileModal}
