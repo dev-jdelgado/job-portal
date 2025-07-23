@@ -8,7 +8,6 @@ const authRoutes = require('./routes/auth');
 const jobRoutes = require('./routes/jobs');
 const userRoutes = require('./routes/user');
 const accountRoutes = require('./routes/account');
-const messagesRoute = require('./routes/messages');
 
 
 // Initialize App
@@ -27,7 +26,6 @@ app.use('/api/auth', authRoutes);
 app.use('/jobs', jobRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/account', accountRoutes);
-app.use('/api/messages', messagesRoute);
 
 
 // Start Server
