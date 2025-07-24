@@ -193,8 +193,9 @@ const AccountSettingsPage = () => {
           </form>
         </div>
       </div>
-        
-        {/* Delete Account Card */}
+
+      
+        {user?.role !== 'admin' && (
         <div style={styles.card}>
             <h2 style={{...styles.cardHeader, ...styles.deleteHeader}}>Delete Account</h2>
             <div style={styles.cardBody}>
@@ -221,6 +222,7 @@ const AccountSettingsPage = () => {
                 </form>
             </div>
         </div>
+        )}
     </div>
   );
 };

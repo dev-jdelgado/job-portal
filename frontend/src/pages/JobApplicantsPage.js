@@ -1,11 +1,12 @@
 import { useEffect, useState, useMemo } from "react";
-import { useParams, Link } from "react-router-dom"; // Make sure useParams is imported
-import { Container, Spinner, Alert, Button, ButtonGroup, Row, Col } from "react-bootstrap";
+import { useParams, Link } from "react-router-dom";
+import { Container, Spinner, Alert, Row, Col, Card, Tabs, Tab } from "react-bootstrap"; // Import Tabs and Tab
 import axios from "axios";
 import { ApplicantCard } from "../components/ApplicantCard";
 import { ApplicantDetailsModal } from "../components/ApplicantDetailsModal";
-import { InterviewScheduleModal } from "../components/InterviewScheduleModal"; 
+import { InterviewScheduleModal } from "../components/InterviewScheduleModal";
 import config from '../config';
+import '../pages/AdminDashboard.css';
 
 const API_URL = config.API_URL;
 
@@ -25,152 +26,162 @@ function JobApplicantsPage() {
 
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await axios.get(`${API_URL}/jobs/applicants/${jobId}`);
-        setApplicants(res.data);
-        if (res.data.length > 0) {
-          setJobTitle(res.data[0].job_title);
-        } else {
-          const jobRes = await axios.get(`${API_URL}/jobs/${jobId}`);
-          setJobTitle(jobRes.data.title);
+        const fetchData = async () => {
+          try {
+            const res = await axios.get(`${API_URL}/jobs/applicants/${jobId}`); //
+            setApplicants(res.data); //
+            if (res.data.length > 0) {
+              setJobTitle(res.data[0].job_title); //
+            } else {
+              const jobRes = await axios.get(`${API_URL}/jobs/${jobId}`); //
+              setJobTitle(jobRes.data.title); //
+            }
+          } catch (err) {
+            setError("Failed to load applicant information."); //
+          } finally {
+            setLoading(false); //
+          }
+        };
+    
+        fetchData();
+      }, [jobId]);
+
+      const handleStatusUpdate = async (applicationId, newStatus) => {
+        if (newStatus === 'shortlisted') {
+          setSelectedAppId(applicationId); //
+          setShowScheduleModal(true); //
+          return;
         }
-      } catch (err) {
-        setError("Failed to load applicant information.");
-      } finally {
-        setLoading(false);
-      }
+      
+        setStatusLoadingId(applicationId); //
+      
+        try {
+          await axios.put(`${API_URL}/jobs/applications/${applicationId}/status`, { status: newStatus }); //
+          setApplicants(applicants.map(app =>
+            app.applicationId === applicationId ? { ...app, status: newStatus } : app
+          )); //
+        } catch (err) {
+          alert("Failed to update status."); //
+        } finally {
+          setStatusLoadingId(null); //
+        }
+      };
+      
+      const handleConfirmSchedule = async (interviewDate) => {
+        setStatusLoadingId(selectedAppId); //
+      
+        try {
+          await axios.put(`${API_URL}/jobs/applications/${selectedAppId}/status`, { //
+            status: 'shortlisted', //
+            interviewTime: interviewDate.toISOString(), //
+          });
+      
+          setApplicants(applicants.map(app =>
+            app.applicationId === selectedAppId ? { ...app, status: 'shortlisted' } : app
+          )); //
+        } catch (err) {
+          alert("Failed to schedule interview."); //
+        } finally {
+          setStatusLoadingId(null); //
+          setShowScheduleModal(false); //
+        }
+      };
+
+      const handleShowModal = (applicant) => {
+        setSelectedApplicant(applicant); //
+        setShowModal(true); //
+      };
+    
+      const handleCloseModal = () => {
+        setShowModal(false); //
+        setSelectedApplicant(null); //
+      };
+    
+
+    const filteredAndSortedApplicants = useMemo(() => {
+        return applicants
+            .filter(app => filterStatus === 'all' || app.status === filterStatus)
+            .sort((a, b) => b.matchScore - a.matchScore);
+    }, [applicants, filterStatus]); //
+
+    // Helper to get counts for each tab
+    const getCount = (status) => {
+        if (status === 'all') return applicants.length;
+        return applicants.filter(a => a.status === status).length;
     };
 
-    fetchData();
-  }, [jobId]);
+    if (loading) return <Container className="mt-5 text-center"><Spinner animation="border" /></Container>; //
+    if (error) return <Container className="mt-5"><Alert variant="danger">{error}</Alert></Container>; //
 
+    return (
+        <>
+            <div className="dashboard-header">
+                <Container>
+                    <Row className="align-items-center">
+                        <Col>
+                            <h3 className="dashboard-subtitle" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>Applicants for:</h3>
+                            <h1 className="dashboard-title">{jobTitle}</h1>
+                        </Col>
+                        <Col xs="auto">
+                            <Link to="/admin-dashboard" className="btn btn-outline-light">← Back to Dashboard</Link>
+                        </Col>
+                    </Row>
+                </Container>
+            </div>
 
-  const handleStatusUpdate = async (applicationId, newStatus) => {
-    if (newStatus === 'shortlisted') {
-      setSelectedAppId(applicationId);
-      setShowScheduleModal(true);
-      return;
-    }
-  
-    setStatusLoadingId(applicationId); // Start loading
-  
-    try {
-      await axios.put(`${API_URL}/jobs/applications/${applicationId}/status`, { status: newStatus });
-      setApplicants(applicants.map(app =>
-        app.applicationId === applicationId ? { ...app, status: newStatus } : app
-      ));
-    } catch (err) {
-      alert("Failed to update status.");
-    } finally {
-      setStatusLoadingId(null); // Stop loading
-    }
-  };
-  
-  const handleConfirmSchedule = async (interviewDate) => {
-    setStatusLoadingId(selectedAppId); // Start loading
-  
-    try {
-      await axios.put(`${API_URL}/jobs/applications/${selectedAppId}/status`, {
-        status: 'shortlisted',
-        interviewTime: interviewDate.toISOString(),
-      });
-  
-      setApplicants(applicants.map(app =>
-        app.applicationId === selectedAppId ? { ...app, status: 'shortlisted' } : app
-      ));
-    } catch (err) {
-      alert("Failed to schedule interview.");
-    } finally {
-      setStatusLoadingId(null); // Stop loading
-      setShowScheduleModal(false);
-    }
-  };
-  
-  
+            <Container className="my-4">
+                <Card className="jobs-table-card">
+                    <Tabs
+                        activeKey={filterStatus}
+                        onSelect={(k) => setFilterStatus(k)}
+                        id="applicant-status-tabs"
+                        className="mb-3 nav-tabs-custom"
+                    >
+                        <Tab eventKey="all" title={`All (${getCount('all')})`} />
+                        <Tab eventKey="shortlisted" title={`Shortlisted (${getCount('shortlisted')})`} />
+                        <Tab eventKey="interviewed" title={`Interviewed (${getCount('interviewed')})`} />
+                        <Tab eventKey="selected" title={`Selected (${getCount('selected')})`} />
+                        <Tab eventKey="rejected" title={`Rejected (${getCount('rejected')})`} />
+                    </Tabs>
+                    
+                    <Card.Body>
+                        <Row>
+                            {filteredAndSortedApplicants.length > 0 ? (
+                                filteredAndSortedApplicants.map((applicant) => (
+                                    <Col md={12} key={applicant.applicationId}>
+                                        <ApplicantCard
+                                            applicant={applicant}
+                                            onStatusUpdate={handleStatusUpdate}
+                                            onViewDetails={handleShowModal}
+                                            isLoading={statusLoadingId === applicant.applicationId}
+                                        />
+                                    </Col>
+                                ))
+                            ) : (
+                                <Col>
+                                    <div className="empty-state">
+                                        <h5>No Applicants Found</h5>
+                                        <p>There are no applicants in this category.</p>
+                                    </div>
+                                </Col>
+                            )}
+                        </Row>
+                    </Card.Body>
+                </Card>
+            </Container>
 
-  const handleShowModal = (applicant) => {
-    setSelectedApplicant(applicant);
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setSelectedApplicant(null);
-  };
-
-  const filteredAndSortedApplicants = useMemo(() => {
-    return applicants
-      .filter(app => filterStatus === 'all' || app.status === filterStatus)
-      .sort((a, b) => b.matchScore - a.matchScore);
-  }, [applicants, filterStatus]);
-
-  if (loading) return <Container className="mt-5 text-center"><Spinner animation="border" /></Container>;
-  if (error) return <Container className="mt-5"><Alert variant="danger">{error}</Alert></Container>;
-
-  return (
-    <>
-      <Container className="my-4">
-        <div className="d-flex flex-wrap justify-content-between align-items-center mb-4">
-          <div>
-            <h3>Applicants for:</h3>
-            <h1 className="fw-bold">{jobTitle}</h1>
-          </div>
-          <Link to="/admin-dashboard" className="btn btn-secondary">← Back to Dashboard</Link>
-        </div>
-
-        <div className="mb-4">
-          <ButtonGroup className="flex-wrap" style={{ gap:'1px'}}>
-            <Button variant={filterStatus === 'all' ? 'primary' : 'outline-primary'} onClick={() => setFilterStatus('all')}>
-              All ({applicants.length})
-            </Button>
-            <Button variant={filterStatus === 'shortlisted' ? 'success' : 'outline-success'} onClick={() => setFilterStatus('shortlisted')}>
-              Shortlisted ({applicants.filter(a => a.status === 'shortlisted').length})
-            </Button>
-            <Button variant={filterStatus === 'interviewed' ? 'success' : 'outline-success'} onClick={() => setFilterStatus('interviewed')}>
-              Interviewed ({applicants.filter(a => a.status === 'interviewed').length})
-            </Button>
-            <Button variant={filterStatus === 'selected' ? 'success' : 'outline-success'} onClick={() => setFilterStatus('selected')}>
-              Selected ({applicants.filter(a => a.status === 'selected').length})
-            </Button>
-            <Button variant={filterStatus === 'rejected' ? 'danger' : 'outline-danger'} onClick={() => setFilterStatus('rejected')}>
-              Rejected ({applicants.filter(a => a.status === 'rejected').length})
-            </Button>
-          </ButtonGroup>
-        </div>
-
-        <Row>
-          {filteredAndSortedApplicants.length > 0 ? (
-            filteredAndSortedApplicants.map((applicant) => (
-              <Col md={12} lg={6} key={applicant.applicationId}>
-                <ApplicantCard
-                  applicant={applicant}
-                  onStatusUpdate={handleStatusUpdate}
-                  onViewDetails={handleShowModal}
-                  isLoading={statusLoadingId === applicant.applicationId}
-                />
-              </Col>
-            ))
-          ) : (
-            <Col>
-              <Alert variant="info">No applicants match the current filter.</Alert>
-            </Col>
-          )}
-        </Row>
-      </Container>
-      
-      <ApplicantDetailsModal
-        show={showModal}
-        onHide={handleCloseModal}
-        applicant={selectedApplicant}
-      />
-      <InterviewScheduleModal
-        show={showScheduleModal}
-        onHide={() => setShowScheduleModal(false)}
-        onConfirm={handleConfirmSchedule}
-      />
-    </>
-  );
+            <ApplicantDetailsModal
+                show={showModal}
+                onHide={handleCloseModal}
+                applicant={selectedApplicant}
+            />
+            <InterviewScheduleModal
+                show={showScheduleModal}
+                onHide={() => setShowScheduleModal(false)}
+                onConfirm={handleConfirmSchedule}
+            />
+        </>
+    );
 }
 
 export default JobApplicantsPage;
