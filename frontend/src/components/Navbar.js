@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
+import { BiSolidMessage } from "react-icons/bi";
 import config from '../config';
 
 const API_URL = config.API_URL;
@@ -241,6 +242,25 @@ const Navbar = () => {
         </Link>
 
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+
+          {user && (
+            <Link
+              to={user.role === 'seeker' ? "/messaging" : "/admin/messaging"}
+              style={
+                { 
+                  marginRight: "1rem", 
+                  fontWeight: "500", 
+                  color: "#111827", 
+                  fontSize: "20px",
+                  display: "flex",
+                }
+              }
+              title="Messages"
+            >
+              <BiSolidMessage />
+
+            </Link>
+          )}
 
           <div style={{ position: "relative", marginRight: "1rem" }} ref={dropdownRef}>
             <button

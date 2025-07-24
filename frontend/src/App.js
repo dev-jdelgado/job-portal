@@ -17,7 +17,8 @@ import AccountSettingsPage from './pages/AccountSettingsPage';
 import EmailVerificationHandler from './pages/EmailVerificationHandler'; 
 import ForgotPasswordPage from './pages/ForgotPasswordPage'; 
 import ResetPasswordPage from './pages/ResetPasswordPage'; 
-
+import SeekerMessagingPage from './pages/SeekerMessagingPage';
+import AdminMessagingPage from './pages/AdminMessagingPage';
 
 // HomeRedirect component
 function HomeRedirect() {
@@ -90,6 +91,17 @@ function AppRoutes() {
         <Route path="/account-settings" element={
           <PrivateRoute allowedRoles={['seeker', 'admin']}>
             <AccountSettingsPage />
+          </PrivateRoute>
+        } />
+
+        <Route path="/messaging" element={
+          <PrivateRoute allowedRoles={['seeker']}>
+            <SeekerMessagingPage />
+          </PrivateRoute>
+        } />
+        <Route path="/admin/messaging" element={
+          <PrivateRoute allowedRoles={['admin']}>
+            <AdminMessagingPage />
           </PrivateRoute>
         } />
 
