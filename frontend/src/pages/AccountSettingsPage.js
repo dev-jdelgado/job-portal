@@ -5,7 +5,7 @@ import config from '../config';
 const API_URL = config.API_URL;
 
 const AccountSettingsPage = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth(); // Include logout from useAuth
   const [userInfo, setUserInfo] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -17,6 +17,12 @@ const AccountSettingsPage = () => {
   const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [passwordMessage, setPasswordMessage] = useState('');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  
+  // State for account deletion
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteMessage, setDeleteMessage] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
 
   const fetchUserInfo = useCallback(async () => {
     if (!user?.id) return;
@@ -98,6 +104,37 @@ const AccountSettingsPage = () => {
     }
   };
 
+  const handleSubmitDeleteAccount = async (e) => {
+    e.preventDefault();
+    setDeleteMessage('');
+
+    if (!deletePassword) {
+      setDeleteMessage('You must enter your password to delete your account.');
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`${API_URL}/api/account/delete-account`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, password: deletePassword }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed to delete account.');
+      
+      alert('Your account has been successfully deleted.');
+      logout();
+      // You might want to use react-router's navigate for a cleaner redirect
+      window.location.href = '/'; 
+
+    } catch (error) {
+      setDeleteMessage(error.message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
 
   if (isLoading) {
     return <div style={styles.container}><p>Loading...</p></div>;
@@ -156,6 +193,34 @@ const AccountSettingsPage = () => {
           </form>
         </div>
       </div>
+        
+        {/* Delete Account Card */}
+        <div style={styles.card}>
+            <h2 style={{...styles.cardHeader, ...styles.deleteHeader}}>Delete Account</h2>
+            <div style={styles.cardBody}>
+                <p style={styles.warningText}>
+                    Warning: This action is permanent and cannot be undone. All of your personal data, including your profile and job applications, will be permanently removed.
+                </p>
+                <form onSubmit={handleSubmitDeleteAccount}>
+                    <div style={styles.formGroup}>
+                        <label style={styles.label} htmlFor="deletePassword">Enter Your Password to Confirm</label>
+                        <input 
+                            type="password" 
+                            id="deletePassword" 
+                            name="deletePassword" 
+                            style={styles.input} 
+                            value={deletePassword}
+                            onChange={(e) => setDeletePassword(e.target.value)}
+                            required 
+                        />
+                    </div>
+                    <button className='red-btn' type="submit" style={styles.button} disabled={isDeleting}>
+                        {isDeleting ? 'Deleting...' : 'Permanently Delete My Account'}
+                    </button>
+                    {deleteMessage && <p style={{...styles.message, color: '#991b1b'}}>{deleteMessage}</p>}
+                </form>
+            </div>
+        </div>
     </div>
   );
 };
@@ -176,23 +241,34 @@ const styles = {
       border: '1px solid #e5e7eb', 
       borderRadius: '0.5rem', 
       marginBottom: '1.5rem', 
-      backgroundColor: 'white' 
+      backgroundColor: 'white',
+      overflow: 'hidden' // Ensures the child border radius is clipped
     },
     cardHeader: { 
       fontSize: '1.25rem', 
-      padding: '1rem', 
+      padding: '1rem 1.5rem', 
       borderBottom: '1px solid #e5e7eb', 
-      margin: 0 
+      margin: 0,
+      backgroundColor: '#f9fafb'
+    },
+    deleteHeader: {
+        backgroundColor: '#fee2e2',
+        color: '#991b1b',
+        borderBottom: '1px solid #fecaca'
     },
     cardBody: { 
       padding: '1.5rem' 
+    },
+    warningText: {
+        color: '#b91c1c',
+        marginBottom: '1.5rem',
+        lineHeight: '1.6'
     },
     statusContainer: { 
       display: 'flex', 
       alignItems: 'center', 
       gap: '0.5rem',
       marginBottom: '1rem', 
-      alignItems: 'center',
     },
     statusBadge: { 
       padding: '0.1rem 0.75rem', 
@@ -214,6 +290,7 @@ const styles = {
       fontSize: '0.875rem', 
       fontWeight: '500', 
       cursor: 'pointer', 
+      border: 'none',
       transition: 'background-color 0.2s' 
     },
     message: { 
