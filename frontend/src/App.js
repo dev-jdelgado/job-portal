@@ -70,7 +70,11 @@ function AppRoutes() {
           </PrivateRoute>
           } />
 
-        <Route path="/admin/job/:jobId/applicants" element={<JobApplicantsPage />} />
+        <Route path="/admin/job/:jobId/applicants" element={
+  <         PrivateRoute allowedRoles={['admin']}>
+            <JobApplicantsPage />
+           </PrivateRoute>
+           } />
         
         <Route path="/profile" element={
           <PrivateRoute allowedRoles={['seeker']}>

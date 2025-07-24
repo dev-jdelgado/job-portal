@@ -30,7 +30,7 @@ function AdminDashboard() {
     totalJobs: 0,
     activeJobs: 0,
     totalApplications: 0,
-    recentViews: 0,
+    
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -61,7 +61,6 @@ function AdminDashboard() {
         totalJobs: jobsRes.data.length,
         activeJobs: jobsRes.data.length, // you can add logic to filter inactive jobs
         totalApplications,
-        recentViews: Math.floor(Math.random() * 500), // still mock
       };
   
       setJobStats(stats);
@@ -263,18 +262,6 @@ function AdminDashboard() {
               <Card.Body className="text-center">
                 <div className={styles.statsValue}>{jobStats.totalApplications}</div>
                 <div className={styles.statsDescription}>Total Applications</div>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={6} lg={3} className="mb-4">
-            <Card className={styles.statsCard}>
-              <Card.Header className="d-flex align-items-center">
-                <BsEyeFill className="me-2" />
-                Views
-              </Card.Header>
-              <Card.Body className="text-center">
-                <div className={styles.statsValue}>{jobStats.recentViews}</div>
-                <div className={styles.statsDescription}>Recent Views</div>
               </Card.Body>
             </Card>
           </Col>

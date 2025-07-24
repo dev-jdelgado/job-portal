@@ -5,6 +5,8 @@ const db = require('../db');
 const nodemailer = require("nodemailer");
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const fs = require('fs');
+const path = require('path');
 
 // Nodemailer transporter setup (re-using your existing setup)
 const transporter = nodemailer.createTransport({
@@ -221,5 +223,94 @@ router.post('/reset-password', async (req, res) => {
     res.status(500).json({ error: 'Server error.' });
   }
 });
+
+// === ROUTE TO DELETE ACCOUNT ===
+router.post('/delete-account', async (req, res) => {
+    const { userId, password } = req.body;
+
+    if (!userId || !password) {
+        return res.status(400).json({ error: 'User ID and password are required.' });
+    }
+
+    const connection = await db.getConnection(); // Use a connection for transaction
+    try {
+        await connection.beginTransaction();
+
+        // 1. Get user's info, including role and profile picture
+        const [rows] = await connection.execute('SELECT password, role, profile_picture_url FROM users WHERE id = ?', [userId]);
+        if (rows.length === 0) {
+            await connection.rollback();
+            return res.status(404).json({ error: 'User not found.' });
+        }
+        const user = rows[0];
+
+        // 2. Verify password
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            await connection.rollback();
+            return res.status(401).json({ error: 'Incorrect password.' });
+        }
+
+        // 3. Consolidate and delete all associated files from the filesystem
+        const [appFileRows] = await connection.execute(
+            `SELECT pds_url, application_letter_url, performance_rating_url, eligibility_url, diploma_url, tor_url, trainings_url 
+             FROM applications WHERE seeker_id = ?`, 
+            [userId]
+        );
+
+        const filesToDelete = [];
+        if (user.profile_picture_url) {
+            filesToDelete.push(user.profile_picture_url);
+        }
+        appFileRows.forEach(app => {
+            Object.values(app).forEach(filename => {
+                if (filename) {
+                    filesToDelete.push(filename);
+                }
+            });
+        });
+
+        for (const filename of filesToDelete) {
+            const filePath = path.join(__dirname, '..', 'public', 'uploads', String(userId), filename);
+            fs.unlink(filePath, (err) => {
+                if (err && err.code !== 'ENOENT') { // Don't log error if file is already gone
+                    console.error(`Could not delete file ${filePath}:`, err);
+                }
+            });
+        }
+        
+        // 4. Delete dependent records from the database
+        await connection.execute('DELETE FROM applications WHERE seeker_id = ?', [userId]);
+        await connection.execute('DELETE FROM notifications WHERE user_id = ?', [userId]);
+
+        if (user.role === 'admin') {
+            const [adminJobs] = await connection.execute('SELECT id FROM jobs WHERE admin_id = ?', [userId]);
+            for (const job of adminJobs) {
+                const [applications] = await connection.execute('SELECT COUNT(*) as count FROM applications WHERE job_id = ?', [job.id]);
+                if (applications[0].count > 0) {
+                    await connection.rollback();
+                    return res.status(400).json({ error: `Cannot delete account. Job ID ${job.id} has active applicants.` });
+                }
+                await connection.execute('DELETE FROM jobs WHERE id = ?', [job.id]);
+            }
+        }
+        
+        // 5. Finally, delete the user from the 'users' table
+        await connection.execute('DELETE FROM users WHERE id = ?', [userId]);
+
+        await connection.commit(); // Finalize the transaction
+        res.json({ message: 'Account and all associated data deleted successfully.' });
+
+    } catch (error) {
+        await connection.rollback(); // Rollback on any error
+        console.error('Error deleting account:', error);
+        res.status(500).json({ error: 'Server error during account deletion.' });
+    } finally {
+        if (connection) {
+            connection.release(); // Release the connection back to the pool
+        }
+    }
+});
+
 
 module.exports = router;

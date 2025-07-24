@@ -156,7 +156,7 @@ function ApplyPage() {
   }
 
   return (
-    <div style={{ backgroundColor: "#FFF5D1", minHeight: "100vh" }}>
+    <div style={{ backgroundColor: "#fafafaff", minHeight: "100vh" }}>
       <ToastContainer
         position="top-end"
         className="p-3"

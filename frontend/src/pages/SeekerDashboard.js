@@ -144,14 +144,6 @@ function SeekerDashboard() {
     return null
   }
 
-  // Get card styling based on match count
-  //const getCardClass = (matchCount) => {
-  //  const baseClass = "job-card h-100"
-  //  if (matchCount >= 4) return `${baseClass} strong-match-card`
-  //  if (matchCount >= 2) return `${baseClass} moderate-match-card`
-  //  return baseClass
-  //}
-
   return (
     <div className="dashboard-wrapper">
       {/* Professional Header */}
@@ -195,50 +187,55 @@ function SeekerDashboard() {
             </div>
           </div>
 
-          {/* Enhanced Search Bar */}
-          <div className="d-flex justify-content-between gap-3">
-            <div className="d-flex gap-3 search-input-wrapper">
-              <i className="fas fa-search search-icon"></i>
-              <Form.Control
-                type="text"
-                placeholder="Search by title or description..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="search-input"
-              />
-              <div>
-                <Form className="d-flex gap-2">
-                  <Form.Select className="filter-form" value={filterEmployment} onChange={(e) => setFilterEmployment(e.target.value)}>
-                    <option value="">All Employment Types</option>
-                    <option value="Full-time">Full-time</option>
-                    <option value="Part-time">Part-time</option>
-                    <option value="Contract">Contract</option>
-                    <option value="Internship">Internship</option>
-                  </Form.Select>
+          {/* Enhanced Search Bar and Filters */}
+          <div className="search-filter-container">
+            <div className="search-filter-left">
+              <div className="search-input-wrapper">
+                <i className="fas fa-search search-icon"></i>
+                <Form.Control
+                  type="text"
+                  placeholder="Search by title or description..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="search-input"
+                />
+              </div>
+              <div className="filters-container">
+                <Form.Select 
+                  className="filter-form" 
+                  value={filterEmployment} 
+                  onChange={(e) => setFilterEmployment(e.target.value)}
+                >
+                  <option value="">All Employment Types</option>
+                  <option value="Full-time">Full-time</option>
+                  <option value="Part-time">Part-time</option>
+                  <option value="Contract">Contract</option>
+                  <option value="Internship">Internship</option>
+                </Form.Select>
 
-                  <Form.Select className="filter-form" value={filterDisability} onChange={(e) => setFilterDisability(e.target.value)}>
-                    <option value="">All Disability Status</option>
-                    <option value="PWD">PWD</option>
-                    <option value="Non-PWD">Non-PWD</option>
-                  </Form.Select>
-                </Form>
+                <Form.Select 
+                  className="filter-form" 
+                  value={filterDisability} 
+                  onChange={(e) => setFilterDisability(e.target.value)}
+                >
+                  <option value="">All Disability Status</option>
+                  <option value="PWD">PWD</option>
+                  <option value="Non-PWD">Non-PWD</option>
+                </Form.Select>
               </div>
             </div>
-            <div>
-              <Button className="" variant="warning" onClick={() => setShowAll(!showAll)}>
-                  <i className={`fas ${showAll ? "fa-star" : "fa-list"} me-2`}></i>
-                  {showAll ? "Show Matching Only" : "Show All Jobs"}
+            
+            <div className="toggle-button-container">
+              <Button className="toggle-button" variant="warning" onClick={() => setShowAll(!showAll)}>
+                <i className={`fas ${showAll ? "fa-star" : "fa-list"} me-2`}></i>
+                {showAll ? "Show Matching Only" : "Show All Jobs"}
               </Button>
             </div>
-
-
-
           </div>
-          
         </div>
 
         {/* Jobs Grid */}
-          <Row className="jobs-grid">
+        <Row className="jobs-grid">
           {jobsToShow.length === 0 ? (
             <Col xs={12}>
               <div className="no-jobs-wrapper">
@@ -255,9 +252,9 @@ function SeekerDashboard() {
                 const matchBadge = getMatchBadge(matchCount);
               
                 return (
-                  <Col md={6} lg={4} key={job.id} className="mb-4">
+                  <Col xs={12} sm={6} lg={4} key={job.id} className="mb-4">
                     <Card className="job-card h-100">
-                      <Card.Body className="job-card-body d-flex flex-column justify-content-between">
+                      <Card.Body className="job-card-body">
                         <div>
                           <div className="job-header">
                             <Card.Title className="job-title">{job.title}</Card.Title>
@@ -351,12 +348,9 @@ function SeekerDashboard() {
         name={user?.name}
       />
 
-
       <IncompleteProfileModal 
         show={!showVerifyModal && showIncompleteProfileModal}
       />
-
-
 
     </div>
   )
