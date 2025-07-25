@@ -18,29 +18,27 @@ const AdminMessagingPage = () => {
     useEffect(() => {
         socket.emit('join', { userId: user.id });
     
-        // ✅ Restore seekers from localStorage first
+        // Restore seekers from cache
         const cachedSeekers = localStorage.getItem('adminSeekers');
         if (cachedSeekers) {
             try {
                 const parsedSeekers = JSON.parse(cachedSeekers);
                 setSeekers(parsedSeekers);
-                console.log("Loaded seekers from localStorage:", parsedSeekers);
             } catch (e) {
                 console.error("Failed to parse cached seekers", e);
             }
         }
     
-        // 🔄 Then fetch from backend to ensure we get latest
+        // Fetch fresh list
         fetch(`${API_URL}/api/messages/seekers/${user.id}`)
             .then((res) => res.json())
             .then((data) => {
-                console.log("Seekers fetched from API:", data);
-                setSeekers(data);
+                if (data.length > 0) {
+                    setSeekers(data);
+                    localStorage.setItem('adminSeekers', JSON.stringify(data));
+                }
     
-                // ✅ Save to localStorage
-                localStorage.setItem('adminSeekers', JSON.stringify(data));
-    
-                // Restore selected seeker if available
+                // Restore selected seeker
                 const storedSelectedSeekerId = localStorage.getItem('selectedSeekerId');
                 if (storedSelectedSeekerId) {
                     const storedId = parseInt(storedSelectedSeekerId);
@@ -51,36 +49,43 @@ const AdminMessagingPage = () => {
                 }
             })
             .catch(console.error);
-
-        socket.on('receiveMessage', (data) => {
-            if (data.senderId === selectedSeeker?.id) {
-                setMessages((prev) => [...prev, data]);
-            } else {
-                console.log("New message from another seeker:", data.senderId);
-
-                // Check if sender already in seeker list
-                if (!seekers.some((s) => s.id === data.senderId)) {
-                    fetch(`${API_URL}/api/messages/${data.senderId}/${user.id}`)
-                        .then((res) => res.json())
-                        .then((msgs) => {
-                            if (msgs.length > 0) {
-                                fetch(`${API_URL}/api/users/${data.senderId}`)
-                                    .then((res) => res.json())
-                                    .then((newSeeker) => {
-                                        setSeekers((prev) => {
-                                            const exists = prev.some(s => s.id === newSeeker.id);
-                                            return exists ? prev : [...prev, newSeeker];
-                                        });
-                                    });
-                            }
-                        });
-                }
-                
+    
+        // Set up message listener once
+        const handleReceiveMessage = async (data) => {
+            const isCurrentChat = selectedSeeker && data.senderId === selectedSeeker.id;
+    
+            if (isCurrentChat) {
+                setMessages(prev => {
+                    const last = prev[prev.length - 1];
+                    if (!last || last.content !== data.content || last.timestamp !== data.timestamp) {
+                        return [...prev, data];
+                    }
+                    return prev;
+                });
             }
-        });
-
-        return () => socket.off('receiveMessage');
-    }, [user.id]); 
+    
+            setSeekers(prev => {
+                if (prev.some(s => s.id === data.senderId)) return prev;
+    
+                fetch(`${API_URL}/api/users/${data.senderId}`)
+                    .then(res => res.json())
+                    .then(newSeeker => {
+                        const updated = [...prev, newSeeker];
+                        setSeekers(updated);
+                        localStorage.setItem('adminSeekers', JSON.stringify(updated));
+                    });
+    
+                return prev;
+            });
+        };
+    
+        socket.on('receiveMessage', handleReceiveMessage);
+    
+        return () => {
+            socket.off('receiveMessage', handleReceiveMessage);
+        };
+    }, [user.id, selectedSeeker]);
+    
 
     // Effect to fetch messages when a seeker is selected
     useEffect(() => {
@@ -88,23 +93,15 @@ const AdminMessagingPage = () => {
             setMessages([]);
             return;
         }
-
+    
         fetch(`${API_URL}/api/messages/${selectedSeeker.id}/${user.id}`)
             .then((res) => res.json())
             .then(setMessages)
             .catch(console.error);
-
+    
         localStorage.setItem('selectedSeekerId', selectedSeeker.id);
-
-        const handleReceiveMessage = (data) => {
-            if (data.senderId === selectedSeeker.id || data.receiverId === selectedSeeker.id && data.senderId === user.id) {
-                setMessages((prev) => [...prev, data]);
-            }
-        };
-        socket.on('receiveMessage', handleReceiveMessage);
-        return () => socket.off('receiveMessage', handleReceiveMessage);
-
     }, [selectedSeeker, user.id]);
+    
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

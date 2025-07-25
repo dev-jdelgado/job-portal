@@ -19,6 +19,8 @@ const Navbar = () => {
   const handleLogout = () => {
     logout()
     navigate("/login")
+    localStorage.removeItem('adminSeekers');
+    localStorage.removeItem('selectedSeekerId');
   }
 
   const getInitials = (name) => {
