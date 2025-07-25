@@ -17,43 +17,38 @@ const AdminMessagingPage = () => {
     // Effect to join socket and fetch initial seekers
     useEffect(() => {
         socket.emit('join', { userId: user.id });
-
+    
+        // ✅ Restore seekers from localStorage first
+        const cachedSeekers = localStorage.getItem('adminSeekers');
+        if (cachedSeekers) {
+            try {
+                const parsedSeekers = JSON.parse(cachedSeekers);
+                setSeekers(parsedSeekers);
+                console.log("Loaded seekers from localStorage:", parsedSeekers);
+            } catch (e) {
+                console.error("Failed to parse cached seekers", e);
+            }
+        }
+    
+        // 🔄 Then fetch from backend to ensure we get latest
         fetch(`${API_URL}/api/messages/seekers/${user.id}`)
             .then((res) => res.json())
             .then((data) => {
-                console.log("Seekers fetched for admin:", data);
+                console.log("Seekers fetched from API:", data);
                 setSeekers(data);
-
+    
+                // ✅ Save to localStorage
+                localStorage.setItem('adminSeekers', JSON.stringify(data));
+    
+                // Restore selected seeker if available
                 const storedSelectedSeekerId = localStorage.getItem('selectedSeekerId');
                 if (storedSelectedSeekerId) {
                     const storedId = parseInt(storedSelectedSeekerId);
                     const foundSeeker = data.find(s => s.id === storedId);
                     if (foundSeeker) {
                         setSelectedSeeker(foundSeeker);
-                    } else {
-                        // Do not add new seeker if they have no messages
-                        fetch(`${API_URL}/api/messages/${storedId}/${user.id}`)
-                        .then((res) => res.json())
-                        .then((msgs) => {
-                            if (msgs.length > 0) {
-                                fetch(`${API_URL}/api/users/${storedId}`)
-                                    .then((res) => res.json())
-                                    .then((newSeeker) => {
-                                        setSeekers((prev) => {
-                                            const exists = prev.some((s) => s.id === newSeeker.id);
-                                            return exists ? prev : [...prev, newSeeker];
-                                        });
-                                        setSelectedSeeker(newSeeker);
-                                    });
-                            } else {
-                                // clear invalid localStorage
-                                localStorage.removeItem('selectedSeekerId');
-                            }
-                        })
-                        .catch(console.error);
                     }
                 }
-
             })
             .catch(console.error);
 

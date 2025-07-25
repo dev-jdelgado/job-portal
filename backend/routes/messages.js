@@ -35,15 +35,15 @@ router.get('/seekers/:adminId', async (req, res) => {
     const { adminId } = req.params;
     try {
         const [rows] = await db.query(
-        `SELECT DISTINCT users.id, users.name
-         FROM users
-         WHERE users.role = 'seeker'
-         AND users.id IN (
-            SELECT sender_id FROM messages WHERE receiver_id = ?
-            UNION
-            SELECT receiver_id FROM messages WHERE sender_id = ?
-         )`,
-        [adminId, adminId]
+            `SELECT DISTINCT u.id, u.name
+             FROM users u
+             INNER JOIN messages m ON (
+                (m.sender_id = u.id AND m.receiver_id = ?)
+                OR
+                (m.receiver_id = u.id AND m.sender_id = ?)
+             )
+             WHERE u.role = 'seeker'`,
+            [adminId, adminId]
         );
         res.json(rows);
     } catch (err) {
