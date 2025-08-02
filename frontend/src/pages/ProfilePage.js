@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Container, Row, Col, Card, Button, Modal, Form, Spinner, Alert, Tabs, Tab } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Modal, Form, Spinner, Alert, Tabs, Tab, Badge } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
 import './ProfilePage.css';
 import config from '../config';
+import { Accordion } from 'react-bootstrap';
+
 
 const API_URL = config.API_URL;
 // Helper function to calculate age from date of birth
@@ -26,6 +28,26 @@ function ProfilePage() {
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editData, setEditData] = useState({});
+  const [showSkillSection, setShowSkillSection] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 576);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 576);
+    };
+  
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const skillCategories = [
+    { title: "Information Technology & Software", options: ["HTML/CSS", "JavaScript", "React.js/Angular/Vue.js", "Node.js/Express", "Python/Django / Flask", "Java/Spring", "C#/.NET", "SQL/MySQL/PostgreSQL", "MongoDB", "Git/GitHub", "DevOps", "AWS/Azure/GCP", "Cybersecurity", "UI/UX Design", "Mobile Development"] },
+    { title: "Business & Management", options: ["Project Management", "Business Analysis", "Marketing Strategy", "Budgeting & Forecasting", "Customer Relationship Management", "Sales & Lead Generation", "Human Resources Management", "Operations Management"] },
+    { title: "Marketing & Communications", options: ["SEO/SEM", "Content Writing/Copywriting", "Social Media Marketing", "Google Ads/Facebook Ads", "Email Marketing", "Analytics", "Brand Management", "Video Editing/Multimedia"] },
+    { title: "Finance & Accounting", options: ["Bookkeeping", "Financial Analysis", "Accounting Software", "Tax Preparation", "Auditing", "Payroll Management"] },
+    { title: "Engineering & Technical", options: ["AutoCAD/SolidWorks", "Electrical Design", "Civil Engineering Tools", "Mechanical Design", "Process Engineering"] },
+    { title: "Soft Skills (Universal)", options: ["Communication", "Teamwork", "Time Management", "Problem Solving", "Critical Thinking", "Adaptability", "Leadership", "Work Ethic"] },
+  ];
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -90,6 +112,17 @@ function ProfilePage() {
     }
   };
 
+  const handleSkillCheckboxChange = (e) => {
+    const { value, checked } = e.target;
+    const currentSkills = editData.skills ? editData.skills.split(',').map(s => s.trim()) : [];
+  
+    const updatedSkills = checked
+      ? [...new Set([...currentSkills, value])]
+      : currentSkills.filter(skill => skill !== value);
+  
+    setEditData({ ...editData, skills: updatedSkills.join(',') });
+  };
+
   if (loading) return <Container className="text-center mt-5"><Spinner animation="border" /></Container>;
   if (error) return <Container className="mt-5"><Alert variant="danger">{error}</Alert></Container>;
   if (!profile) return null;
@@ -98,7 +131,7 @@ function ProfilePage() {
     <div className="profile-page-wrapper">
       <Container className="py-5">
         <Row>
-          <Col lg={4}>
+          <Col lg={4} md={5}>
             <Card className="profile-card text-center p-4 mb-4">
               <img
                 src={profile.profile_picture_url ? `${API_URL}/uploads/${profile.id}/profile/${profile.profile_picture_url}` : 'https://via.placeholder.com/150'}
@@ -114,31 +147,91 @@ function ProfilePage() {
               </Card.Body>
             </Card>
           </Col>
-          <Col lg={8}>
+          <Col lg={8} md={7}>
             <Card className="details-card">
-              <Card.Body>
+              <Card.Body className='p-0'>
                 {/* NEW: Redesigned details section with Tabs */}
-                <Tabs defaultActiveKey="about" id="profile-tabs" className="profile-tabs mb-3">
-                  <Tab eventKey="about" title="About Me">
-                    <div className="p-3">
-                      <p className="bio-text">{profile.bio || 'No bio provided. Click "Edit Profile" to add one.'}</p>
-                    </div>
-                  </Tab>
-                  <Tab eventKey="professional" title="Professional Info">
-                    <div className="p-3">
-                      <p><strong>Skills:</strong> {profile.skills || 'Not specified'}</p>
-                      <p><strong>Education:</strong> {profile.education || 'Not specified'}</p>
-                      <p><strong>Disability Status:</strong> {profile.disability_status || 'Not specified'}</p>
-                    </div>
-                  </Tab>
-                  <Tab eventKey="contact" title="Contact Details">
-                     <div className="p-3">
-                      <p><strong>Email:</strong> {profile.email || 'Not specified'}</p>
-                      <p><strong>Phone:</strong> {profile.phone_number || 'Not specified'}</p>
-                      <p><strong>Address:</strong> {profile.address || 'Not specified'}</p>
-                    </div>
-                  </Tab>
-                </Tabs>
+                {isMobile ? (
+                  <Accordion defaultActiveKey="0">
+                    <Accordion.Item eventKey="0">
+                      <Accordion.Header>About Me</Accordion.Header>
+                      <Accordion.Body>
+                        <p className="bio-text">{profile.bio || 'No bio provided. Click "Edit Profile" to add one.'}</p>
+                      </Accordion.Body>
+                    </Accordion.Item>
+
+                    <Accordion.Item eventKey="1">
+                      <Accordion.Header>Professional Info</Accordion.Header>
+                      <Accordion.Body>
+                        <div>
+                          <strong>Skills:</strong> {profile.skills ? (
+                            <div className="mb-4">
+                              {profile.skills
+                                .split(',')
+                                .map(skill => skill.trim())
+                                .filter(skill => skill.length > 0)
+                                .map((skill, index) => (
+                                  <Badge key={index} bg="primary" className="me-1">
+                                    {skill}
+                                  </Badge>
+                                ))}
+                            </div>
+                          ) : (
+                            <p className="text-muted">Not specified</p>
+                          )}
+                        </div>
+                        <p><strong>Education:</strong> {profile.education || 'Not specified'}</p>
+                        <p><strong>Disability Status:</strong> {profile.disability_status || 'Not specified'}</p>
+                      </Accordion.Body>
+                    </Accordion.Item>
+
+                    <Accordion.Item eventKey="2">
+                      <Accordion.Header>Contact</Accordion.Header>
+                      <Accordion.Body>
+                        <p><strong>Email:</strong> {profile.email || 'Not specified'}</p>
+                        <p><strong>Phone:</strong> {profile.phone_number || 'Not specified'}</p>
+                        <p><strong>Address:</strong> {profile.address || 'Not specified'}</p>
+                      </Accordion.Body>
+                    </Accordion.Item>
+                  </Accordion>
+                ) : (
+                  <Tabs defaultActiveKey="about" id="profile-tabs" className="profile-tabs mb-3">
+                    <Tab eventKey="about" title="About Me">
+                      <div className="p-3">
+                        <p className="bio-text">{profile.bio || 'No bio provided. Click "Edit Profile" to add one.'}</p>
+                      </div>
+                    </Tab>
+                    <Tab eventKey="professional" title="Professional Info">
+                      <div className="p-3">
+                        <p className='m-0'><strong>Skills:</strong></p>
+                        {profile.skills ? (
+                          <div className="mb-4">
+                            {profile.skills
+                              .split(',')
+                              .map(skill => skill.trim())
+                              .filter(skill => skill.length > 0)
+                              .map((skill, index) => (
+                                <Badge key={index} bg="primary" className="me-1">
+                                  {skill}
+                                </Badge>
+                              ))}
+                          </div>
+                        ) : (
+                          <p className="text-muted">Not specified</p>
+                        )}
+                        <p><strong>Education:</strong> {profile.education || 'Not specified'}</p>
+                        <p><strong>Disability Status:</strong> {profile.disability_status || 'Not specified'}</p>
+                      </div>
+                    </Tab>
+                    <Tab eventKey="contact" title="Contact">
+                      <div className="p-3">
+                        <p><strong>Email:</strong> {profile.email || 'Not specified'}</p>
+                        <p><strong>Phone:</strong> {profile.phone_number || 'Not specified'}</p>
+                        <p><strong>Address:</strong> {profile.address || 'Not specified'}</p>
+                      </div>
+                    </Tab>
+                  </Tabs>
+                )}
               </Card.Body>
             </Card>
           </Col>
@@ -146,34 +239,133 @@ function ProfilePage() {
       </Container>
 
       {/* Edit Profile Modal with new fields */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+      <Modal size="lg" show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton><Modal.Title>Edit Profile</Modal.Title></Modal.Header>
         <Modal.Body>
-          <Form onSubmit={handleUpdate}>
-            <Form.Group className="mb-3"><Form.Label>Name</Form.Label><Form.Control type="text" name="name" value={editData.name || ''} onChange={handleInputChange} /></Form.Group>
-            <Form.Group className="mb-3"><Form.Label>Email</Form.Label><Form.Control type="email" name="email" value={editData.email || ''} onChange={handleInputChange} /></Form.Group>
-            
-            {/* NEW: Added fields for new details */}
-            <Form.Group className="mb-3"><Form.Label>Date of Birth</Form.Label><Form.Control type="date" name="date_of_birth" value={editData.date_of_birth || ''} onChange={handleInputChange} /></Form.Group>
-            <Form.Group className="mb-3"><Form.Label>Phone Number</Form.Label><Form.Control type="tel" name="phone_number" value={editData.phone_number || ''} onChange={handleInputChange} /></Form.Group>
-            <Form.Group className="mb-3"><Form.Label>Address</Form.Label><Form.Control type="text" name="address" value={editData.address || ''} onChange={handleInputChange} /></Form.Group>
+        <Form onSubmit={handleUpdate}>
+          <Container>
+            <Row>
+              <Col xs={12} lg={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Name</Form.Label>
+                  <Form.Control type="text" name="name" value={editData.name || ''} onChange={handleInputChange} />
+                </Form.Group>
+              </Col>
 
-            <Form.Group className="mb-3"><Form.Label>Short Bio</Form.Label><Form.Control as="textarea" rows={3} name="bio" value={editData.bio || ''} onChange={handleInputChange} /></Form.Group>
-            <Form.Group className="mb-3"><Form.Label>Skills (comma-separated)</Form.Label><Form.Control type="text" name="skills" value={editData.skills || ''} onChange={handleInputChange} /></Form.Group>
-            <Form.Group className="mb-3"><Form.Label>Education</Form.Label><Form.Control type="text" name="education" value={editData.education || ''} onChange={handleInputChange} /></Form.Group>
-            
-            <Form.Group className="mb-3">
-              <Form.Label>Profile Picture</Form.Label>
-              {profile.profile_picture_url && (
-                <div className="mb-2 text-muted">
-                  Current file: <strong>{profile.profile_picture_url.split('/').pop().split('-').slice(1).join('-')}</strong>
-                </div>
-              )}
-              <Form.Control type="file" name="profilePicture" onChange={handleFileChange} />
-            </Form.Group>
-            
-            <Button variant="primary" type="submit" className="w-100 save-changes-btn navy-blue-btn">Save Changes</Button>
-          </Form>
+              <Col xs={12} lg={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Email</Form.Label>
+                  <Form.Control type="email" name="email" value={editData.email || ''} onChange={handleInputChange} />
+                </Form.Group>
+              </Col>
+
+              <Col xs={12} lg={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Date of Birth</Form.Label>
+                  <Form.Control type="date" name="date_of_birth" value={editData.date_of_birth || ''} onChange={handleInputChange} />
+                </Form.Group>
+              </Col>
+
+              <Col xs={12} lg={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Phone Number</Form.Label>
+                  <Form.Control type="tel" name="phone_number" value={editData.phone_number || ''} onChange={handleInputChange} />
+                </Form.Group>
+              </Col>
+
+              <Col xs={12}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Address</Form.Label>
+                  <Form.Control type="text" name="address" value={editData.address || ''} onChange={handleInputChange} />
+                </Form.Group>
+              </Col>
+
+              <Col xs={12}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Short Bio</Form.Label>
+                  <Form.Control as="textarea" rows={3} name="bio" value={editData.bio || ''} onChange={handleInputChange} />
+                </Form.Group>
+              </Col>
+
+              <Col xs={12} lg={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label className="m-0">Skills</Form.Label>
+                  {editData.skills && (
+                    <div className="mb-2">
+                      {editData.skills
+                        .split(',')
+                        .map(skill => skill.trim())
+                        .filter(skill => skill.length > 0)
+                        .map((skill, index) => (
+                          <Badge key={index} bg="primary" className="me-1">
+                            {skill}
+                          </Badge>
+                        ))}
+                    </div>
+                  )}
+                  <Button
+                    variant="outline-primary"
+                    size="sm"
+                    onClick={() => setShowSkillSection(prev => !prev)}
+                  >
+                    {showSkillSection ? 'Close Skills' : 'Edit Skills'}
+                  </Button>
+
+                  {showSkillSection && (
+                    <div className="mt-3" style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid #ccc', padding: '1rem', borderRadius: '0.5rem' }}>
+                      {skillCategories.map(category => (
+                        <div key={category.title} className="mb-3">
+                          <h6>{category.title}</h6>
+                          <div className="d-flex flex-wrap">
+                            {category.options.map(skill => {
+                              const selectedSkills = editData.skills?.split(',').map(s => s.trim()) || [];
+                              return (
+                                <Form.Check
+                                  key={skill}
+                                  type="checkbox"
+                                  label={skill}
+                                  value={skill}
+                                  checked={selectedSkills.includes(skill)}
+                                  onChange={handleSkillCheckboxChange}
+                                  className="me-3 mb-2"
+                                />
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Form.Group>
+              </Col>
+
+              <Col xs={12} lg={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Education</Form.Label>
+                  <Form.Control type="text" name="education" value={editData.education || ''} onChange={handleInputChange} />
+                </Form.Group>
+              </Col>
+
+              <Col xs={12}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Profile Picture</Form.Label>
+                  {profile.profile_picture_url && (
+                    <div className="mb-2 text-muted">
+                      Current file: <strong>{profile.profile_picture_url.split('/').pop().split('-').slice(1).join('-')}</strong>
+                    </div>
+                  )}
+                  <Form.Control type="file" name="profilePicture" onChange={handleFileChange} />
+                </Form.Group>
+              </Col>
+
+              <Col xs={12}>
+                <Button variant="primary" type="submit" className="w-100 save-changes-btn navy-blue-btn">
+                  Save Changes
+                </Button>
+              </Col>
+            </Row>
+          </Container>
+        </Form>
         </Modal.Body>
       </Modal>
     </div>

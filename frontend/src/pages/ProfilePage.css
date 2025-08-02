@@ -53,7 +53,6 @@
 .section-title {
   color: var(--ocean-blue);
   font-weight: 600;
-  margin-bottom: 1rem;
 }
 
 .bio-text {
@@ -89,6 +88,7 @@
 .profile-tabs .nav-link {
   color: var(--ocean-blue);
   font-weight: 600;
+  padding: 5px 12px;
 }
 
 .profile-tabs .nav-link.active {
@@ -99,4 +99,10 @@
 
 .profile-tabs .nav-tabs {
   border-bottom: 2px solid #dee2e6;
+}
+
+@media (max-width: 480px) { 
+  .profile-picture {
+    margin: 0rem auto 1rem;
+  }
 }

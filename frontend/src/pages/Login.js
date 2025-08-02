@@ -30,7 +30,7 @@ export default function Login() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.card}>
+      <div className='px-sm-5 px-3 py-3' style={styles.card}>
         <div style={styles.header}>
           <h2 style={styles.title}>Welcome Back!</h2>
           <p style={styles.subtitle}>Sign in to continue to your dashboard.</p>
@@ -93,10 +93,10 @@ export default function Login() {
 const styles = {
   container: {
     display: 'flex', justifyContent: 'center', alignItems: 'center',
-    minHeight: '100vh', backgroundColor: '#f9fafb'
+    minHeight: '100vh', backgroundColor: '#f9fafb', padding: '2rem 1.5rem' 
   },
   card: {
-    backgroundColor: 'white', padding: '2rem 2.5rem',
+    backgroundColor: 'white',
     borderRadius: '0.75rem', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
     maxWidth: '450px', width: '100%'
   },

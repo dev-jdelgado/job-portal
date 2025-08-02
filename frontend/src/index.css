@@ -23,3 +23,13 @@ code {
   color: #002D5A !important;
   border-color: #002D5A !important;
 }
+
+.hide-on-mobile {
+  display: inline;
+}
+
+@media (max-width: 576px) {
+  .hide-on-mobile {
+    display: none !important;
+  }
+}

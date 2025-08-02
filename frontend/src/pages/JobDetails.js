@@ -171,32 +171,34 @@ function JobDetails() {
             </Container>
         </div>
 
-        <Container className="bg-white rounded shadow p-0 mb-4">
-            <div className="px-5 pt-4 pb-1">
-                <h3>Job Summary</h3>
-            </div>
-            <hr />
-            <div className="px-5 pt-2 pb-4">
-                <div className="d-flex gap-5 mb-3">
-                    <p><strong>Education:</strong> {job.education}</p>
-                    <p><strong>Employment Type:</strong> {job.employment_type}</p>
-                    <p><strong>Disability Status:</strong> {job.disability_status}</p>
+        <div className="px-4">
+            <Container className="bg-white rounded shadow p-0 mb-4">
+                <div className="px-5 pt-4 pb-1">
+                    <h3>Job Summary</h3>
                 </div>
-                
-                <p style={{ whiteSpace: "pre-line" }}>{job.description}</p>
+                <hr />
+                <div className="px-sm-5 px-3 pt-2 pb-4">
+                    <div className="d-flex flex-md-row flex-column gap-md-5 mb-3">
+                        <p><strong>Education:</strong> {job.education}</p>
+                        <p><strong>Employment Type:</strong> {job.employment_type}</p>
+                        <p><strong>Disability Status:</strong> {job.disability_status}</p>
+                    </div>
+                    
+                    <p style={{ whiteSpace: "pre-line" }}>{job.description}</p>
 
-            </div>
-        </Container>
-        <Container className="bg-white rounded shadow px-5 py-4 mb-5">
-            <div className="mb-3">
-                <strong>Skills Required:</strong>
-                <div className="mt-1">
-                {job.skills.split(',').map((skill, i) => (
-                    <Badge key={i} className="me-1 bg-blue">{skill.trim()}</Badge>
-                ))}
                 </div>
-            </div>
-        </Container>
+            </Container>
+            <Container className="bg-white rounded shadow px-sm-5 px-3 py-4 mb-5">
+                <div className="mb-3">
+                    <strong>Skills Required:</strong>
+                    <div className="mt-1">
+                    {job.skills.split(',').map((skill, i) => (
+                        <Badge key={i} className="me-1 bg-blue">{skill.trim()}</Badge>
+                    ))}
+                    </div>
+                </div>
+            </Container>
+        </div>
     </div>
     )
 }

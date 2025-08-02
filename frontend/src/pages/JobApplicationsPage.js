@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Container, Row, Col, Badge, Tabs, Tab  } from "react-bootstrap"
+import { Container, Row, Col, Badge, Tabs, Tab, Form } from "react-bootstrap";
 import { } from "react-bootstrap"
 import axios from "axios"
 import { useNavigate } from 'react-router-dom';
@@ -14,7 +14,13 @@ function JobApplicationsPage() {
   const navigate = useNavigate();
   const seekerId = JSON.parse(localStorage.getItem("user"))?.id
   const [selectedTab, setSelectedTab] = useState("applied");
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 576);
 
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 576);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const fetchApplications = async () => {
@@ -117,18 +123,32 @@ function JobApplicationsPage() {
 
       <Container className="applications-container">
         
-      <Tabs
-        activeKey={selectedTab}
-        onSelect={(k) => setSelectedTab(k)}
-        className="mb-4"
-        justify
-      >
-        <Tab eventKey="applied" title={`Applied (${statusCounts.applied})`} />
-        <Tab eventKey="shortlisted" title={`Shortlisted (${statusCounts.shortlisted})`} />
-        <Tab eventKey="interviewed" title={`Interviewed (${statusCounts.interviewed})`} />
-        <Tab eventKey="selected" title={`Selected (${statusCounts.selected})`} />
-        <Tab eventKey="rejected" title={`Rejected (${statusCounts.rejected})`} />
-      </Tabs>
+      {isMobile ? (
+        <Form.Select
+          className="mb-4"
+          value={selectedTab}
+          onChange={(e) => setSelectedTab(e.target.value)}
+        >
+          <option value="applied">Applied ({statusCounts.applied})</option>
+          <option value="shortlisted">Shortlisted ({statusCounts.shortlisted})</option>
+          <option value="interviewed">Interviewed ({statusCounts.interviewed})</option>
+          <option value="selected">Selected ({statusCounts.selected})</option>
+          <option value="rejected">Rejected ({statusCounts.rejected})</option>
+        </Form.Select>
+      ) : (
+        <Tabs
+          activeKey={selectedTab}
+          onSelect={(k) => setSelectedTab(k)}
+          className="mb-4"
+          justify
+        >
+          <Tab eventKey="applied" title={`Applied (${statusCounts.applied})`} />
+          <Tab eventKey="shortlisted" title={`Shortlisted (${statusCounts.shortlisted})`} />
+          <Tab eventKey="interviewed" title={`Interviewed (${statusCounts.interviewed})`} />
+          <Tab eventKey="selected" title={`Selected (${statusCounts.selected})`} />
+          <Tab eventKey="rejected" title={`Rejected (${statusCounts.rejected})`} />
+        </Tabs>
+      )}
 
 
         {filteredApplications.length === 0 ? (
@@ -143,45 +163,46 @@ function JobApplicationsPage() {
           <div className="applications-list">
             {filteredApplications.map((app) => (
               <div key={app.id} className="application-item">
-                <div className="application-border"></div>
                 <div className="application-content">
-                  <Row className="align-items-center">
-                    <Col lg={6} className="application-main">
-                      <div className="application-title-section">
-                        <h4 className="application-title">{app.title}</h4>
-                        <div className="application-badges">{getStatusBadge(app.status || "pending")}</div>
-                      </div> { console.log (app) }
-                    </Col>
-                    <Col lg={4} className="application-stats">
-                      <div className="application-dates">
-                        <div className="date-item">
-                          <span className="date-label">Applied on</span>
-                          <span className="date-value">
-                            {formatDate(app.applied_at)} | {formatTime(app.applied_at)}
-                          </span>
-                        </div>
-                        {app.updated_at && app.updated_at !== app.applied_at && (
+                  <div className="d-flex flex-sm-row flex-column align-items-center justify-content-between gap-sm-5 gap-2">
+                    <div className="d-flex flex-lg-row flex-column justify-content-between align-items-lg-center align-items-start w-100">
+                      <div className="application-main">
+                        <div className="application-title-section">
+                          <h4 className="application-title">{app.title}</h4>
+                          <div className="application-badges">{getStatusBadge(app.status || "pending")}</div>
+                        </div> { console.log (app) }
+                      </div>
+                      <div className="application-stats">
+                        <div className="application-dates">
                           <div className="date-item">
-                            <span className="date-label">Updated:</span>
+                            <span className="date-label">Applied on</span>
                             <span className="date-value">
-                              {formatDate(app.updated_at)} | {formatTime(app.updated_at)}
+                              {formatDate(app.applied_at)} | {formatTime(app.applied_at)}
                             </span>
                           </div>
-                        )}
+                          {app.updated_at && app.updated_at !== app.applied_at && (
+                            <div className="date-item">
+                              <span className="date-label">Updated:</span>
+                              <span className="date-value">
+                                {formatDate(app.updated_at)} | {formatTime(app.updated_at)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </Col>
-                    <Col lg={2} className="application-actions">
-                      <div className="action-buttons">
+                    </div>
+                    <div className="application-actions">
+                      <div className="action-buttons w-100">
                         <button
-                          className="action-btn navy-blue-btn"
+                          className="action-btn navy-blue-btn w-100"
                           title="View Job"
                           onClick={() => navigate(`/jobs/${app.job_id}`)}
                         >
                           <i className="fas fa-eye me-2"></i> View Job
                         </button>
                       </div>
-                    </Col>
-                  </Row>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}

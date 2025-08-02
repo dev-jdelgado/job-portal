@@ -112,7 +112,6 @@ const Navbar = () => {
   const profileTriggerStyle = {
     display: "flex",
     alignItems: "center",
-    gap: "0.5rem",
     padding: "0.5rem",
     background: "transparent",
     border: "none",
@@ -247,10 +246,10 @@ const Navbar = () => {
 
           {user && (
             <Link
+              className="me-2 me-sm-4"
               to={user.role === 'seeker' ? "/messaging" : "/admin/messaging"}
               style={
                 { 
-                  marginRight: "1rem", 
                   fontWeight: "500", 
                   color: "#111827", 
                   fontSize: "20px",
@@ -264,14 +263,15 @@ const Navbar = () => {
             </Link>
           )}
 
-          <div style={{ position: "relative", marginRight: "1rem" }} ref={dropdownRef}>
+          <div className="me-2 me-sm-4" style={{ position: "relative", marginRight: "1rem" }} ref={dropdownRef}>
             <button
               onClick={() => setNotifDropdownOpen(!isNotifDropdownOpen)}
               style={{
                 background: "transparent",
                 border: "none",
                 cursor: "pointer",
-                position: "relative"
+                position: "relative",
+                padding: "0"
               }}
             >
               <i className="fas fa-bell" style={{ fontSize: "20px", color: "#111827" }}></i>
@@ -336,6 +336,7 @@ const Navbar = () => {
           {user ? (
             <div style={{ position: "relative" }} ref={dropdownRef}>
               <button
+                className="gap-sm-2 gap-1"
                 style={profileTriggerStyle}
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f3f4f6")}
@@ -369,7 +370,7 @@ const Navbar = () => {
                   </div>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                  <span style={{ fontSize: "0.875rem", fontWeight: "500", color: "#111827" }}>{user.name}</span>
+                  <span className="hide-on-mobile" style={{ fontSize: "0.875rem", fontWeight: "500", color: "#111827" }}>{user.name}</span>
                 </div>
                 <svg
                   style={{

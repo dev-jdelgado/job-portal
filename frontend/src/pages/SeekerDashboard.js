@@ -252,7 +252,7 @@ function SeekerDashboard() {
                 const matchBadge = getMatchBadge(matchCount);
               
                 return (
-                  <Col xs={12} sm={6} lg={4} key={job.id} className="mb-4">
+                  <Col sm={12} md={6} lg={4} key={job.id} className="mb-4">
                     <Card className="job-card h-100">
                       <Card.Body className="job-card-body">
                         <div>
@@ -274,9 +274,6 @@ function SeekerDashboard() {
                             </div>
                           </div>
                           <Card.Text className="job-description multiline-truncate">{job.description}</Card.Text>
-                        </div>
-
-                        <div>
                           <div className="job-details">
                             <div className="detail-item">
                               <div className="detail-header m-0">
@@ -322,7 +319,9 @@ function SeekerDashboard() {
                               </div>
                             </div>
                           </div>
+                        </div>
 
+                        <div>
                           <Link to={`/jobs/${job.id}`} className="btn navy-blue-btn w-100 mt-3">
                             <i className="fas fa-eye me-2"></i>
                             View Details
