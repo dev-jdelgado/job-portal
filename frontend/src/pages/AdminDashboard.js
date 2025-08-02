@@ -28,7 +28,7 @@ const StatCard = ({ icon, value, label, header }) => (
             {icon}
             {header}
         </Card.Header>
-        <Card.Body className="text-center">
+        <Card.Body className="text-center p-md-2 p-0">
             <div className="stats-value">{value}</div>
             <div className="stats-description">{label}</div>
         </Card.Body>
@@ -40,11 +40,22 @@ const JobCard = ({ job, onEdit, onDelete, getBadgeVariant }) => (
     <Card className="jobs-table-card mb-3">
         <Card.Body>
             <Row className="align-items-center">
-                <Col md={4}>
+                {/* Job Title & Description */}
+                <Col xs={12} md={5} className="order-3 order-md-1 my-md-0 my-3">
                     <h5 className="job-title">{job.title}</h5>
-                    <p className="job-description">{job.description?.substring(0, 100)}...</p>
+                    <p className="m-0">{job.description?.substring(0, 100)}...</p>
                 </Col>
-                <Col md={4}>
+
+                {/* Applicant Count */}
+                <Col xs={4} md={2} className="order-1 order-md-3 text-md-center">
+                    <strong className="d-block stats-value" style={{ fontSize: '1.5rem' }}>
+                        {job.applicant_count || 0}
+                    </strong>
+                    <span className="stats-description">Applicants</span>
+                </Col>
+
+                {/* Employment Type & Education Badges */}
+                <Col xs={12} md={2} className="order-4 order-md-2">
                     <Badge bg={getBadgeVariant(job.employment_type)} className="me-2 mb-1">
                         {job.employment_type}
                     </Badge>
@@ -52,14 +63,12 @@ const JobCard = ({ job, onEdit, onDelete, getBadgeVariant }) => (
                         {job.education}
                     </Badge>
                 </Col>
-                <Col md={2} className="text-md-center">
-                    <strong className="d-block stats-value" style={{ fontSize: '1.5rem' }}>{job.applicant_count || 0}</strong>
-                    <span className="stats-description">Applicants</span>
-                </Col>
-                <Col md={2} className="text-md-end">
-                     <div className="d-flex flex-column flex-md-row gap-1 justify-content-end">
+
+                {/* Action Buttons */}
+                <Col xs={8} md={3} className="order-2 order-md-4 text-md-end">
+                    <div className="d-flex flex-row gap-1 justify-content-end">
                         <Button
-                            className="navy-blue-btn"
+                            className="navy-blue-btn admin-btn"
                             size="sm"
                             as={Link}
                             to={`/admin/job/${job.id}/applicants`}
@@ -68,7 +77,7 @@ const JobCard = ({ job, onEdit, onDelete, getBadgeVariant }) => (
                             <BsPeopleFill />
                         </Button>
                         <Button
-                            className="navy-blue-btn"
+                            className="navy-blue-btn admin-btn"
                             size="sm"
                             onClick={() => onEdit(job, 1)}
                             title="Edit Job"
@@ -76,7 +85,7 @@ const JobCard = ({ job, onEdit, onDelete, getBadgeVariant }) => (
                             <BsPencilSquare />
                         </Button>
                         <Button
-                            className="navy-blue-btn"
+                            className="navy-blue-btn admin-btn"
                             size="sm"
                             onClick={() => onDelete(job)}
                             title="Delete Job"
@@ -209,15 +218,15 @@ function AdminDashboard() {
     if (loading) { /* ... loading spinner ... */ }
 
     return (
-        <div className="dashboard-container">
+        <div className="">
             <div className="dashboard-header">
                 <Container>
-                    <Row className="align-items-center">
-                        <Col>
+                    <div className="d-flex flex-sm-row flex-column align-items-center justify-content-between gap-3">
+                        <div className="w-100 text-start">
                             <h1 className="dashboard-title"><BsBriefcaseFill className="me-3" />Admin Dashboard</h1>
                             <p className="dashboard-subtitle">Manage your job postings and track applications</p>
-                        </Col>
-                        <Col xs="auto" className="text-end">
+                        </div>
+                        <div xs="auto" className="text-end w-100">
                             <Button 
                                 onClick={() => { setSelectedJob(null); setShowModal(true); }} 
                                 className="btn-post-job"
@@ -225,8 +234,8 @@ function AdminDashboard() {
                                 <BsPlusCircleFill className="me-2" />
                                 Post New Job
                             </Button>
-                        </Col>
-                    </Row>
+                        </div>
+                    </div>
                 </Container>
             </div>
 

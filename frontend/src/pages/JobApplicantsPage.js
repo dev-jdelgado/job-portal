@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Container, Spinner, Alert, Row, Col, Card, Tabs, Tab } from "react-bootstrap"; // Import Tabs and Tab
+import { Container, Spinner, Alert, Row, Col, Card, Tabs, Tab, Form } from "react-bootstrap"; // Import Tabs and Tab
 import axios from "axios";
 import { ApplicantCard } from "../components/ApplicantCard";
 import { ApplicantDetailsModal } from "../components/ApplicantDetailsModal";
@@ -23,7 +23,13 @@ function JobApplicantsPage() {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedAppId, setSelectedAppId] = useState(null);
   const [statusLoadingId, setStatusLoadingId] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 767);
 
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 767);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
         const fetchData = async () => {
@@ -117,33 +123,46 @@ function JobApplicantsPage() {
         <>
             <div className="dashboard-header">
                 <Container>
-                    <Row className="align-items-center">
-                        <Col>
+                    <div className="d-flex flex-sm-row flex-column align-items-sm-center">
+                        <Col className="text-start order-2 order-sm-1">
                             <h3 className="dashboard-subtitle" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>Applicants for:</h3>
                             <h1 className="dashboard-title">{jobTitle}</h1>
                         </Col>
-                        <Col xs="auto">
+                        <Col className="d-flex align-items-start order-1 order-sm-2 mb-sm-0 mb-3" xs="auto">
                             <Link to="/admin-dashboard" className="btn btn-outline-light">← Back to Dashboard</Link>
                         </Col>
-                    </Row>
+                    </div>
                 </Container>
             </div>
 
             <Container className="my-4">
                 <Card className="jobs-table-card">
-                    <Tabs
-                        activeKey={filterStatus}
-                        onSelect={(k) => setFilterStatus(k)}
-                        id="applicant-status-tabs"
-                        className="mb-3 nav-tabs-custom"
+                  {isMobile ? (
+                    <Form.Select
+                      className="mb-3"
+                      value={filterStatus}
+                      onChange={(e) => setFilterStatus(e.target.value)}
                     >
-                        <Tab eventKey="all" title={`All (${getCount('all')})`} />
-                        <Tab eventKey="shortlisted" title={`Shortlisted (${getCount('shortlisted')})`} />
-                        <Tab eventKey="interviewed" title={`Interviewed (${getCount('interviewed')})`} />
-                        <Tab eventKey="selected" title={`Selected (${getCount('selected')})`} />
-                        <Tab eventKey="rejected" title={`Rejected (${getCount('rejected')})`} />
+                      <option value="all">All ({getCount('all')})</option>
+                      <option value="shortlisted">Shortlisted ({getCount('shortlisted')})</option>
+                      <option value="interviewed">Interviewed ({getCount('interviewed')})</option>
+                      <option value="selected">Selected ({getCount('selected')})</option>
+                      <option value="rejected">Rejected ({getCount('rejected')})</option>
+                    </Form.Select>
+                  ) : (
+                    <Tabs
+                      activeKey={filterStatus}
+                      onSelect={(k) => setFilterStatus(k)}
+                      id="applicant-status-tabs"
+                      className="mb-3 nav-tabs-custom"
+                    >
+                      <Tab eventKey="all" title={`All (${getCount('all')})`} />
+                      <Tab eventKey="shortlisted" title={`Shortlisted (${getCount('shortlisted')})`} />
+                      <Tab eventKey="interviewed" title={`Interviewed (${getCount('interviewed')})`} />
+                      <Tab eventKey="selected" title={`Selected (${getCount('selected')})`} />
+                      <Tab eventKey="rejected" title={`Rejected (${getCount('rejected')})`} />
                     </Tabs>
-                    
+                  )}
                     <Card.Body>
                         <Row>
                             {filteredAndSortedApplicants.length > 0 ? (
