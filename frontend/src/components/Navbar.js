@@ -475,6 +475,10 @@ const Navbar = () => {
                         </svg>
                         Dashboard
                       </Link>
+                      </>
+                       )}
+                      {/* 
+                      {user.role === 'system_admin' && (
                       <Link
                         to="/admin/create-user"
                         style={dropdownItemStyle}
@@ -487,8 +491,9 @@ const Navbar = () => {
                         </svg>
                         Create User
                       </Link>
-                    </>
-                  )}
+                      )}
+                      */}
+                 
                   
                   {/* ================================================== */}
                   {/* == Shared Links for All Roles                   == */}
