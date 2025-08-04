@@ -6,15 +6,16 @@ const API_URL = config.API_URL;
 const Icon = ({ className }) => <i className={className} style={{ marginRight: '8px' }}></i>;
 
 const isForceDownloadType = (filename) => {
-  const ext = filename.split('.').pop().toLowerCase();
-  return ['docx', 'xlsx'].includes(ext);
+  const forceTypes = ['pdf', 'doc', 'docx'];
+  const ext = filename?.split('.').pop()?.toLowerCase();
+  return forceTypes.includes(ext);
 };
 
 export const ApplicantDetailsModal = ({ show, onHide, applicant }) => {
   if (!applicant) {
     return null;
   }
-
+  console.log(applicant)
   const skills = applicant.skills ? applicant.skills.split(',').map(s => s.trim()) : [];
 
   return (
@@ -187,6 +188,25 @@ export const ApplicantDetailsModal = ({ show, onHide, applicant }) => {
                 </a>
               </div>
             )}
+            
+            {applicant.disability_status === 'PWD' && applicant.pwd_id_image && (
+              <div className="text-center">
+                {/* Button for download/view */}
+                <div className="d-grid">
+                  <a
+                    href={`${API_URL}/uploads/${applicant.id}/pwdID/${applicant.pwd_id_image}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-outline-primary"
+                    download={isForceDownloadType(applicant.pwd_id_image) ? '' : undefined}
+                  >
+                    <Icon className={`bi ${isForceDownloadType(applicant.pwd_id_image) ? 'bi-download' : 'bi-eye'}`} /> 
+                    {isForceDownloadType(applicant.pwd_id_image) ? 'Download PWD ID' : 'View PWD ID'}
+                  </a>
+                </div>
+              </div>
+            )}
+
 
             </div>
           </Col>

@@ -9,7 +9,7 @@ const path = require('path');
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const [rows] = await db.execute('SELECT id, name, email, is_verified, skills, education, disability_status, bio, date_of_birth, address, phone_number, profile_picture_url FROM users WHERE id = ?', [id]);
+    const [rows] = await db.execute('SELECT id, name, email, is_verified, skills, education, disability_status, bio, date_of_birth, address, phone_number, profile_picture_url, pwd_id_image FROM users WHERE id = ?', [id]);
     if (rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -21,7 +21,11 @@ router.get('/:id', async (req, res) => {
 });
 
 
-router.put('/:id', upload.fields([{ name: 'profilePicture', maxCount: 1 }, { name: 'pds', maxCount: 1 }]), async (req, res) => {
+router.put('/:id', upload.fields([
+    { name: 'profilePicture', maxCount: 1 },
+    { name: 'pds', maxCount: 1 },
+    { name: 'pwdIdImage', maxCount: 1 } 
+  ]), async (req, res) => {
   const { id } = req.params;
   const { name, email, bio, skills, education, disability_status, date_of_birth, address, phone_number } = req.body;
 
@@ -57,6 +61,10 @@ router.put('/:id', upload.fields([{ name: 'profilePicture', maxCount: 1 }, { nam
 
     if (req.files.profilePicture) {
         fieldsToUpdate.profile_picture_url = `${req.files.profilePicture[0].filename}`;
+    }
+
+    if (req.files.pwdIdImage) {
+      fieldsToUpdate.pwd_id_image = `${req.files.pwdIdImage[0].filename}`;
     }
     
     if (Object.keys(fieldsToUpdate).length === 0) {

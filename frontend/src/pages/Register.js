@@ -16,7 +16,15 @@ const Universal_skillOptions = ["Communication", "Teamwork", "Time Management", 
 export default function Register() {
     // --- STATE AND LOGIC (No Changes) ---
     const [step, setStep] = useState(1);
-    const [form, setForm] = useState({ name: '', email: '', password: '', role: 'seeker', education: '', skills: [], disabilityStatus: '', pwdIdImage: null });
+    const [form, setForm] = useState({
+        name: '',
+        email: '',
+        password: '',
+        role: 'seeker',
+        education: '',
+        skills: [],
+        disabilityStatus: ''
+      });
     const navigate = useNavigate();
     const [toast, setToast] = useState({ show: false, message: '', variant: 'success' });
 
@@ -167,10 +175,9 @@ export default function Register() {
                             </select>
                         </div>
                         {form.disabilityStatus === 'PWD' && (
-                        <div style={styles.formGroup}>
-                            <label style={styles.label}>PWD ID Image</label>
-                            <input type="file" accept="image/*" style={styles.input} onChange={(e) => setForm(prev => ({ ...prev, pwdIdImage: e.target.files[0] }))} required/>
-                        </div>
+                            <div style={{ marginBottom: '1rem', color: '#6b7280' }}>
+                                Please prepare your PWD ID once logged in, you will need to upload your PWD ID after registration from your profile page.
+                            </div>
                         )}
                         <div style={styles.buttonGroup}>
                             <button type="button" style={styles.secondaryButton} onClick={handleBack}>Back</button>

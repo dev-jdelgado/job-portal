@@ -380,7 +380,7 @@ router.get('/applicants/:jobId', async (req, res) => {
     const [applicants] = await db.execute(`
       SELECT 
         u.id, u.name, u.email, u.education, u.skills, u.disability_status, 
-        u.date_of_birth, u.address, u.phone_number,
+        u.date_of_birth, u.address, u.phone_number, u.pwd_id_image,
         a.pds_url, a.application_letter_url, a.diploma_url, a.tor_url,
         a.eligibility_url, a.performance_rating_url, a.trainings_url,
         a.applied_at, a.id AS applicationId, a.status,

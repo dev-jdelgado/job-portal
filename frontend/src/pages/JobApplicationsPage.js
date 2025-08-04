@@ -170,7 +170,7 @@ function JobApplicationsPage() {
                         <div className="application-title-section">
                           <h4 className="application-title">{app.title}</h4>
                           <div className="application-badges">{getStatusBadge(app.status || "pending")}</div>
-                        </div> { console.log (app) }
+                        </div>
                       </div>
                       <div className="application-stats">
                         <div className="application-dates">

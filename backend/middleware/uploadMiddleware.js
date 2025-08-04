@@ -20,26 +20,28 @@ const ensureDirExists = (dirPath) => {
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const userId = req.body.seeker_id || req.body.userId || req.params.id || 'unknown';
-
+  
     let folder = 'misc';
+    const jobId = req.body.job_id || 'general';
+  
     if (file.fieldname === 'profilePicture' || file.fieldname === 'pds') {
       folder = 'profile';
+    } else if (file.fieldname === 'pwdIdImage') {
+      folder = `pwdID`; 
     } else {
-      const jobId = req.body.job_id || 'general';
       folder = `applications/${jobId}`;
     }
-
-    // Store relative path to /uploads
+  
     const relativePath = path.join(userId.toString(), folder);
     const fullPath = path.join(baseUploadDir, relativePath);
-
-    // Save the relative directory in the request so you can use it in your route handler
+  
     if (!req.uploadPaths) req.uploadPaths = {};
     req.uploadPaths[file.fieldname] = relativePath;
-
+  
     ensureDirExists(fullPath);
     cb(null, fullPath);
   },
+  
 
   filename: (req, file, cb) => {
     const safeName = file.originalname.replace(/\s+/g, '_');
@@ -58,12 +60,13 @@ const storage = multer.diskStorage({
 // Allowed file types
 const allowedTypes = {
   profilePicture: ['image/jpeg', 'image/jpg', 'image/png'],
+  pwdIdImage: ['image/jpeg', 'image/jpg', 'image/png'], // ← Add this
   default: [
     'application/pdf',
     'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/zip',
     'application/x-rar-compressed'
   ]

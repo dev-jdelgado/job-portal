@@ -84,30 +84,44 @@ function ProfilePage() {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-      const formData = new FormData();
-      // Append all fields to FormData
-      Object.keys(editData).forEach(key => {
-        // Don't append unchanged files or null/undefined values
-        if (key === 'profilePicture' && editData.profilePicture) {
-          formData.append('profilePicture', editData.profilePicture);
-        } else if (key !== 'profilePicture' && editData[key] !== null && editData[key] !== undefined) {
-          formData.append(key, editData[key]);
-        }
+    const formData = new FormData();
+  
+    // Handle specific files only if they exist
+    if (editData.profilePicture instanceof File) {
+      formData.append('profilePicture', editData.profilePicture);
+    }
+  
+    if (editData.pwdIdImage instanceof File) {
+      formData.append('pwdIdImage', editData.pwdIdImage);
+    }
+  
+    // Append all other non-file fields
+    Object.entries(editData).forEach(([key, value]) => {
+      if (
+        key !== 'profilePicture' &&
+        key !== 'pwdIdImage' &&
+        value !== null &&
+        value !== undefined
+      ) {
+        formData.append(key, value);
+      }
     });
-
+  
     try {
       await axios.put(`${API_URL}/api/users/${user.id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setShowModal(false);
-      // Refresh profile data after update
+  
+      // Refresh profile data
       const res = await axios.get(`${API_URL}/api/users/${user.id}`);
       const updatedProfileData = {
-          ...res.data,
-          date_of_birth: res.data.date_of_birth ? res.data.date_of_birth.split('T')[0] : '',
+        ...res.data,
+        date_of_birth: res.data.date_of_birth ? res.data.date_of_birth.split('T')[0] : '',
       };
       setProfile(updatedProfileData);
     } catch (err) {
+      console.error(err);
       setError('Failed to update profile.');
     }
   };
@@ -182,6 +196,25 @@ function ProfilePage() {
                         </div>
                         <p><strong>Education:</strong> {profile.education || 'Not specified'}</p>
                         <p><strong>Disability Status:</strong> {profile.disability_status || 'Not specified'}</p>
+                          {profile.disability_status === 'PWD' && profile.pwd_id_image && (
+                              <div className="mt-3">
+                                <strong>PWD ID:</strong>
+                                <div>
+                                  <a
+                                    href={`${API_URL}/uploads/${profile.id}/pwdID/${profile.pwd_id_image}`}
+                                    download={`PWD_ID_${profile.name || 'user'}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    <img
+                                      src={`${API_URL}/uploads/${profile.id}/pwdID/${profile.pwd_id_image}`}
+                                      alt="PWD ID"
+                                      style={{ maxWidth: '100%', maxHeight: '200px', marginTop: '0.5rem', border: '1px solid #ccc', borderRadius: '8px' }}
+                                    />
+                                  </a>
+                                </div>
+                              </div>
+                            )}
                       </Accordion.Body>
                     </Accordion.Item>
 
@@ -221,6 +254,25 @@ function ProfilePage() {
                         )}
                         <p><strong>Education:</strong> {profile.education || 'Not specified'}</p>
                         <p><strong>Disability Status:</strong> {profile.disability_status || 'Not specified'}</p>
+                          {profile.disability_status === 'PWD' && profile.pwd_id_image && (
+                            <div className="mt-3">
+                              <strong>PWD ID:</strong>
+                              <div>
+                                <a
+                                  href={`${API_URL}/uploads/${profile.id}/pwdID/${profile.pwd_id_image}`}
+                                  download={`PWD_ID_${profile.name || 'user'}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  <img
+                                    src={`${API_URL}/uploads/${profile.id}/pwdID/${profile.pwd_id_image}`}
+                                    alt="PWD ID"
+                                    style={{ maxWidth: '100%', maxHeight: '200px', marginTop: '0.5rem', border: '1px solid #ccc', borderRadius: '8px' }}
+                                  />
+                                </a>
+                              </div>
+                            </div>
+                          )}
                       </div>
                     </Tab>
                     <Tab eventKey="contact" title="Contact">
@@ -345,6 +397,35 @@ function ProfilePage() {
                   <Form.Control type="text" name="education" value={editData.education || ''} onChange={handleInputChange} />
                 </Form.Group>
               </Col>
+
+              <Col xs={12} lg={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Disability Status</Form.Label>
+                  <Form.Select
+                    name="disability_status"
+                    value={editData.disability_status || ''}
+                    onChange={handleInputChange}
+                  >
+                    <option value="">-- Select Status --</option>
+                    <option value="Non-PWD">Non-PWD</option>
+                    <option value="PWD">PWD (Person with Disability)</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+
+              {editData.disability_status === 'PWD' && (
+                <Col xs={12} lg={6}>
+                  <Form.Group className="mb-3">
+                    <Form.Label>PWD ID Image</Form.Label>
+                    {profile.pwd_id_image && (
+                      <div className="mb-2 text-muted">
+                        Current file: <strong>{profile.pwd_id_image}</strong>
+                      </div>
+                    )}
+                    <Form.Control type="file" name="pwdIdImage" accept="image/*" onChange={handleFileChange} />
+                  </Form.Group>
+                </Col>
+              )}
 
               <Col xs={12}>
                 <Form.Group className="mb-3">
