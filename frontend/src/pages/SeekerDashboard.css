@@ -324,6 +324,12 @@ body {
   color: var(--white) !important;
 }
 
+.match-badge.soft-match {
+  background-color: #e0f7fa;
+  color: #006064;
+  font-weight: 600;
+}
+
 .education-badge {
   background: var(--ocean-blue) !important;
   color: var(--white) !important;

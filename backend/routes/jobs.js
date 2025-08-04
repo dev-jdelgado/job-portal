@@ -134,8 +134,24 @@ router.get('/seeker/:id', async (req, res) => {
       const jobEducation = job.education?.toLowerCase() || '';
       const jobDisabilityStatus = job.disability_status || 'Non-PWD';
 
-      const skillMatchCount = seekerSkills.filter(skill => jobSkills.includes(skill)).length;
-      const educationMatch = jobEducation === seekerEducation ? 1 : 0;
+      // Lowercased universal skill set
+      const universalSkillsSet = new Set([
+        "communication", "teamwork", "time management", "problem solving",
+        "critical thinking", "adaptability", "leadership", "work ethic"
+      ]);
+
+      const matchedSkills = seekerSkills.filter(skill => jobSkills.includes(skill));
+      const matchedUniversal = matchedSkills.filter(skill => universalSkillsSet.has(skill));
+      const matchedNonUniversal = matchedSkills.filter(skill => !universalSkillsSet.has(skill));
+
+      // Only count universal skills if there's at least one non-universal match
+      const skillMatchCount = matchedNonUniversal.length + (matchedNonUniversal.length > 0 ? matchedUniversal.length : 0);
+      
+      const isEducationMatched = jobEducation === seekerEducation;
+      const educationMatch = (skillMatchCount > 0 && isEducationMatched) ? 1 : 0;
+      
+      const softOnlyMatch = matchedUniversal.length > 0 && matchedNonUniversal.length === 0;
+
 
       let disabilityMatch = 0;
 
@@ -149,11 +165,16 @@ router.get('/seeker/:id', async (req, res) => {
 
       const matchScore = (disabilityMatch * 1000) + (educationMatch * 1) + skillMatchCount;
 
+      const hasSkillMatch = skillMatchCount > 0;
+
       return {
         ...job,
         matchScore,
         educationMatch,
-        disabilityMatch
+        disabilityMatch: (disabilityMatch === 1 && hasSkillMatch) ? 1 : 0,
+        softOnlyMatch,
+        hasSkillMatch,
+        isEducationMatched 
       };
     });
 
@@ -398,8 +419,19 @@ router.get('/applicants/:jobId', async (req, res) => {
       const seekerEducation = applicant.education?.toLowerCase() || '';
       const seekerDisabilityStatus = applicant.disability_status || 'Non-PWD';
 
-      const skillMatchCount = seekerSkills.filter(skill => jobSkills.includes(skill)).length;
-      const educationMatch = jobEducation === seekerEducation ? 1 : 0;
+      const universalSkillsSet = new Set([
+        "communication", "teamwork", "time management", "problem solving",
+        "critical thinking", "adaptability", "leadership", "work ethic"
+      ]);
+      
+      const matchedSkills = seekerSkills.filter(skill => jobSkills.includes(skill));
+      const matchedUniversal = matchedSkills.filter(skill => universalSkillsSet.has(skill));
+      const matchedNonUniversal = matchedSkills.filter(skill => !universalSkillsSet.has(skill));
+      
+      const skillMatchCount = matchedNonUniversal.length + (matchedNonUniversal.length > 0 ? matchedUniversal.length : 0);
+      
+      const educationMatch = (skillMatchCount > 0 && jobEducation === seekerEducation) ? 1 : 0;
+
       let disabilityMatch = 0;
       if (seekerDisabilityStatus === 'PWD' && jobDisabilityStatus === 'PWD') {
         disabilityMatch = 1;

@@ -136,13 +136,28 @@ function SeekerDashboard() {
   });
 
   // Visual intensity for match levels
-  const getMatchBadge = (count) => {
-    if (count >= 6) return <Badge bg={null} className="match-badge strong-match">Strong Skills Match</Badge>
-    if (count >= 4) return <Badge bg={null} className="match-badge moderate-match">Moderate Skills Match</Badge>
-    if (count >= 2) return <Badge bg={null} className="match-badge weak-match">Weak Skills Match</Badge>
-    if (count >= 1) return <Badge bg={null} className="match-badge weak-match">Very Weak Skills Match</Badge>
-    return null
-  }
+  const getMatchBadge = (job) => {
+    const jobSkillList = job.skills?.split(",").map((s) => s.trim().toLowerCase()) || [];
+    const rawSkillMatchCount = seekerSkills.filter((skill) => jobSkillList.includes(skill)).length;
+  
+    // Don't show skill match badges if no actual skill match
+    if (rawSkillMatchCount === 0) return null;
+  
+    const disabilityBonus = (seekerDisability === 'PWD' && job.disability_status === 'PWD') ? 1 : 0;
+    const totalMatchCount = rawSkillMatchCount + disabilityBonus;
+  
+    if (job.softOnlyMatch) {
+      return <Badge bg={null} className="match-badge soft-match">Soft Skills Match Only</Badge>;
+    }
+  
+    if (totalMatchCount >= 6) return <Badge bg={null} className="match-badge strong-match">Strong Skills Match</Badge>;
+    if (totalMatchCount >= 4) return <Badge bg={null} className="match-badge moderate-match">Moderate Skills Match</Badge>;
+    if (totalMatchCount >= 2) return <Badge bg={null} className="match-badge weak-match">Weak Skills Match</Badge>;
+    if (totalMatchCount >= 1) return <Badge bg={null} className="match-badge weak-match">Very Weak Skills Match</Badge>;
+  
+    return null;
+  };
+  
 
   return (
     <div className="dashboard-wrapper">
@@ -161,11 +176,14 @@ function SeekerDashboard() {
             </div>
             <div className="header-stats">
               <div className="stat-item">
-              <span className="stat-number">
-                {
-                  matchingJobs.filter((job) => getEnhancedMatchCount(job) > 0).length
-                }
-              </span>
+                <span className="stat-number">
+                  {
+                    matchingJobs.filter((job) =>
+                      getEnhancedMatchCount(job) > 0 &&
+                      (!job.disabilityMatch || job.hasSkillMatch) // Only count if valid PWD-friendly match
+                    ).length
+                  }
+                </span>
                 <span className="stat-label">Matches</span>
               </div>
               <div className="stat-item">
@@ -249,7 +267,7 @@ function SeekerDashboard() {
             ) : (
               jobsToShow.map((job) => {
                 const matchCount = getEnhancedMatchCount(job);
-                const matchBadge = getMatchBadge(matchCount);
+                const matchBadge = getMatchBadge(job);
               
                 return (
                   <Col sm={12} md={6} lg={4} key={job.id} className="mb-4">
@@ -259,12 +277,20 @@ function SeekerDashboard() {
                           <div className="job-header">
                             <Card.Title className="job-title">{job.title}</Card.Title>
                             <div className="job-badges">
-                              {job.disabilityMatch === 1 && seekerDisability === 'PWD' && (
-                                <Badge bg={null} className="disability-badge">
-                                  <i className="fas fa-wheelchair me-1"></i> PWD Friendly
-                                </Badge>
+                              {seekerDisability === 'PWD' && job.disability_status === 'PWD' && (
+                                <>
+                                  <Badge bg={null} className="disability-badge me-1">
+                                    <i className="fas fa-wheelchair me-1"></i> PWD Friendly
+                                  </Badge>
+
+                                  {!job.hasSkillMatch && (
+                                    <Badge bg="secondary" className="disability-badge no-skills-match">
+                                      <i className="fas fa-exclamation-triangle me-1"></i> No Skills Match
+                                    </Badge>
+                                  )}
+                                </>
                               )}
-                              {job.educationMatch === 1 && matchCount > 0 && (
+                              {job.isEducationMatched && (
                                 <Badge bg={null} className="education-badge">
                                   <i className="fas fa-graduation-cap me-1"></i>
                                   Education Match
