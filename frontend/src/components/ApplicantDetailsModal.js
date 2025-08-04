@@ -98,6 +98,21 @@ export const ApplicantDetailsModal = ({ show, onHide, applicant }) => {
               </div>
             )}
 
+             {applicant.pwd_id_url && (
+              <div className="d-grid">
+                <a
+                  href={`${API_URL}/uploads/${applicant.id}/${applicant.pwd_id_image}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-outline-primary"
+                  download={isForceDownloadType(applicant.pwd_id_url) ? '' : undefined}
+                >
+                  <Icon className={`bi ${isForceDownloadType(applicant.pwd_id_image) ? 'bi-download' : 'bi-eye'}`} /> 
+                  {isForceDownloadType(applicant.pwd_id_url) ? 'Download PWD ID' : 'View PWD ID'}
+                </a>
+              </div>
+            )}
+
             {applicant.performance_rating_url && (
               <div className="d-grid">
                 <a
