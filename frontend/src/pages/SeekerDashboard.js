@@ -21,7 +21,7 @@ function SeekerDashboard() {
   const [filterEmployment, setFilterEmployment] = useState('')
   const [filterDisability, setFilterDisability] = useState('')
   const [seekerDisability, setSeekerDisability] = useState("")
-  const [applications, setApplications] = useState([]);
+  const [,setApplications] = useState([]);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [isVerified, setIsVerified] = useState(true);
   const seekerId = JSON.parse(localStorage.getItem("user"))?.id
@@ -266,7 +266,6 @@ function SeekerDashboard() {
             </Col>
             ) : (
               jobsToShow.map((job) => {
-                const matchCount = getEnhancedMatchCount(job);
                 const matchBadge = getMatchBadge(job);
               
                 return (

@@ -8,7 +8,6 @@ const API_URL = config.API_URL;
 
 export default function AdminCreateUser() {
     const { user } = useAuth();
-    const navigate = useNavigate();
     const [form, setForm] = useState({ name: '', email: '', password: '' });
     const [msg, setMsg] = useState('');
 

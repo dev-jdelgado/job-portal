@@ -15,7 +15,7 @@ function JobDetails() {
     const seekerId = JSON.parse(localStorage.getItem("user"))?.id;
 
     const [applied, setApplied] = useState(false);
-    const [applyError, setApplyError] = useState(null);
+    const [applyError] = useState(null);
     const [appliedAt, setAppliedAt] = useState(null);
     const [applicationStatus, setApplicationStatus] = useState(null);
 

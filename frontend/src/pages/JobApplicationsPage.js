@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Container, Row, Col, Badge, Tabs, Tab, Form } from "react-bootstrap";
+import { Container, Badge, Tabs, Tab, Form } from "react-bootstrap";
 import { } from "react-bootstrap"
 import axios from "axios"
 import { useNavigate } from 'react-router-dom';

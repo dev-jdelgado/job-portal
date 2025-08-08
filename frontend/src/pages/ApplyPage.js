@@ -1,4 +1,4 @@
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Container, Spinner, Alert, Form, Button, Card, Row, Col } from "react-bootstrap";
 import { Toast, ToastContainer } from "react-bootstrap";
@@ -15,7 +15,6 @@ function ApplyPage() {
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const seekerId = JSON.parse(localStorage.getItem("user"))?.id;
   const seekerData = JSON.parse(localStorage.getItem("user")) || {};
@@ -65,14 +64,6 @@ function ApplyPage() {
     checkIfApplied();
   }, [id, seekerId]);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
   const handleFileChange = (e) => {
     const { name, files } = e.target;
     setFormData(prev => ({
@@ -106,10 +97,6 @@ function ApplyPage() {
         if (formData[field]) {
           formDataToSend.append(field, formData[field]);
         }
-      });
-  
-      const res = await axios.post(`${API_URL}/jobs/applications/detailed`, formDataToSend, {
-        headers: { "Content-Type": "multipart/form-data" },
       });
   
       setShowToast(true);

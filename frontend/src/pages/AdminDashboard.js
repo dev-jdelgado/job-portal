@@ -1,16 +1,14 @@
 import { useState, useEffect } from "react";
-import { Button, Container, Toast, ToastContainer, Card, Row, Col, Badge, Spinner, Alert, Modal } from "react-bootstrap";
+import { Button, Container, Toast, ToastContainer, Card, Row, Col, Badge, Alert, Modal } from "react-bootstrap";
 import {
     BsBriefcaseFill,
     BsPeopleFill,
-    BsEyeFill,
     BsCheckCircleFill,
     BsPlusCircleFill,
     BsPencilSquare,
     BsTrash3Fill,
     BsExclamationCircleFill,
     BsInfoCircleFill,
-    BsCalendarPlus
 } from "react-icons/bs";
 import JobPostModal from "../components/JobPostModal";
 import { useAuth } from "../context/AuthContext";
