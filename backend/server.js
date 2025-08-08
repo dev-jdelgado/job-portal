@@ -12,12 +12,14 @@ const userRoutes = require('./routes/user');
 const accountRoutes = require('./routes/account');
 const messageRoutes = require('./routes/messages');
 
-
-// Initialize App
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+}));
 app.use(express.json());
 
 // Static Files
@@ -31,12 +33,15 @@ app.use('/api/users', userRoutes);
 app.use('/api/account', accountRoutes);
 app.use('/api/messages', messageRoutes);
 
-
 const server = http.createServer(app);
+
+// Socket.IO with production-safe CORS
 const io = new Server(server, {
     cors: {
-        origin: '*',
-        methods: ['GET', 'POST']
+        origin: process.env.CLIENT_URL || 'http://localhost:3000',
+        methods: ['GET', 'POST'],
+        credentials: true,
+        transports: ['websocket', 'polling'] // ensure fallback works
     }
 });
 
@@ -72,7 +77,6 @@ io.on('connection', (socket) => {
         console.log('Client disconnected');
     });
 });
-
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
