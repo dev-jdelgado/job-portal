@@ -82,7 +82,6 @@ function ApplyPage() {
       formDataToSend.append("job_id", job.id);
       formDataToSend.append("seeker_id", seekerId);
   
-      // Append files only if they exist
       const fileFields = [
         "pdsFile",
         "ApplicationLetterFile",
@@ -99,18 +98,25 @@ function ApplyPage() {
         }
       });
   
+      // SEND THE REQUEST
+      await axios.post(`${API_URL}/jobs/applications/detailed`, formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+  
       setShowToast(true);
       setTimeout(() => {
         window.location.href = `/jobs/${id}`;
       }, 4000);
-
+  
     } catch (err) {
       console.error("Application error:", err);
       setSubmitError(err.response?.data?.message || "Something went wrong while submitting your application.");
     } finally {
       setSubmitting(false);
     }
-  };
+  };  
 
   if (loading) {
     return (
