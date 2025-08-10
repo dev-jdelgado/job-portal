@@ -1,4 +1,3 @@
-// AdminMessagingPage.js
 import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import socket from '../socket';
@@ -14,121 +13,73 @@ const AdminMessagingPage = () => {
     const [input, setInput] = useState('');
     const messagesEndRef = useRef();
 
-    // Effect to join socket and fetch initial seekers
     useEffect(() => {
+        if (!user) return;
+
         socket.emit('join', { userId: user.id });
-    
-        // Restore seekers from cache
+
+        // Restore seekers from localStorage
         const cachedSeekers = localStorage.getItem('adminSeekers');
         if (cachedSeekers) {
             try {
-                const parsedSeekers = JSON.parse(cachedSeekers);
-                setSeekers(parsedSeekers);
+                setSeekers(JSON.parse(cachedSeekers));
             } catch (e) {
                 console.error("Failed to parse cached seekers", e);
             }
         }
-    
-        // Fetch fresh list
-        fetch(`${API_URL}/api/messages/seekers/${user.id}`)
-            .then((res) => res.json())
-            .then((data) => {
-                if (data.length > 0) {
-                    setSeekers(data);
-                    localStorage.setItem('adminSeekers', JSON.stringify(data));
-                }
-    
-                // Restore selected seeker
-                const storedSelectedSeekerId = localStorage.getItem('selectedSeekerId');
-                if (storedSelectedSeekerId) {
-                    const storedId = parseInt(storedSelectedSeekerId);
-                    const foundSeeker = data.find(s => s.id === storedId);
-                    if (foundSeeker) {
-                        setSelectedSeeker(foundSeeker);
-                    }
-                }
-            })
-            .catch(console.error);
-    
-        // Set up message listener once
-        const handleReceiveMessage = async (data) => {
-            const isCurrentChat = selectedSeeker && data.senderId === selectedSeeker.id;
-    
-            if (isCurrentChat) {
-                setMessages(prev => {
-                    const last = prev[prev.length - 1];
-                    if (!last || last.content !== data.content || last.timestamp !== data.timestamp) {
-                        return [...prev, data];
-                    }
-                    return prev;
-                });
-            }
-    
-            setSeekers(prev => {
-                if (prev.some(s => s.id === data.senderId)) return prev;
-    
-                fetch(`${API_URL}/api/users/${data.senderId}`)
-                    .then(res => res.json())
-                    .then(newSeeker => {
-                        const updated = [...prev, newSeeker];
-                        setSeekers(updated);
-                        localStorage.setItem('adminSeekers', JSON.stringify(updated));
-                    });
-    
-                return prev;
-            });
-        };
-    
-        socket.on('receiveMessage', handleReceiveMessage);
-    
-        return () => {
-            socket.off('receiveMessage', handleReceiveMessage);
-        };
-    }, [user.id, selectedSeeker]);
-    
 
-    // Effect to fetch messages when a seeker is selected
+        socket.on('updateSeekers', (newSeekers) => {
+            setSeekers(prev => {
+                const ids = prev.map(s => s.id);
+                const merged = [...prev];
+                newSeekers.forEach(seeker => {
+                    if (!ids.includes(seeker.id)) {
+                        merged.push(seeker);
+                    }
+                });
+                localStorage.setItem('adminSeekers', JSON.stringify(merged));
+                return merged;
+            });
+        });
+
+        socket.on('receiveMessage', (data) => {
+            setMessages(prev => {
+                if (prev.some(msg => msg.id === data.id)) return prev;
+                return [...prev, data];
+            });
+        });
+
+        return () => {
+            socket.off('updateSeekers');
+            socket.off('receiveMessage');
+        };
+    }, [user]);
+
     useEffect(() => {
         if (!selectedSeeker) {
             setMessages([]);
             return;
         }
-    
         fetch(`${API_URL}/api/messages/${selectedSeeker.id}/${user.id}`)
-            .then((res) => res.json())
-            .then(setMessages)
+            .then(res => res.json())
+            .then(data => setMessages(data))
             .catch(console.error);
-    
+
         localStorage.setItem('selectedSeekerId', selectedSeeker.id);
     }, [selectedSeeker, user.id]);
-    
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-    const handleSeekerClick = (seeker) => {
-        setSelectedSeeker(seeker);
-    };
-
-    const sendMessage = async () => {
+    const sendMessage = () => {
         if (!input.trim() || !selectedSeeker) return;
-
         const message = {
             senderId: user.id,
             receiverId: selectedSeeker.id,
-            content: input,
+            content: input
         };
-
         socket.emit('sendMessage', message);
-
-        await fetch(`${API_URL}/api/messages`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(message),
-        });
-
-        setMessages((prev) => [...prev, { ...message, timestamp: new Date().toISOString() }]);
         setInput('');
     };
 
@@ -140,7 +91,7 @@ const AdminMessagingPage = () => {
                     {seekers.map((seeker) => (
                         <div
                             key={seeker.id}
-                            onClick={() => handleSeekerClick(seeker)}
+                            onClick={() => setSelectedSeeker(seeker)}
                             style={{
                                 ...styles.seekerItem,
                                 backgroundColor: selectedSeeker?.id === seeker.id ? '#e0e7ff' : 'white',
@@ -155,20 +106,20 @@ const AdminMessagingPage = () => {
                     {selectedSeeker ? (
                         <>
                             <h3 style={styles.h3}>Chat with {selectedSeeker.name}</h3>
-                                <div style={styles.messages}>
-                                    {messages.map((msg, i) => {
-                                        const isSender = msg.sender_id === user.id || msg.senderId === user.id;
-                                        return (
-                                            <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: isSender ? 'flex-end' : 'flex-start' }}>
-                                                <div style={isSender ? styles.sender : styles.receiver}>
-                                                    {msg.content}
-                                                </div>
-                                                <div style={styles.timestamp}>{new Date(msg.timestamp).toLocaleString()}</div>
+                            <div style={styles.messages}>
+                                {messages.map((msg) => {
+                                    const isSender = msg.sender_id === user.id || msg.senderId === user.id;
+                                    return (
+                                        <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: isSender ? 'flex-end' : 'flex-start' }}>
+                                            <div style={isSender ? styles.sender : styles.receiver}>
+                                                {msg.content}
                                             </div>
-                                        );
-                                    })}
-                                    <div ref={messagesEndRef}></div>
-                                </div>
+                                            <div style={styles.timestamp}>{new Date(msg.timestamp).toLocaleString()}</div>
+                                        </div>
+                                    );
+                                })}
+                                <div ref={messagesEndRef}></div>
+                            </div>
                             <div style={styles.inputBox}>
                                 <input
                                     type="text"

@@ -1,4 +1,3 @@
-// SeekerMessagingPage.js
 import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import socket from '../socket';
@@ -12,7 +11,7 @@ const SeekerMessagingPage = () => {
     const [input, setInput] = useState('');
     const messagesEndRef = useRef();
 
-    const ADMIN_ID = 1; // Replace with your actual admin ID
+    const ADMIN_ID = 1; // your admin ID
 
     useEffect(() => {
         if (!user) return;
@@ -20,56 +19,46 @@ const SeekerMessagingPage = () => {
         socket.emit('join', { userId: user.id });
 
         socket.on('receiveMessage', (data) => {
-        setMessages((prev) => [...prev, data]);
+            setMessages(prev => {
+                if (prev.some(msg => msg.id === data.id)) return prev;
+                return [...prev, data];
+            });
         });
 
-        // Fetch initial chat history
         fetch(`${API_URL}/api/messages/${user.id}/${ADMIN_ID}`)
-        .then((res) => res.json())
-        .then(setMessages)
-        .catch(console.error);
+            .then(res => res.json())
+            .then(data => setMessages(data))
+            .catch(console.error);
 
         return () => {
-        socket.off('receiveMessage');
+            socket.off('receiveMessage');
         };
     }, [user]);
-
-    const sendMessage = async () => {
-        if (!input.trim()) return;
-
-        const message = {
-        senderId: user.id,
-        receiverId: ADMIN_ID,
-        content: input,
-        };
-
-        // Emit real-time
-        socket.emit('sendMessage', message);
-
-        // Save to DB
-        await fetch(`${API_URL}/api/messages`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(message),
-        });
-
-        setMessages((prev) => [...prev, { ...message, timestamp: new Date().toISOString() }]);
-        setInput('');
-    };
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
+    const sendMessage = () => {
+        if (!input.trim()) return;
+        const message = {
+            senderId: user.id,
+            receiverId: ADMIN_ID,
+            content: input
+        };
+        socket.emit('sendMessage', message);
+        setInput('');
+    };
+
     return (
         <div style={styles.container}>
-        <h2>Chat with HR</h2>
+            <h2>Chat with HR</h2>
             <div style={styles.chatBox}>
                 <div style={styles.messages}>
-                    {messages.map((msg, i) => {
+                    {messages.map((msg) => {
                         const isSender = msg.sender_id === user.id || msg.senderId === user.id;
                         return (
-                            <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: isSender ? 'flex-end' : 'flex-start' }}>
+                            <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: isSender ? 'flex-end' : 'flex-start' }}>
                                 <div style={isSender ? styles.sender : styles.receiver}>
                                     {msg.content}
                                 </div>

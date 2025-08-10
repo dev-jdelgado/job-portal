@@ -51,28 +51,76 @@ let onlineUsers = {};
 io.on('connection', (socket) => {
     console.log('New client connected');
 
-    socket.on('join', ({ userId }) => {
+    socket.on('join', async ({ userId }) => {
         onlineUsers[userId] = socket.id;
         console.log(`User ${userId} connected`);
+
+        // If this is the admin, fetch ALL seekers they've chatted with
+        try {
+            const [seekers] = await require('./db').query(
+                `SELECT DISTINCT u.id, u.name
+                 FROM users u
+                 INNER JOIN messages m ON (
+                    (m.sender_id = u.id AND m.receiver_id = ?)
+                    OR
+                    (m.receiver_id = u.id AND m.sender_id = ?)
+                 )
+                 WHERE u.role = 'seeker'`,
+                [userId, userId]
+            );
+            io.to(socket.id).emit('updateSeekers', seekers);
+        } catch (err) {
+            console.error('Error fetching seekers on join:', err);
+        }
     });
 
-    socket.on('sendMessage', (data) => {
-        const adminSocket = Object.keys(onlineUsers).find(
-        key => key !== data.senderId // assumes only one admin
-        );
-        const targetSocketId = onlineUsers[data.receiverId] || onlineUsers[adminSocket];
-
-        if (targetSocketId) {
-        io.to(targetSocketId).emit('receiveMessage', data);
+    socket.on('sendMessage', async (data) => {
+        try {
+            // Save to DB
+            const [result] = await require('./db').query(
+                'INSERT INTO messages (sender_id, receiver_id, content) VALUES (?, ?, ?)',
+                [data.senderId, data.receiverId, data.content]
+            );
+    
+            const [savedMessage] = await require('./db').query(
+                'SELECT * FROM messages WHERE id = ?',
+                [result.insertId]
+            );
+            const messageToSend = savedMessage[0]; // includes id & timestamp
+    
+            // Send to receiver if online
+            const targetSocketId = onlineUsers[data.receiverId];
+            if (targetSocketId) {
+                io.to(targetSocketId).emit('receiveMessage', messageToSend);
+            }
+    
+            // Also send back to sender so they see their own message immediately
+            const senderSocketId = onlineUsers[data.senderId];
+            if (senderSocketId) {
+                io.to(senderSocketId).emit('receiveMessage', messageToSend);
+            }
+    
+            // If admin is the receiver, send seeker info
+            if (data.receiverId === 1) { // your admin ID
+                const [rows] = await require('./db').query(
+                    `SELECT id, name FROM users WHERE id = ? AND role = 'seeker'`,
+                    [data.senderId]
+                );
+                if (rows.length > 0) {
+                    io.to(targetSocketId).emit('updateSeekers', [rows[0]]);
+                }
+            }
+        } catch (err) {
+            console.error('Error handling sendMessage:', err);
         }
     });
 
     socket.on('disconnect', () => {
         for (let userId in onlineUsers) {
-        if (onlineUsers[userId] === socket.id) {
-            delete onlineUsers[userId];
-            break;
-        }
+            if (onlineUsers[userId] === socket.id) {
+                delete onlineUsers[userId];
+                break;
+            }
         }
         console.log('Client disconnected');
     });
