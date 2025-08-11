@@ -6,7 +6,6 @@ const { Server } = require('socket.io');
 require('dotenv').config();
 
 const fs = require('fs');
-const path = require('path');
 
 // Import Routes
 const authRoutes = require('./routes/auth');
