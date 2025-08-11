@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import { BiSolidMessage } from "react-icons/bi";
+import SkillLinkLogo from '../images/SkillLink-Logo-Banner.png';
 import config from '../config';
 
 const API_URL = config.API_URL;
@@ -107,6 +108,10 @@ const Navbar = () => {
     fontWeight: "bold",
     color: "#111827",
     textDecoration: "none",
+  }
+
+  const Logo = {
+    height: "45px"
   }
 
   const profileTriggerStyle = {
@@ -239,7 +244,7 @@ const Navbar = () => {
     <nav style={navbarStyle}>
       <div style={containerStyle}>
         <Link to="/" style={brandStyle}>
-          Job Portal
+          <img style={Logo} src={SkillLinkLogo} alt="SkillLink Logo" />
         </Link>
 
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
