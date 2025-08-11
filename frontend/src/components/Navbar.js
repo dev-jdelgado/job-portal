@@ -268,75 +268,76 @@ const Navbar = () => {
             </Link>
           )}
 
-          <div className="me-2 me-sm-4" style={{ position: "relative", marginRight: "1rem" }} ref={dropdownRef}>
-            <button
-              onClick={() => setNotifDropdownOpen(!isNotifDropdownOpen)}
-              style={{
-                background: "transparent",
-                border: "none",
-                cursor: "pointer",
-                position: "relative",
-                padding: "0"
-              }}
-            >
-              <i className="fas fa-bell" style={{ fontSize: "20px", color: "#111827" }}></i>
-              {unreadCount > 0 && (
-                <span style={{
-                  position: "absolute", top: "-5px", right: "-8px",
-                  backgroundColor: "red", color: "white",
-                  borderRadius: "50%", padding: "2px 6px",
-                  fontSize: "10px", fontWeight: "bold"
-                }}>
-                  {unreadCount}
-                </span>
-              )}
-            </button>
-
-            {isNotifDropdownOpen && (
-              <div style={{
-                position: "absolute",
-                right: 0,
-                marginTop: "0.5rem",
-                backgroundColor: "white",
-                border: "1px solid #e5e7eb",
-                borderRadius: "0.5rem",
-                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-                width: "300px",
-                maxHeight: "400px",
-                overflowY: "auto",
-                zIndex: 50
-              }}>
-                <div style={{ padding: "0.5rem", fontWeight: "bold", borderBottom: "1px solid #e5e7eb" }}>
-                  Notifications
-                </div>
-                {notifications.length === 0 ? (
-                  <div style={{ padding: "0.75rem", color: "#6b7280", fontSize: "0.875rem" }}>
-                    No new notifications
-                  </div>
-                ) : (
-                  notifications.map((notification, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        padding: "0.75rem",
-                        borderBottom: "1px solid #f3f4f6",
-                        backgroundColor: notification.is_read ? "white" : "#d6ebff",
-                        fontSize: "0.875rem",
-                        cursor: "pointer"
-                      }}
-                      onClick={() => {
-                        // Mark as read (optional)
-                        fetch(`${API_URL}/jobs/notifications/mark-read/${notification.id}`, { method: "POST" });
-                        setNotifDropdownOpen(false);
-                      }}
-                    >
-                      {notification.message}
-                    </div>
-                  ))
+          {user?.role !== 'admin' && (
+            <div className="me-2 me-sm-4" style={{ position: "relative", marginRight: "1rem" }} ref={dropdownRef}>
+              <button
+                onClick={() => setNotifDropdownOpen(!isNotifDropdownOpen)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  position: "relative",
+                  padding: "0"
+                }}
+              >
+                <i className="fas fa-bell" style={{ fontSize: "20px", color: "#111827" }}></i>
+                {unreadCount > 0 && (
+                  <span style={{
+                    position: "absolute", top: "-5px", right: "-8px",
+                    backgroundColor: "red", color: "white",
+                    borderRadius: "50%", padding: "2px 6px",
+                    fontSize: "10px", fontWeight: "bold"
+                  }}>
+                    {unreadCount}
+                  </span>
                 )}
-              </div>
-            )}
-          </div>
+              </button>
+
+              {isNotifDropdownOpen && (
+                <div style={{
+                  position: "absolute",
+                  right: 0,
+                  marginTop: "0.5rem",
+                  backgroundColor: "white",
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "0.5rem",
+                  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                  width: "300px",
+                  maxHeight: "400px",
+                  overflowY: "auto",
+                  zIndex: 50
+                }}>
+                  <div style={{ padding: "0.5rem", fontWeight: "bold", borderBottom: "1px solid #e5e7eb" }}>
+                    Notifications
+                  </div>
+                  {notifications.length === 0 ? (
+                    <div style={{ padding: "0.75rem", color: "#6b7280", fontSize: "0.875rem" }}>
+                      No new notifications
+                    </div>
+                  ) : (
+                    notifications.map((notification, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          padding: "0.75rem",
+                          borderBottom: "1px solid #f3f4f6",
+                          backgroundColor: notification.is_read ? "white" : "#d6ebff",
+                          fontSize: "0.875rem",
+                          cursor: "pointer"
+                        }}
+                        onClick={() => {
+                          fetch(`${API_URL}/jobs/notifications/mark-read/${notification.id}`, { method: "POST" });
+                          setNotifDropdownOpen(false);
+                        }}
+                      >
+                        {notification.message}
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {user ? (
             <div style={{ position: "relative" }} ref={dropdownRef}>
