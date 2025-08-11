@@ -5,6 +5,9 @@ const http = require('http');
 const { Server } = require('socket.io');
 require('dotenv').config();
 
+const fs = require('fs');
+const path = require('path');
+
 // Import Routes
 const authRoutes = require('./routes/auth');
 const jobRoutes = require('./routes/jobs');
@@ -13,6 +16,18 @@ const accountRoutes = require('./routes/account');
 const messageRoutes = require('./routes/messages');
 
 const app = express();
+
+// Write secret files from env vars
+const configDir = path.join(__dirname, 'config');
+if (!fs.existsSync(configDir)) {
+  fs.mkdirSync(configDir);
+}
+if (process.env.CREDENTIALS_JSON) {
+  fs.writeFileSync(path.join(configDir, 'credentials.json'), process.env.CREDENTIALS_JSON);
+}
+if (process.env.TOKEN_JSON) {
+  fs.writeFileSync(path.join(configDir, 'toker.json'), process.env.TOKEN_JSON);
+}
 
 // Middleware
 app.use(cors({
