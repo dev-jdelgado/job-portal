@@ -74,11 +74,26 @@ const AdminMessagingPage = () => {
     }
     fetch(`${API_URL}/api/messages/${selectedSeeker.id}/${user.id}`)
       .then(res => res.json())
-      .then(data => setMessages(data))
+      .then(async data => {
+        setMessages(data);
+  
+        // Mark messages as read after loading them
+        try {
+          await fetch(`${API_URL}/api/messages/mark-read`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: user.id, senderId: selectedSeeker.id }),
+          });
+          // Optionally update unread badge count here if you manage it in state
+          // e.g. setUnreadCount(prev => Math.max(prev - data.length, 0));
+        } catch (err) {
+          console.error("Error marking messages read:", err);
+        }
+      })
       .catch(console.error);
-
+  
     localStorage.setItem('selectedSeekerId', selectedSeeker.id);
-
+  
     if (isMobile) {
       setShowSidebar(false); // On mobile, hide sidebar when seeker selected
     }
@@ -198,93 +213,92 @@ const AdminMessagingPage = () => {
 export default AdminMessagingPage;
 
 const styles = {
-  container: {
-    padding: '1rem',
-  },
-  layout: {
-    display: 'flex',
-    gap: '20px',
-  },
-  sidebar: {
-    borderRight: '1px solid #ccc',
-    paddingRight: '1rem',
-    overflowY: 'auto',
-    maxHeight: '80vh',
-  },
-  seekerItem: {
-    padding: '0.5rem',
-    cursor: 'pointer',
-    borderBottom: '1px solid #eee',
-  },
-  chatBox: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    border: '1px solid #ccc',
-    borderRadius: '8px',
-    overflow: 'hidden',
-  },
-  messages: {
-    flex: 1,
-    padding: '1rem',
-    overflowY: 'auto',
-    background: '#f9f9f9',
-  },
-  sender: {
-    alignSelf: 'flex-end',
-    backgroundColor: '#2563eb',
-    color: '#fff',
-    padding: '10px 15px',
-    borderRadius: '18px 18px 4px 18px',
-    maxWidth: '70%',
-    margin: '8px 0',
-    wordWrap: 'break-word',
-  },
-  receiver: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#e5e7eb',
-    color: '#000',
-    padding: '10px 15px',
-    borderRadius: '18px 18px 18px 4px',
-    maxWidth: '70%',
-    margin: '8px 0',
-    wordWrap: 'break-word',
-  },
-  h3: {
-    padding: '.5rem 1rem',
-    margin: 0,
-  },
-  timestamp: {
-    fontSize: '0.7rem',
-    marginTop: '4px',
-    opacity: 0.6,
-    textAlign: 'right',
-  },
-  inputBox: {
-    display: 'flex',
-    gap: '10px',
-    padding: '1rem',
-    borderTop: '1px solid #ccc',
-    background: '#fff',
-  },
-  input: {
-    flex: 1,
-    padding: '0.5rem',
-  },
-  button: {
-    padding: '0.5rem 1rem',
-    background: '#2563eb',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '4px',
-  },
-  backButton: {
-    background: 'none',
-    border: 'none',
-    color: '#2563eb',
-    fontSize: '1rem',
-    padding: '0.5rem 1rem',
-    cursor: 'pointer',
-    textAlign: 'left',
-  },
+    container: {
+        padding: '1rem',
+    },
+    layout: {
+        display: 'flex',
+        gap: '20px',
+    },
+    sidebar: {
+        borderRight: '1px solid #ccc',
+        paddingRight: '1rem',
+        overflowY: 'auto',
+        maxHeight: '80vh',
+    },
+    seekerItem: {
+        padding: '0.5rem',
+        cursor: 'pointer',
+        borderBottom: '1px solid #eee',
+    },
+    chatBox: {
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        border: '1px solid #ccc',
+        borderRadius: '8px',
+        overflow: 'hidden',
+    },
+    messages: {
+        flex: 1,
+        padding: '1rem',
+        overflowY: 'auto',
+        background: '#f9f9f9',
+    },
+    sender: {
+        alignSelf: 'flex-end',
+        backgroundColor: '#2563eb',
+        color: '#fff',
+        padding: '10px 15px',
+        borderRadius: '18px 18px 4px 18px',
+        maxWidth: '70%',
+        marginTop: '12px',
+        wordWrap: 'break-word',
+    },
+    receiver: {
+        alignSelf: 'flex-start',
+        backgroundColor: '#e5e7eb',
+        color: '#000',
+        padding: '10px 15px',
+        borderRadius: '18px 18px 18px 4px',
+        maxWidth: '70%',
+        marginTop: '12px',
+        wordWrap: 'break-word',
+    },
+    h3: {
+        padding: '.5rem 1rem',
+        margin: 0,
+    },
+    timestamp: {
+        fontSize: '0.7rem',
+        marginTop: '0',
+        opacity: 0.6,
+        textAlign: 'right',
+    },
+    inputBox: {
+        display: 'flex',
+        padding: '1rem',
+        borderTop: '1px solid #ccc',
+        background: '#fff',
+    },
+    input: {
+        flex: 1,
+        padding: '0.5rem',
+    },
+    button: {
+        padding: '0.5rem',
+        background: '#2563eb',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '0 4px 4px 0',
+    },
+    backButton: {
+        background: 'none',
+        border: 'none',
+        color: '#2563eb',
+        fontSize: '1rem',
+        padding: '0.5rem 1rem',
+        cursor: 'pointer',
+        textAlign: 'left',
+    },
 };

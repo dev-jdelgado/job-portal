@@ -1,3 +1,4 @@
+import { io } from "socket.io-client";
 import { useState, useRef, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
@@ -6,6 +7,7 @@ import SkillLinkLogo from '../images/SkillLink-Logo-Banner.png';
 import config from '../config';
 
 const API_URL = config.API_URL;
+const socket = io(config.API_SOCKET_URL || "http://localhost:5000");
 
 const Navbar = () => {
   const { user, logout } = useAuth()
@@ -16,6 +18,7 @@ const Navbar = () => {
   const dropdownRef = useRef(null)
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
 
   const handleLogout = () => {
     logout()
@@ -23,6 +26,40 @@ const Navbar = () => {
     localStorage.removeItem('adminSeekers');
     localStorage.removeItem('selectedSeekerId');
   }
+
+  useEffect(() => {
+    if (!user?.id) return;
+  
+    // Fetch initial unread messages count
+    const fetchUnreadMessages = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/messages/unread-count/${user.id}`);
+        const data = await res.json();
+        setUnreadMessagesCount(data.unreadCount || 0);
+      } catch (err) {
+        console.error("Error fetching unread messages count:", err);
+      }
+    };
+  
+    fetchUnreadMessages();
+  
+    // Join socket room for this user to receive messages
+    socket.emit("join", { userId: user.id });
+  
+    // Listen for incoming messages
+    socket.on("receiveMessage", (message) => {
+      // If message is for current user and is unread, increment badge
+      if (message.receiver_id === user.id && message.is_read === 0) {
+        setUnreadMessagesCount((count) => count + 1);
+      }
+    });
+  
+    // Cleanup on unmount or user change
+    return () => {
+      socket.off("receiveMessage");
+    };
+  }, [user?.id]);
+
 
   const getInitials = (name) => {
     if (!name) return ""
@@ -244,7 +281,7 @@ const Navbar = () => {
     <nav style={navbarStyle}>
       <div style={containerStyle}>
         <Link to="/" style={brandStyle}>
-          <img style={Logo} src={SkillLinkLogo} alt="SkillLink Logo" />
+          <img style={Logo} src={SkillLinkLogo} alt="SkillLink Logo" className="logo"/>
         </Link>
 
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
@@ -252,19 +289,35 @@ const Navbar = () => {
           {user && (
             <Link
               className="me-2 me-sm-4"
-              to={user.role === 'seeker' ? "/messaging" : "/admin/messaging"}
-              style={
-                { 
-                  fontWeight: "500", 
-                  color: "#111827", 
-                  fontSize: "20px",
-                  display: "flex",
-                }
-              }
+              to={user.role === "seeker" ? "/messaging" : "/admin/messaging"}
+              style={{
+                fontWeight: "500",
+                color: "#111827",
+                fontSize: "20px",
+                display: "flex",
+                position: "relative",
+              }}
               title="Messages"
             >
               <BiSolidMessage />
-
+              {unreadMessagesCount > 0 && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: "-5px",
+                    right: "-8px",
+                    backgroundColor: "red",
+                    color: "white",
+                    borderRadius: "50%",
+                    padding: "2px 6px",
+                    fontSize: "10px",
+                    fontWeight: "bold",
+                    pointerEvents: "none",
+                  }}
+                >
+                  {unreadMessagesCount}
+                </span>
+              )}
             </Link>
           )}
 
@@ -294,7 +347,7 @@ const Navbar = () => {
               </button>
 
               {isNotifDropdownOpen && (
-                <div style={{
+                <div className='notification-dropdown' style={{
                   position: "absolute",
                   right: 0,
                   marginTop: "0.5rem",
@@ -325,10 +378,22 @@ const Navbar = () => {
                           fontSize: "0.875rem",
                           cursor: "pointer"
                         }}
-                        onClick={() => {
-                          fetch(`${API_URL}/jobs/notifications/mark-read/${notification.id}`, { method: "POST" });
-                          setNotifDropdownOpen(false);
-                        }}
+                        onClick={async () => {
+                          try {
+                            await fetch(`${API_URL}/jobs/notifications/mark-read/${notification.id}`, { method: "POST" });
+                        
+                            setNotifications((prevNotifications) =>
+                              prevNotifications.map((n) =>
+                                n.id === notification.id ? { ...n, is_read: true } : n
+                              )
+                            );
+                        
+                            setUnreadCount((prevCount) => Math.max(prevCount - 1, 0));
+                        
+                          } catch (err) {
+                            console.error("Error marking notification as read:", err);
+                          }
+                        }}                                            
                       >
                         {notification.message}
                       </div>
@@ -379,6 +444,7 @@ const Navbar = () => {
                   <span className="hide-on-mobile" style={{ fontSize: "0.875rem", fontWeight: "500", color: "#111827" }}>{user.name}</span>
                 </div>
                 <svg
+                  className="dropdown-arrow"
                   style={{
                     transition: "transform 0.2s",
                     color: "#6b7280",
@@ -396,7 +462,7 @@ const Navbar = () => {
               </button>
 
               {isDropdownOpen && (
-                <div style={dropdownMenuStyle}>
+                <div style={dropdownMenuStyle} className="dropdown-profile">
                   <div style={dropdownHeaderStyle}>
                     <div style={dropdownAvatarStyle}>
                       {getProfileImageUrl() ? (
@@ -433,10 +499,6 @@ const Navbar = () => {
                     </div>
                   </div>
                   <div style={{ height: "1px", background: "#e5e7eb", margin: "0.25rem 0" }}></div>
-
-                  {/* ================================================== */}
-                  {/* == Conditional Links Based on User Role           == */}
-                  {/* ================================================== */}
 
                   {user.role === 'seeker' && (
                     <>
@@ -500,10 +562,6 @@ const Navbar = () => {
                       )}
                       */}
                  
-                  
-                  {/* ================================================== */}
-                  {/* == Shared Links for All Roles                   == */}
-                  {/* ================================================== */}
 
                   <Link
                     to="/account-settings"

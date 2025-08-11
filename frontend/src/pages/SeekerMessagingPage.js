@@ -15,21 +15,34 @@ const SeekerMessagingPage = () => {
 
     useEffect(() => {
         if (!user) return;
-
+    
         socket.emit('join', { userId: user.id });
-
+    
         socket.on('receiveMessage', (data) => {
             setMessages(prev => {
                 if (prev.some(msg => msg.id === data.id)) return prev;
                 return [...prev, data];
             });
         });
-
+    
         fetch(`${API_URL}/api/messages/${user.id}/${ADMIN_ID}`)
-            .then(res => res.json())
-            .then(data => setMessages(data))
-            .catch(console.error);
-
+        .then(res => res.json())
+        .then(async data => {
+          setMessages(data);
+      
+          // Mark all messages as read between seeker (user) and admin
+          try {
+            await fetch(`${API_URL}/api/messages/mark-read`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ userId: user.id, senderId: ADMIN_ID }),
+            });
+          } catch (err) {
+            console.error("Error marking messages read:", err);
+          }
+        })
+        .catch(console.error);      
+    
         return () => {
             socket.off('receiveMessage');
         };
@@ -116,7 +129,7 @@ const styles = {
         padding: '10px 15px',
         borderRadius: '18px 18px 4px 18px',
         maxWidth: '70%',
-        margin: '8px 0',
+        marginTop: '12px',
         wordWrap: 'break-word',
     },
     receiver: {
@@ -126,18 +139,17 @@ const styles = {
         padding: '10px 15px',
         borderRadius: '18px 18px 18px 4px',
         maxWidth: '70%',
-        margin: '8px 0',
+        marginTop: '12px',
         wordWrap: 'break-word',
     },
     timestamp: {
         fontSize: '0.7rem',
-        marginTop: '4px',
+        marginTop: '0',
         opacity: 0.6,
         textAlign: 'right',
     },
     inputBox: {
         display: 'flex',
-        gap: '10px',
         padding: '1rem',
         borderTop: '1px solid #ccc',
         background: '#fff',
@@ -147,10 +159,10 @@ const styles = {
         padding: '0.5rem',
     },
     button: {
-        padding: '0.5rem 1rem',
+        padding: '0.5rem',
         background: '#2563eb',
         color: '#fff',
         border: 'none',
-        borderRadius: '4px',
+        borderRadius: '0 4px 4px 0',
     },
 };

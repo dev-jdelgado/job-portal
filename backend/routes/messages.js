@@ -16,6 +16,41 @@ router.post('/', async (req, res) => {
     }
 });
 
+
+// Get unread messages count for a user
+router.get('/unread-count/:userId', async (req, res) => {
+    const { userId } = req.params;
+    try {
+        const [rows] = await db.query(
+        `SELECT COUNT(*) AS unreadCount FROM messages 
+        WHERE receiver_id = ? AND is_read = 0`,
+        [userId]
+        );
+        res.json({ unreadCount: rows[0].unreadCount });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error fetching unread messages count' });
+    }
+});
+
+// Mark messages as read between user and sender (called when chat opened)
+router.post('/mark-read', async (req, res) => {
+    const { userId, senderId } = req.body;
+    if (!userId || !senderId) {
+        return res.status(400).json({ error: 'userId and senderId are required' });
+    }
+    try {
+        await db.query(
+        `UPDATE messages SET is_read = 1 WHERE receiver_id = ? AND sender_id = ? AND is_read = 0`,
+        [userId, senderId]
+        );
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error marking messages as read' });
+    }
+});
+
 // Get messages with a specific user (for admin view)
 router.get('/:userId/:adminId', async (req, res) => {
     const { userId, adminId } = req.params;

@@ -28,8 +28,36 @@ code {
   display: inline;
 }
 
+.logo {
+  height: 45px;
+}
+
 @media (max-width: 768px) {
   .hide-on-mobile {
+    display: none !important;
+  }
+
+  .logo {
+    height: 35px !important; 
+  }
+}
+
+@media (max-width: 480px) {
+  .logo {
+    height: 30px !important; 
+  }
+
+  .notification-dropdown {
+    width: 85vw !important;
+    position: fixed !important;
+    left: 7.5% !important;
+  }
+  
+  .dropdown-profile {
+    width: 270px !important;
+  }
+
+  .dropdown-arrow {
     display: none !important;
   }
 }
