@@ -38,10 +38,23 @@ router.put('/:id', upload.fields([
         if (currentUser) {
           // If a new profile picture is uploaded and an old one exists, delete the old one.
           if (req.files.profilePicture && currentUser.profile_picture_url) {
-            // FIX: Construct the correct absolute path by removing the leading slash from the stored URL
-            const oldPath = path.join(__dirname, '..', currentUser.profile_picture_url.substring(1));
+            const oldPath = path.join(
+              __dirname,
+              '..',
+              'uploads',
+              id.toString(),
+              'profile',
+              currentUser.profile_picture_url
+            );
+          
             fs.unlink(oldPath, err => {
-              if (err) console.error("Error deleting old picture:", err);
+              if (err) {
+                if (err.code !== 'ENOENT') {
+                  console.error("Error deleting old picture:", err);
+                } else {
+                  console.warn("Old picture not found:", oldPath);
+                }
+              }
             });
           }
         }

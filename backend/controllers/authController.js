@@ -55,7 +55,7 @@ exports.login = async (req, res) => {
           role: user.role,
           name: user.name,
           email: user.email,
-          pds_url: user.pds_url || null, // 👈 include this!
+          pds_url: user.pds_url || null, 
       });
   } catch (err) {
       res.status(500).json({ msg: 'Error logging in' });
