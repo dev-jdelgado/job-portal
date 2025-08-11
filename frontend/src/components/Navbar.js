@@ -7,7 +7,8 @@ import SkillLinkLogo from '../images/SkillLink-Logo-Banner.png';
 import config from '../config';
 
 const API_URL = config.API_URL;
-const socket = io(config.API_SOCKET_URL || "http://localhost:5000");
+const socketURL = process.env.REACT_APP_SOCKET_URL;
+const socket = io(socketURL);
 
 const Navbar = () => {
   const { user, logout } = useAuth()
