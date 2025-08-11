@@ -77,7 +77,6 @@ function SeekerDashboard() {
         if (seeker?.disability_status) {
           setSeekerDisability(seeker.disability_status)
         }
-        console.log(seeker)
       } catch (err) {
         console.error("Error fetching jobs:", err)
       }

@@ -109,54 +109,67 @@ function JobDetails() {
                             <h5 className="text-white mb-4">Application Status Tracker</h5>
                             <div className="d-flex align-items-center justify-content-center flex-wrap gap-2">
 
-                            {['applied', 'shortlisted', 'interviewed', 'selected', 'rejected'].map((step, i, steps) => {
+                            {['applied', 'shortlisted', 'interviewed', 'final'].map((step, i, steps) => {
                                 const statusOrder = {
-                                applied: 1,
-                                shortlisted: 2,
-                                interviewed: 3,
-                                selected: 4,
-                                rejected: 4, // final state
+                                    applied: 1,
+                                    shortlisted: 2,
+                                    interviewed: 3,
+                                    final: 4,
                                 };
 
-                                const current = statusOrder[applicationStatus] || 0;
+                                const currentStatus = applicationStatus === 'selected' ? 'final' :
+                                                    applicationStatus === 'rejected' ? 'final' :
+                                                    applicationStatus;
+
+                                const current = statusOrder[currentStatus] || 0;
                                 const stepValue = statusOrder[step] || 0;
 
                                 const isActive = stepValue <= current;
                                 const isCurrent = stepValue === current;
 
+                                // Label logic for the final step
+                                let label = '';
+                                if (step === 'final') {
+                                    label = applicationStatus === 'selected' ? 'Selected' :
+                                            applicationStatus === 'rejected' ? 'Rejected' :
+                                            'Final';
+                                } else {
+                                    label = step.charAt(0).toUpperCase() + step.slice(1);
+                                }
+
                                 return (
-                                <div key={step} className="d-flex align-items-center">
-                                    <div>
-                                        <div
-                                        className="rounded-circle d-flex align-items-center justify-content-center mx-auto"
-                                        style={{
-                                            width: '50px',
-                                            height: '50px',
-                                            backgroundColor: isActive ? (isCurrent ? '#198754' : '#198754') : '#dee2e6',
-                                            color: isActive ? '#fff' : '#6c757d',
-                                            fontWeight: 'bold',
-                                            fontSize: '1.1rem',
-                                        }}
-                                        >
-                                        {i + 1}
+                                    <div key={step} className="d-flex align-items-center">
+                                        <div>
+                                            <div
+                                                className="rounded-circle d-flex align-items-center justify-content-center mx-auto"
+                                                style={{
+                                                    width: '50px',
+                                                    height: '50px',
+                                                    backgroundColor: isActive ? (isCurrent ? '#198754' : '#198754') : '#dee2e6',
+                                                    color: isActive ? '#fff' : '#6c757d',
+                                                    fontWeight: 'bold',
+                                                    fontSize: '1.1rem',
+                                                }}
+                                            >
+                                                {i + 1}
+                                            </div>
+
+                                            <div className="text-white small mt-1 text-center" style={{ width: "80px" }}>
+                                                {label}
+                                            </div>
                                         </div>
 
-                                        <div className="text-white small mt-1 text-center" style={{ width: "80px" }}>
-                                        {step.charAt(0).toUpperCase() + step.slice(1)}
-                                        </div>
+                                        {i < steps.length - 1 && (
+                                            <div
+                                                style={{
+                                                    height: '3px',
+                                                    width: '40px',
+                                                    marginBottom: '20px',
+                                                    backgroundColor: statusOrder[steps[i + 1]] <= current ? '#198754' : '#dee2e6',
+                                                }}
+                                            ></div>
+                                        )}
                                     </div>
-                                    
-                                    {i < steps.length - 1 && (
-                                    <div
-                                        style={{
-                                        height: '3px',
-                                        width: '40px',
-                                        marginBottom: '20px',
-                                        backgroundColor: statusOrder[steps[i + 1]] <= current ? '#198754' : '#dee2e6',
-                                        }}
-                                    ></div>
-                                    )}
-                                </div>
                                 );
                             })}
 
