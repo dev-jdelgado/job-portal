@@ -25,7 +25,7 @@ if (process.env.CREDENTIALS_JSON) {
   fs.writeFileSync(path.join(configDir, 'credentials.json'), process.env.CREDENTIALS_JSON);
 }
 if (process.env.TOKEN_JSON) {
-  fs.writeFileSync(path.join(configDir, 'toker.json'), process.env.TOKEN_JSON);
+  fs.writeFileSync(path.join(configDir, 'token.json'), process.env.TOKEN_JSON);
 }
 
 // Middleware
