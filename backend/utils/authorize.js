@@ -16,6 +16,7 @@ const SCOPES = ['https://www.googleapis.com/auth/calendar.events'];
 function getAccessToken(oAuth2Client) {
   const authUrl = oAuth2Client.generateAuthUrl({
     access_type: 'offline',
+    prompt: 'consent',   // 👈 force Google to reissue refresh_token
     scope: SCOPES,
   });
 
