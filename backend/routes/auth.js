@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
-const upload = require('../middleware/uploadMiddleware');
+const { upload, supabaseUploadMiddleware } = require('../middleware/uploadMiddleware');
 
 
 router.post('/register', upload.single('pwdIdImage'), authController.register);
