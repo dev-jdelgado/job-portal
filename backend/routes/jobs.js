@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
-const upload = require('../middleware/uploadMiddleware');
+const { upload, supabaseUploadMiddleware } = require('../middleware/uploadMiddleware');
 const nodemailer = require("nodemailer");
 
 
@@ -236,36 +236,39 @@ router.post('/applications', async (req, res) => {
   }
 });
 
-router.post('/applications/detailed', upload.fields([
-  { name: 'pdsFile' },
-  { name: 'ApplicationLetterFile' },
-  { name: 'performanceRatingFile' },
-  { name: 'eligibilityFile' },
-  { name: 'diplomaFile' },
-  { name: 'torFile' },
-  { name: 'trainingsFile' }
-]), async (req, res) => {
-  const { job_id, seeker_id } = req.body;
-  const files = req.files || {};
+// Apply for job
+router.post(
+  '/applications/detailed',
+  upload.fields([
+    { name: 'pdsFile' },
+    { name: 'ApplicationLetterFile' },
+    { name: 'performanceRatingFile' },
+    { name: 'eligibilityFile' },
+    { name: 'diplomaFile' },
+    { name: 'torFile' },
+    { name: 'trainingsFile' }
+  ]),
+  supabaseUploadMiddleware,
+  async (req, res) => {
+    const { job_id, seeker_id } = req.body;
 
-  try {
-    // 1. Insert application
-    await db.execute(
-      `INSERT INTO applications 
-        (job_id, seeker_id, pds_url, application_letter_url, performance_rating_url, eligibility_url, diploma_url, tor_url, trainings_url)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        job_id,
-        seeker_id,
-        files.pdsFile?.[0]?.filename || null,
-        files.ApplicationLetterFile?.[0]?.filename || null,
-        files.performanceRatingFile?.[0]?.filename || null,
-        files.eligibilityFile?.[0]?.filename || null,
-        files.diplomaFile?.[0]?.filename || null,
-        files.torFile?.[0]?.filename || null,
-        files.trainingsFile?.[0]?.filename || null
-      ]
-    );
+    try {
+      await db.execute(
+        `INSERT INTO applications 
+          (job_id, seeker_id, pds_url, application_letter_url, performance_rating_url, eligibility_url, diploma_url, tor_url, trainings_url)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          job_id,
+          seeker_id,
+          req.savedFiles.pdsFile || null,
+          req.savedFiles.ApplicationLetterFile || null,
+          req.savedFiles.performanceRatingFile || null,
+          req.savedFiles.eligibilityFile || null,
+          req.savedFiles.diplomaFile || null,
+          req.savedFiles.torFile || null,
+          req.savedFiles.trainingsFile || null
+        ]
+      );
 
     // 2. Get seeker info
     const [[seeker]] = await db.execute('SELECT name, email, phone_number FROM users WHERE id = ?', [seeker_id]);
