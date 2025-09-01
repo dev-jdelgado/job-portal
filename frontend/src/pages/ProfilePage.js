@@ -157,7 +157,7 @@ function ProfilePage() {
         <Row>
           <Col lg={4} md={5}>
             <Card className="profile-card text-center p-4 mb-4">
-              <div className="profile-picture-wrapper" style={{ width: '150px', height: '150px', margin: '0 auto', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#ccc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px', color: '#fff' }}>
+              <div className="profile-picture-wrapper" style={{ width: '200px', height: '200px', margin: '0 auto', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#ccc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px', color: '#fff' }}>
                 {profile.profile_picture_url ? (
                   <img
                     src={profile.profile_picture_url}

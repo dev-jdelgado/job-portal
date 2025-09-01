@@ -299,11 +299,12 @@ router.post(
     
 
     res.status(201).json({ message: "Application submitted successfully!" });
-  } catch (err) {
-    console.error("Error:", err.stack || err);
-    res.status(500).json({ error: "Server error" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
+    }
   }
-});
+);
 
 // Remove Notification When Clicked
 router.post('/notifications/mark-read/:id', async (req, res) => {

@@ -1,3 +1,4 @@
+// middleware/uploadMiddleware.js
 const multer = require('multer');
 const { createClient } = require('@supabase/supabase-js');
 
@@ -21,7 +22,7 @@ const supabaseUploadMiddleware = async (req, res, next) => {
     const uniqueName = `${Date.now()}-${safeName}`;
 
     let folder = 'misc';
-    if (field === 'profilePicture' || field === 'pds') folder = 'profile';
+    if (field === 'profilePicture' || field === 'pdsFile') folder = 'profile';
     else if (field === 'pwdIdImage') folder = 'pwdID';
     else folder = `applications/${jobId}`;
 
@@ -36,9 +37,7 @@ const supabaseUploadMiddleware = async (req, res, next) => {
 
     if (error) return next(error);
 
-    const { data } = supabase.storage
-      .from('skilllinkupload')
-      .getPublicUrl(filePath);
+    const { data } = supabase.storage.from('skilllinkupload').getPublicUrl(filePath);
     req.savedFiles[field] = data.publicUrl;
   }
 
