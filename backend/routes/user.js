@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db'); 
-const { upload, supabaseUploadMiddleware } = require('../middleware/uploadMiddleware');
+const { upload, supabaseUploadMiddleware, supabase } = require('../middleware/uploadMiddleware');
 const fs = require('fs'); 
 const path = require('path'); 
 
@@ -34,6 +34,16 @@ router.put(
     const { name, email, bio, skills, education, disability_status, date_of_birth, address, phone_number } = req.body;
 
     try {
+      const [rows] = await db.execute(
+        'SELECT profile_picture_url, pwd_id_image FROM users WHERE id = ?',
+        [id]
+      );
+      if (rows.length === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      const oldProfilePic = rows[0].profile_picture_url;
+      const oldPwdId = rows[0].pwd_id_image;
+
       const fieldsToUpdate = {};
       if (name) fieldsToUpdate.name = name;
       if (email) fieldsToUpdate.email = email;
@@ -47,12 +57,28 @@ router.put(
 
       if (req.savedFiles.profilePicture) {
         fieldsToUpdate.profile_picture_url = req.savedFiles.profilePicture;
+
+        if (oldProfilePic) {
+          const oldPath = oldProfilePic.split('/object/public/skilllinkupload/')[1];
+          if (oldPath) {
+            await supabase.storage.from('skilllinkupload').remove([oldPath]);
+          }
+        }
       }
+
       if (req.savedFiles.pds) {
         fieldsToUpdate.pds_url = req.savedFiles.pds;
       }
+
       if (req.savedFiles.pwdIdImage) {
         fieldsToUpdate.pwd_id_image = req.savedFiles.pwdIdImage;
+
+        if (oldPwdId) {
+          const oldPath = oldPwdId.split('/object/public/skilllinkupload/')[1];
+          if (oldPath) {
+            await supabase.storage.from('skilllinkupload').remove([oldPath]);
+          }
+        }
       }
 
       if (Object.keys(fieldsToUpdate).length === 0) {

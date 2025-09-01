@@ -141,16 +141,33 @@ function ProfilePage() {
   if (error) return <Container className="mt-5"><Alert variant="danger">{error}</Alert></Container>;
   if (!profile) return null;
 
+  const getInitials = (name) => {
+    if (!name) return "";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   return (
     <div className="profile-page-wrapper">
       <Container className="py-5">
         <Row>
           <Col lg={4} md={5}>
             <Card className="profile-card text-center p-4 mb-4">
-              <img
-                src={profile.profile_picture_url || 'https://via.placeholder.com/150'}
-                alt="Profile"
-              />
+              <div className="profile-picture-wrapper" style={{ width: '150px', height: '150px', margin: '0 auto', borderRadius: '50%', overflow: 'hidden', backgroundColor: '#ccc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px', color: '#fff' }}>
+                {profile.profile_picture_url ? (
+                  <img
+                    src={profile.profile_picture_url}
+                    alt={profile.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  getInitials(profile.name)
+                )}
+              </div>
               <Card.Body>
                 <Card.Title className="profile-name">{profile.name}</Card.Title>
                 <p><strong>Age:</strong> {calculateAge(profile.date_of_birth) || 'Not specified'}</p>
@@ -200,14 +217,15 @@ function ProfilePage() {
                                 <strong>PWD ID:</strong>
                                 <div>
                                   <a
-                                    href={`${API_URL}/uploads/${profile.id}/pwdID/${profile.pwd_id_image}`}
+                                    href={profile.pwd_id_image}
                                     download={`PWD_ID_${profile.name || 'user'}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                   >
                                     <img
-                                      src={profile.pwd_id_image || 'https://via.placeholder.com/150'}
+                                      src={profile.pwd_id_image}
                                       alt="PWD ID"
+                                      style={{ maxWidth: '100%', maxHeight: '200px', marginTop: '0.5rem', border: '1px solid #ccc', borderRadius: '8px' }}
                                     />
                                   </a>
                                 </div>
@@ -257,13 +275,13 @@ function ProfilePage() {
                               <strong>PWD ID:</strong>
                               <div>
                                 <a
-                                  href={`${API_URL}/uploads/${profile.id}/pwdID/${profile.pwd_id_image}`}
+                                  href={profile.pwd_id_image}
                                   download={`PWD_ID_${profile.name || 'user'}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                 >
                                   <img
-                                    src={`${API_URL}/uploads/${profile.id}/pwdID/${profile.pwd_id_image}`}
+                                    src={profile.pwd_id_image}
                                     alt="PWD ID"
                                     style={{ maxWidth: '100%', maxHeight: '200px', marginTop: '0.5rem', border: '1px solid #ccc', borderRadius: '8px' }}
                                   />
@@ -417,7 +435,7 @@ function ProfilePage() {
                     <Form.Label>PWD ID Image</Form.Label>
                     {profile.pwd_id_image && (
                       <div className="mb-2 text-muted">
-                        Current file: <strong>{profile.pwd_id_image}</strong>
+                        Current file: <strong>{profile.pwd_id_image.split('/').pop().split('-').slice(1).join('-')}</strong>
                       </div>
                     )}
                     <Form.Control type="file" name="pwdIdImage" accept="image/*" onChange={handleFileChange} />

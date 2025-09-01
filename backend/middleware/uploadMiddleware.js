@@ -45,4 +45,4 @@ const supabaseUploadMiddleware = async (req, res, next) => {
   next();
 };
 
-module.exports = { upload, supabaseUploadMiddleware };
+module.exports = { upload, supabaseUploadMiddleware, supabase };
