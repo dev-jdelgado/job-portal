@@ -28,7 +28,7 @@ const supabaseUploadMiddleware = async (req, res, next) => {
     const filePath = `${userId}/${folder}/${uniqueName}`;
 
     const { error } = await supabase.storage
-      .from('uploads')
+      .from('Skill Link Portal Storage')
       .upload(filePath, file.buffer, {
         contentType: file.mimetype,
         upsert: true
