@@ -148,9 +148,8 @@ function ProfilePage() {
           <Col lg={4} md={5}>
             <Card className="profile-card text-center p-4 mb-4">
               <img
-                src={profile.profile_picture_url ? `${API_URL}/uploads/${profile.id}/profile/${profile.profile_picture_url}` : 'https://via.placeholder.com/150'}
+                src={profile.profile_picture_url || 'https://via.placeholder.com/150'}
                 alt="Profile"
-                className="profile-picture"
               />
               <Card.Body>
                 <Card.Title className="profile-name">{profile.name}</Card.Title>
@@ -207,9 +206,8 @@ function ProfilePage() {
                                     rel="noopener noreferrer"
                                   >
                                     <img
-                                      src={`${API_URL}/uploads/${profile.id}/pwdID/${profile.pwd_id_image}`}
+                                      src={profile.pwd_id_image || 'https://via.placeholder.com/150'}
                                       alt="PWD ID"
-                                      style={{ maxWidth: '100%', maxHeight: '200px', marginTop: '0.5rem', border: '1px solid #ccc', borderRadius: '8px' }}
                                     />
                                   </a>
                                 </div>
