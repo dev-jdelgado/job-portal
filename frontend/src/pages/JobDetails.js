@@ -68,9 +68,11 @@ function JobDetails() {
             <Container>
                 {/* ✅ Back Button */}
                 <div className="mb-3">
-                    <Button variant="primary" onClick={() => navigate(-1)}>
-                        ← Back
+                <div class="mb-4">
+                    <Button class="btn bg-primary text-white" onClick={() => navigate('/')}>
+                    ← Back to Home
                     </Button>
+                </div>
                 </div>
 
                 <div className="d-flex align-items-center flex-column gap-4">

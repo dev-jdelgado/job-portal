@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Container, Badge, Tabs, Tab, Form } from "react-bootstrap";
+import { Container, Badge, Tabs, Button, Tab, Form } from "react-bootstrap";
 import { } from "react-bootstrap"
 import axios from "axios"
 import { useNavigate } from 'react-router-dom';
@@ -122,7 +122,11 @@ function JobApplicationsPage() {
       </div>
 
       <Container className="applications-container">
-        
+      <div class="mb-4">
+        <Button class="btn bg-primary text-white" onClick={() => navigate('/')}>
+          ← Back to Home
+        </Button>
+      </div>
       {isMobile ? (
         <Form.Select
           className="mb-4"

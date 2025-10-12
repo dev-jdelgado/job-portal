@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import './ProfilePage.css';
 import config from '../config';
 import { Accordion } from 'react-bootstrap';
+import { useNavigate } from "react-router-dom"; 
+
 
 
 const API_URL = config.API_URL;
@@ -30,6 +32,8 @@ function ProfilePage() {
   const [editData, setEditData] = useState({});
   const [showSkillSection, setShowSkillSection] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 576);
+
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     const handleResize = () => {
@@ -154,6 +158,12 @@ function ProfilePage() {
   return (
     <div className="profile-page-wrapper">
       <Container className="py-5">
+        <div class="mb-4">
+          <Button class="btn bg-primary text-white" onClick={() => navigate('/')}>
+            ← Back to Home
+          </Button>
+        </div>
+        
         <Row>
           <Col lg={4} md={5}>
             <Card className="profile-card text-center p-4 mb-4">
@@ -304,7 +314,9 @@ function ProfilePage() {
             </Card>
           </Col>
         </Row>
+        
       </Container>
+      
 
       {/* Edit Profile Modal with new fields */}
       <Modal size="lg" show={showModal} onHide={() => setShowModal(false)} centered>

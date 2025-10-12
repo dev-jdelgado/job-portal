@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react'; 
 import { useAuth } from '../context/AuthContext';
 import config from '../config';
+import { useNavigate } from "react-router-dom"; 
+import { Button } from 'react-bootstrap';
+
 
 const API_URL = config.API_URL;
 
@@ -23,6 +26,7 @@ const AccountSettingsPage = () => {
   const [deleteMessage, setDeleteMessage] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const navigate = useNavigate(); 
 
   const fetchUserInfo = useCallback(async () => {
     if (!user?.id) return;
@@ -144,6 +148,13 @@ const AccountSettingsPage = () => {
     <div style={styles.container}>
       <h1 style={styles.header}>Account Settings</h1>
       
+      <div class="mb-4">
+        <Button class="btn bg-primary text-white" onClick={() => navigate('/')}>
+          ← Back to Home
+        </Button>
+      </div>
+
+
       {user?.role !== 'admin' && (
       <div style={styles.card}>
         <h2 style={styles.cardHeader}>Email Verification</h2>

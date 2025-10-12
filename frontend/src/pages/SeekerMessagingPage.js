@@ -2,6 +2,8 @@ import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import socket from '../socket';
 import config from '../config';
+import { Button } from "react-bootstrap";
+import { useNavigate } from 'react-router-dom';
 
 const API_URL = config.API_URL;
 
@@ -10,6 +12,7 @@ const SeekerMessagingPage = () => {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const messagesEndRef = useRef();
+    const navigate = useNavigate();
 
     const ADMIN_ID = 1; // your admin ID
 
@@ -65,6 +68,11 @@ const SeekerMessagingPage = () => {
 
     return (
         <div style={styles.container}>
+            <div class="mb-4">
+                <Button class="btn bg-primary text-white" onClick={() => navigate('/')}>
+                ← Back to Home
+                </Button>
+            </div>
             <h2>Chat with HR</h2>
             <div style={styles.chatBox}>
                 <div style={styles.messages}>
