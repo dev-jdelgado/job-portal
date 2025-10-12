@@ -1,16 +1,18 @@
-import { useParams, Link } from "react-router-dom"
-import { useEffect, useState } from "react"
-import axios from "axios"
-import { Container, Spinner, Alert, Badge } from "react-bootstrap"
+import { useParams, Link, useNavigate } from "react-router-dom"; 
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { Container, Spinner, Alert, Badge, Button } from "react-bootstrap"; 
 import config from '../config';
 
 const API_URL = config.API_URL;
 
 function JobDetails() {
-    const { id } = useParams()
-    const [job, setJob] = useState(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
+    const { id } = useParams();
+    const navigate = useNavigate(); 
+
+    const [job, setJob] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     const seekerId = JSON.parse(localStorage.getItem("user"))?.id;
 
@@ -18,7 +20,6 @@ function JobDetails() {
     const [applyError] = useState(null);
     const [appliedAt, setAppliedAt] = useState(null);
     const [applicationStatus, setApplicationStatus] = useState(null);
-
 
     useEffect(() => {
         const fetchJob = async () => {
@@ -36,10 +37,7 @@ function JobDetails() {
         const checkIfApplied = async () => {
             try {
               const res = await axios.get(`${API_URL}/jobs/applications/check`, {
-                params: {
-                  job_id: id,
-                  seeker_id: seekerId,
-                },
+                params: { job_id: id, seeker_id: seekerId },
               });
           
               if (res.data.applied) {
@@ -58,19 +56,26 @@ function JobDetails() {
     
 
     if (loading) {
-        return <Container className="mt-5 text-center"><Spinner animation="border" /></Container>
+        return <Container className="mt-5 text-center"><Spinner animation="border" /></Container>;
     }
     if (error) {
-        return <Container className="mt-5"><Alert variant="danger">{error}</Alert></Container>
+        return <Container className="mt-5"><Alert variant="danger">{error}</Alert></Container>;
     }
       
     return (
     <div>
         <div className="dashboard-header-section py-5">
             <Container>
+                {/* ✅ Back Button */}
+                <div className="mb-3">
+                    <Button variant="primary" onClick={() => navigate(-1)}>
+                        ← Back
+                    </Button>
+                </div>
+
                 <div className="d-flex align-items-center flex-column gap-4">
                     <h2 className="text-center fw-bold">{job.title}</h2>
-                    <div className=" d-flex flex-column justify-content-center w-100">
+                    <div className="d-flex flex-column justify-content-center w-100">
                         {applied ? (
                             <button
                                 className="btn btn-danger rounded-5 py-2 px-5 fs-5 mx-auto"
@@ -104,30 +109,20 @@ function JobDetails() {
                             </p>
                         )}
                         
+                        {/* Application Status Tracker */}
                         {applied && (
                         <div className="mt-4 mx-auto text-center">
                             <h5 className="text-white mb-4">Application Status Tracker</h5>
                             <div className="d-flex align-items-center justify-content-center flex-wrap gap-2">
-
                             {['applied', 'shortlisted', 'interviewed', 'final'].map((step, i, steps) => {
-                                const statusOrder = {
-                                    applied: 1,
-                                    shortlisted: 2,
-                                    interviewed: 3,
-                                    final: 4,
-                                };
-
+                                const statusOrder = { applied: 1, shortlisted: 2, interviewed: 3, final: 4 };
                                 const currentStatus = applicationStatus === 'selected' ? 'final' :
                                                     applicationStatus === 'rejected' ? 'final' :
                                                     applicationStatus;
-
                                 const current = statusOrder[currentStatus] || 0;
                                 const stepValue = statusOrder[step] || 0;
-
                                 const isActive = stepValue <= current;
                                 const isCurrent = stepValue === current;
-
-                                // Label logic for the final step
                                 let label = '';
                                 if (step === 'final') {
                                     label = applicationStatus === 'selected' ? 'Selected' :
@@ -153,7 +148,6 @@ function JobDetails() {
                                             >
                                                 {i + 1}
                                             </div>
-
                                             <div className="text-white small mt-1 text-center" style={{ width: "80px" }}>
                                                 {label}
                                             </div>
@@ -172,14 +166,10 @@ function JobDetails() {
                                     </div>
                                 );
                             })}
-
                             </div>
                         </div>
                         )}
-
-
                     </div>
-                    
                 </div>
             </Container>
         </div>
@@ -196,24 +186,23 @@ function JobDetails() {
                         <p><strong>Employment Type:</strong> {job.employment_type}</p>
                         <p><strong>Disability Status:</strong> {job.disability_status}</p>
                     </div>
-                    
                     <p style={{ whiteSpace: "pre-line" }}>{job.description}</p>
-
                 </div>
             </Container>
+
             <Container className="bg-white rounded shadow px-sm-5 px-3 py-4 mb-5">
                 <div className="mb-3">
                     <strong>Skills Required:</strong>
                     <div className="mt-1">
-                    {job.skills.split(',').map((skill, i) => (
-                        <Badge key={i} className="me-1 bg-blue">{skill.trim()}</Badge>
-                    ))}
+                        {job.skills.split(',').map((skill, i) => (
+                            <Badge key={i} className="me-1 bg-blue">{skill.trim()}</Badge>
+                        ))}
                     </div>
                 </div>
             </Container>
         </div>
     </div>
-    )
+    );
 }
 
-export default JobDetails
+export default JobDetails;
