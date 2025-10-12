@@ -113,7 +113,7 @@ router.get('/admin/:adminId', async (req, res) => {
 });0 
 
 
-// GET matching jobs for a seeker
+// JOB SKILLS MATCHING
 router.get('/seeker/:id', async (req, res) => {
   const seekerId = req.params.id;
 

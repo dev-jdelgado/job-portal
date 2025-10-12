@@ -85,15 +85,21 @@ router.post('/verify-email', async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.id;
 
-    // 2. Update the user's status to verified
-    const [result] = await db.execute(
+    // 2. Check the user's verification status
+    const [users] = await db.execute('SELECT is_verified FROM users WHERE id = ?', [userId]);
+    if (users.length === 0) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    if (users[0].is_verified) {
+      return res.json({ message: 'Your email has already been verified.' });
+    }
+
+    // 3. Update the user's status to verified
+    await db.execute(
       'UPDATE users SET is_verified = 1, verification_token = NULL WHERE id = ?',
       [userId]
     );
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'User not found or already verified.' });
-    }
 
     res.json({ message: 'Email verified successfully!' });
 
