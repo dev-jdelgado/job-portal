@@ -85,33 +85,33 @@ function JobDetails() {
     // ✅ Upload handler with confirmation
     const handleUpload = async (e) => {
         e.preventDefault();
-
         if (!window.confirm("Are you sure you want to upload these documents?")) return;
-
+      
         const formData = new FormData();
         formData.append("seeker_id", seekerId);
         formData.append("job_id", id);
-
+      
         if (e.target.sss?.files[0]) formData.append("sssFile", e.target.sss.files[0]);
         if (e.target.pagibig?.files[0]) formData.append("pagibigFile", e.target.pagibig.files[0]);
         if (e.target.philhealth?.files[0]) formData.append("philhealthFile", e.target.philhealth.files[0]);
-
+      
         try {
-        const res = await axios.post(`${API_URL}/jobs/applications/additional-requirements`, formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-        });
-        alert("Documents uploaded successfully!");
-
-        // ✅ Refresh uploadedDocs state to hide uploaded inputs
-        const updated = res.data.uploaded || {}; 
-        setUploadedDocs({
-            sss: uploadedDocs.sss || !!updated.sss,
-            pagibig: uploadedDocs.pagibig || !!updated.pagibig,
-            philhealth: uploadedDocs.philhealth || !!updated.philhealth,
-        });
+            const res = await axios.post(`${API_URL}/jobs/applications/additional-requirements`, formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+        
+            alert(res.data.message || "Documents uploaded successfully!");
+        
+            const uploaded = res.data.uploaded || {};
+            setUploadedDocs(prev => ({
+                sss: prev.sss || uploaded.sss,
+                pagibig: prev.pagibig || uploaded.pagibig,
+                philhealth: prev.philhealth || uploaded.philhealth,
+            }));
+      
         } catch (err) {
-        console.error(err);
-        alert("Error uploading documents. Please try again.");
+            console.error(err);
+            alert("Error uploading documents. Please try again.");
         }
     };
 
@@ -146,6 +146,67 @@ function JobDetails() {
                             <p className="text-white mt-1 mb-0 mx-auto">
                             You applied on <strong>{new Date(appliedAt).toLocaleString()}</strong>
                             </p>
+                        )}
+
+                        {/* Application Status Tracker */}
+                        {applied && (
+                        <div className="mt-4 mx-auto text-center">
+                            <h5 className="text-white mb-4">Application Status Tracker</h5>
+                            <div className="d-flex align-items-center justify-content-center flex-wrap gap-2">
+                            {['applied', 'shortlisted', 'interviewed', 'final'].map((step, i, steps) => {
+                                const statusOrder = { applied: 1, shortlisted: 2, interviewed: 3, final: 4 };
+                                const currentStatus = applicationStatus === 'selected' ? 'final' :
+                                                    applicationStatus === 'rejected' ? 'final' :
+                                                    applicationStatus;
+                                const current = statusOrder[currentStatus] || 0;
+                                const stepValue = statusOrder[step] || 0;
+                                const isActive = stepValue <= current;
+                                const isCurrent = stepValue === current;
+                                let label = '';
+                                if (step === 'final') {
+                                    label = applicationStatus === 'selected' ? 'Selected' :
+                                            applicationStatus === 'rejected' ? 'Rejected' :
+                                            'Final';
+                                } else {
+                                    label = step.charAt(0).toUpperCase() + step.slice(1);
+                                }
+
+                                return (
+                                    <div key={step} className="d-flex align-items-center">
+                                        <div>
+                                            <div
+                                                className="rounded-circle d-flex align-items-center justify-content-center mx-auto"
+                                                style={{
+                                                    width: '50px',
+                                                    height: '50px',
+                                                    backgroundColor: isActive ? (isCurrent ? '#198754' : '#198754') : '#dee2e6',
+                                                    color: isActive ? '#fff' : '#6c757d',
+                                                    fontWeight: 'bold',
+                                                    fontSize: '1.1rem',
+                                                }}
+                                            >
+                                                {i + 1}
+                                            </div>
+                                            <div className="text-white small mt-1 text-center" style={{ width: "80px" }}>
+                                                {label}
+                                            </div>
+                                        </div>
+
+                                        {i < steps.length - 1 && (
+                                            <div
+                                                style={{
+                                                    height: '3px',
+                                                    width: '40px',
+                                                    marginBottom: '20px',
+                                                    backgroundColor: statusOrder[steps[i + 1]] <= current ? '#198754' : '#dee2e6',
+                                                }}
+                                            ></div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                            </div>
+                        </div>
                         )}
 
                         {/* ✅ Additional Upload Section */}

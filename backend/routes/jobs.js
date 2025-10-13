@@ -306,7 +306,6 @@ router.post(
   }
 );
 
-// Upload additional requirements (SSS, Pag-IBIG, PhilHealth)
 router.post(
   '/applications/additional-requirements',
   upload.fields([
@@ -323,21 +322,32 @@ router.post(
       const pagibigUrl = req.savedFiles.pagibigFile || null;
       const philhealthUrl = req.savedFiles.philhealthFile || null;
 
-      // ✅ Update existing application record with uploaded file URLs
+      // ✅ Update application record
       await db.execute(
         `UPDATE applications 
-         SET sss_url = ?, pagibig_url = ?, philhealth_url = ?
+         SET sss_url = COALESCE(?, sss_url),
+             pagibig_url = COALESCE(?, pagibig_url),
+             philhealth_url = COALESCE(?, philhealth_url)
          WHERE seeker_id = ? AND job_id = ?`,
         [sssUrl, pagibigUrl, philhealthUrl, seeker_id, job_id]
       );
 
-      // ✅ Optional: send in-app notification
+      // ✅ Add notification (optional)
       await db.execute('INSERT INTO notifications (user_id, message) VALUES (?, ?)', [
         seeker_id,
         `Your additional employment requirements for Job ID ${job_id} have been uploaded successfully.`,
       ]);
 
-      res.status(200).json({ message: "Additional requirements uploaded successfully!" });
+      // ✅ Respond with the updated document info
+      res.status(200).json({
+        message: "Additional requirements uploaded successfully!",
+        uploaded: {
+          sss: !!sssUrl,
+          pagibig: !!pagibigUrl,
+          philhealth: !!philhealthUrl,
+        },
+      });
+
     } catch (err) {
       console.error("Error uploading additional requirements:", err);
       res.status(500).json({ error: "Server error uploading additional requirements." });
