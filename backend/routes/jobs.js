@@ -306,6 +306,74 @@ router.post(
   }
 );
 
+// Upload additional requirements (SSS, Pag-IBIG, PhilHealth)
+router.post(
+  '/applications/additional-requirements',
+  upload.fields([
+    { name: 'sssFile', maxCount: 1 },
+    { name: 'pagibigFile', maxCount: 1 },
+    { name: 'philhealthFile', maxCount: 1 }
+  ]),
+  supabaseUploadMiddleware,
+  async (req, res) => {
+    const { seeker_id, job_id } = req.body;
+
+    try {
+      const sssUrl = req.savedFiles.sssFile || null;
+      const pagibigUrl = req.savedFiles.pagibigFile || null;
+      const philhealthUrl = req.savedFiles.philhealthFile || null;
+
+      // ✅ Update existing application record with uploaded file URLs
+      await db.execute(
+        `UPDATE applications 
+         SET sss_url = ?, pagibig_url = ?, philhealth_url = ?
+         WHERE seeker_id = ? AND job_id = ?`,
+        [sssUrl, pagibigUrl, philhealthUrl, seeker_id, job_id]
+      );
+
+      // ✅ Optional: send in-app notification
+      await db.execute('INSERT INTO notifications (user_id, message) VALUES (?, ?)', [
+        seeker_id,
+        `Your additional employment requirements for Job ID ${job_id} have been uploaded successfully.`,
+      ]);
+
+      res.status(200).json({ message: "Additional requirements uploaded successfully!" });
+    } catch (err) {
+      console.error("Error uploading additional requirements:", err);
+      res.status(500).json({ error: "Server error uploading additional requirements." });
+    }
+  }
+);
+
+// ✅ Fetch already uploaded additional requirements for a seeker
+router.get('/applications/additional-documents', async (req, res) => {
+  const { seeker_id, job_id } = req.query;
+
+  try {
+    const [rows] = await db.execute(
+      `SELECT sss_url, pagibig_url, philhealth_url 
+       FROM applications 
+       WHERE seeker_id = ? AND job_id = ?`,
+      [seeker_id, job_id]
+    );
+
+    if (rows.length === 0) {
+      return res.json({ sss: null, pagibig: null, philhealth: null });
+    }
+
+    const record = rows[0];
+    res.json({
+      sss: record.sss_url || null,
+      pagibig: record.pagibig_url || null,
+      philhealth: record.philhealth_url || null
+    });
+  } catch (err) {
+    console.error("Error fetching uploaded documents:", err);
+    res.status(500).json({ error: "Server error fetching uploaded documents." });
+  }
+});
+
+
 // Remove Notification When Clicked
 router.post('/notifications/mark-read/:id', async (req, res) => {
   const { id } = req.params;
@@ -391,7 +459,7 @@ router.get('/applicants/:jobId', async (req, res) => {
   const { jobId } = req.params;
 
   try {
-    // ... (1. Get job's requirements - this part is unchanged) ...
+    // 1. Get job's requirements
     const [jobRows] = await db.execute('SELECT * FROM jobs WHERE id = ?', [jobId]);
     if (jobRows.length === 0) {
       return res.status(404).json({ error: 'Job not found' });
@@ -401,13 +469,14 @@ router.get('/applicants/:jobId', async (req, res) => {
     const jobEducation = job.education?.toLowerCase() || '';
     const jobDisabilityStatus = job.disability_status || 'Non-PWD';
 
-    // In GET /applicants/:jobId
+    // 2. Fetch applicants including all file URLs
     const [applicants] = await db.execute(`
       SELECT 
         u.id, u.name, u.email, u.education, u.skills, u.disability_status, 
         u.date_of_birth, u.address, u.phone_number, u.pwd_id_image,
         a.pds_url, a.application_letter_url, a.diploma_url, a.tor_url,
         a.eligibility_url, a.performance_rating_url, a.trainings_url,
+        a.sss_url, a.pagibig_url, a.philhealth_url, 
         a.applied_at, a.id AS applicationId, a.status,
         a.job_id AS jobId,
         j.title AS job_title
@@ -427,27 +496,25 @@ router.get('/applicants/:jobId', async (req, res) => {
         "communication", "teamwork", "time management", "problem solving",
         "critical thinking", "adaptability", "leadership", "work ethic"
       ]);
-      
+
       const matchedSkills = seekerSkills.filter(skill => jobSkills.includes(skill));
       const matchedUniversal = matchedSkills.filter(skill => universalSkillsSet.has(skill));
       const matchedNonUniversal = matchedSkills.filter(skill => !universalSkillsSet.has(skill));
-      
+
       const skillMatchCount = matchedNonUniversal.length + (matchedNonUniversal.length > 0 ? matchedUniversal.length : 0);
-      
       const educationMatch = (skillMatchCount > 0 && jobEducation === seekerEducation) ? 1 : 0;
 
       let disabilityMatch = 0;
       if (seekerDisabilityStatus === 'PWD' && jobDisabilityStatus === 'PWD') {
         disabilityMatch = 1;
       }
-      
-      const matchScore = (disabilityMatch * 1000) + (educationMatch * 1) + skillMatchCount;
 
+      const matchScore = (disabilityMatch * 1000) + (educationMatch * 1) + skillMatchCount;
 
       return {
         ...applicant,
         matchScore,
-        age: calculateAge(applicant.date_of_birth), // ADDED age calculation
+        age: calculateAge(applicant.date_of_birth),
       };
     });
 
@@ -558,6 +625,7 @@ router.put('/applications/:applicationId/status', async (req, res) => {
         <p>Hi <strong>${applicant.name}</strong>,</p>
         <p>Thank you for attending the interview for the <strong>${applicant.job_title}</strong> position.</p>
         <p>We appreciate your time and interest. We'll contact you about the next steps.</p>
+        <p>If you have any concerns or question, feel free to message the HR via the messaging feature on the SkillLink Website or send us an email.</p>
         <p>Best regards,<br/>HR Team</p>
       `;
       notificationMessage = `You were marked as interviewed for "${applicant.job_title}".`;
@@ -567,6 +635,7 @@ router.put('/applications/:applicationId/status', async (req, res) => {
       html = `
         <p>Hi <strong>${applicant.name}</strong>,</p>
         <p>We're thrilled to inform you that you’ve been <strong>selected</strong> for the <strong>${applicant.job_title}</strong> position.</p>
+        <p>Please view the application status on the SkillLink Website and upload the additional requirements there.</p>
         <p>We will be reaching out with further instructions shortly.</p>
         <p>Congratulations again!</p>
         <p>Best regards,<br/>HR Team</p>

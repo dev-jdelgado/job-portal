@@ -26,7 +26,11 @@ export const ApplicantDetailsModal = ({ show, onHide, applicant }) => {
     { key: 'diploma_url', label: 'Diploma' },
     { key: 'tor_url', label: 'TOR' },
     { key: 'trainings_url', label: 'Trainings' },
-    { key: 'pwd_id_image', label: 'PWD ID' } // Only for PWD applicants
+    { key: 'pwd_id_image', label: 'PWD ID' },
+    // ✅ Added for Additional Requirements
+    { key: 'sss_url', label: 'SSS' },
+    { key: 'pagibig_url', label: 'Pag-IBIG' },
+    { key: 'philhealth_url', label: 'PhilHealth' }
   ];
 
   return (
