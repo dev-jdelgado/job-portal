@@ -10,6 +10,7 @@ const path = require('path');
 
 const { google } = require('googleapis');
 const OAuth2 = google.auth.OAuth2;
+const { sendEmail } = require('./gmailMailer');
 
 const oAuth2Client = new OAuth2(
   process.env.GMAIL_CLIENT_ID,
@@ -56,18 +57,16 @@ router.post('/send-verification', async (req, res) => {
 
     const transporter = await createTransporter(); 
 
-    await transporter.sendMail({
-      from: `Job Portal <${process.env.GMAIL_USER}>`,
-      to: userEmail,
-      subject: 'Verify Your Email Address',
-      html: `
+    await sendEmail(
+      userEmail,
+      'Verify Your Email Address',
+      `
         <p>Hello,</p>
         <p>Thank you for registering. Please click the link below to verify your email address:</p>
         <a href="${verificationUrl}" style="background-color: #007bff; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Verify Email</a>
         <p>This link will expire in 1 hour.</p>
-        <p>If you did not request this, please ignore this email.</p>
-      `,
-    });
+      `
+    );
 
     res.json({ message: 'Verification email sent successfully.' });
 
