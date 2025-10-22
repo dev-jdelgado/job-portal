@@ -183,18 +183,17 @@ router.post('/forgot-password', async (req, res) => {
     const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
     // 4. Send the reset email
-    await transporter.sendMail({
-      from: process.env.GMAIL_USER,
-      to: user.email,
-      subject: 'Password Reset Request',
-      html: `
+    await sendEmail(
+      user.email,
+      'Password Reset Request',
+      `
         <p>Hello,</p>
         <p>We received a request to reset your password. Click the link below to set a new one:</p>
         <a href="${resetUrl}" style="background-color: #007bff; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Reset Password</a>
         <p>This link will expire in 15 minutes.</p>
         <p>If you did not request this, please ignore this email.</p>
-      `,
-    });
+      `
+    );
 
     res.json({ message: 'If a user with that email exists, a password reset link has been sent.' });
 
