@@ -8,50 +8,56 @@ const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const path = require('path');
 
-// Nodemailer transporter setup (re-using your existing setup)
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS,
-  },
+const { google } = require('googleapis');
+const OAuth2 = google.auth.OAuth2;
+
+const oAuth2Client = new OAuth2(
+  process.env.GMAIL_CLIENT_ID,
+  process.env.GMAIL_CLIENT_SECRET,
+  'https://developers.google.com/oauthplayground' // redirect URI
+);
+
+oAuth2Client.setCredentials({
+  refresh_token: process.env.GMAIL_REFRESH_TOKEN,
 });
+
+// Create transporter dynamically when needed
+async function createTransporter() {
+  const accessToken = await oAuth2Client.getAccessToken();
+
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      type: 'OAuth2',
+      user: process.env.GMAIL_USER,
+      clientId: process.env.GMAIL_CLIENT_ID,
+      clientSecret: process.env.GMAIL_CLIENT_SECRET,
+      refreshToken: process.env.GMAIL_REFRESH_TOKEN,
+      accessToken: accessToken.token,
+    },
+  });
+}
 
 // === ROUTE TO SEND VERIFICATION EMAIL ===
 router.post('/send-verification', async (req, res) => {
   const { userId } = req.body;
 
-  if (!userId) {
-    return res.status(400).json({ error: 'User ID is required.' });
-  }
+  if (!userId) return res.status(400).json({ error: 'User ID is required.' });
 
   try {
-    // 1. Fetch user email
     const [rows] = await db.execute('SELECT email FROM users WHERE id = ?', [userId]);
-    if (rows.length === 0) {
-      return res.status(404).json({ error: 'User not found.' });
-    }
+    if (rows.length === 0) return res.status(404).json({ error: 'User not found.' });
     const userEmail = rows[0].email;
 
-    // 2. Create a verification token that expires in 1 hour
-    const verificationToken = jwt.sign(
-      { id: userId },
-      process.env.JWT_SECRET, 
-      { expiresIn: '1h' }
-    );
+    const verificationToken = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    await db.execute('UPDATE users SET verification_token = ? WHERE id = ?', [verificationToken, userId]);
 
-    // 3. Save the token to the user's record 
-    await db.execute(
-      'UPDATE users SET verification_token = ? WHERE id = ?',
-      [verificationToken, userId]
-    );
-
-    // 4. Create the verification URL for the frontend
     const verificationUrl = `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
 
-    // 5. Send the email
+    const transporter = await createTransporter(); 
+
     await transporter.sendMail({
-      from: process.env.GMAIL_USER,
+      from: `Job Portal <${process.env.GMAIL_USER}>`,
       to: userEmail,
       subject: 'Verify Your Email Address',
       html: `
