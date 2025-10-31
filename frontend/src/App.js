@@ -6,6 +6,8 @@ import AdminDashboard from './pages/AdminDashboard';
 import PrivateRoute from './components/PrivateRoute';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import { Navigate } from 'react-router-dom';
 import AdminCreateUser from './pages/AdminCreateUser';
 import JobDetails from './pages/JobDetails'
@@ -32,81 +34,117 @@ function HomeRedirect() {
 // Wrapper component for App that uses hooks
 function AppRoutes() {
   const location = useLocation();
-  const hideNavbar = location.pathname === '/login' 
-                    || location.pathname === '/register'
-                    || location.pathname === '/forgot-password' 
-                    || location.pathname.startsWith('/reset-password') 
-                    || location.pathname.startsWith('/verify-email');
+  const { user } = useAuth();
+
+  const hideNavbar =
+    location.pathname === '/login' ||
+    location.pathname === '/register' ||
+    location.pathname === '/forgot-password' ||
+    location.pathname.startsWith('/reset-password') ||
+    location.pathname.startsWith('/verify-email');
+
   return (
-    <>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100vh',
+      }}
+    >
       {!hideNavbar && <Navbar />}
-      <Routes>
-        <Route path="/" element={<HomeRedirect />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
 
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+      <div style={{ flex: '1' }}>
+        <Routes>
+          <Route path="/" element={<HomeRedirect />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+          <Route path="/verify-email/:token" element={<EmailVerificationHandler />} />
 
-        <Route path="/verify-email/:token" element={<EmailVerificationHandler />} />
+          <Route
+            path="/seeker-dashboard"
+            element={
+              <PrivateRoute allowedRoles={['seeker']}>
+                <SeekerDashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route path="/jobs/:id" element={<JobDetails />} />
+          <Route path="/apply/:id" element={<ApplyPage />} />
 
-        <Route path="/seeker-dashboard" element={
-          <PrivateRoute allowedRoles={['seeker']}>
-            <SeekerDashboard />
-          </PrivateRoute>
-        } />
-        <Route path="/jobs/:id" element={<JobDetails />} />
-        <Route path="/apply/:id" element={<ApplyPage />} />
+          <Route
+            path="/admin-dashboard"
+            element={
+              <PrivateRoute allowedRoles={['admin']}>
+                <AdminDashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/create-user"
+            element={
+              <PrivateRoute allowedRoles={['admin']}>
+                <AdminCreateUser />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/job/:jobId/applicants"
+            element={
+              <PrivateRoute allowedRoles={['admin']}>
+                <JobApplicantsPage />
+              </PrivateRoute>
+            }
+          />
 
-        <Route path="/admin-dashboard" element={
-          <PrivateRoute allowedRoles={['admin']}>
-            <AdminDashboard />
-          </PrivateRoute>
-        } />
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute allowedRoles={['seeker']}>
+                <ProfilePage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/job-applications"
+            element={
+              <PrivateRoute allowedRoles={['seeker']}>
+                <JobApplicationsPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/account-settings"
+            element={
+              <PrivateRoute allowedRoles={['seeker', 'admin']}>
+                <AccountSettingsPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/messaging"
+            element={
+              <PrivateRoute allowedRoles={['seeker']}>
+                <SeekerMessagingPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/messaging"
+            element={
+              <PrivateRoute allowedRoles={['admin']}>
+                <AdminMessagingPage />
+              </PrivateRoute>
+            }
+          />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        </Routes>
+      </div>
 
-        <Route path="/admin/create-user" element={
-          <PrivateRoute allowedRoles={['admin']}>
-            <AdminCreateUser />
-          </PrivateRoute>
-          } />
-
-        <Route path="/admin/job/:jobId/applicants" element={
-  <         PrivateRoute allowedRoles={['admin']}>
-            <JobApplicantsPage />
-           </PrivateRoute>
-           } />
-        
-        <Route path="/profile" element={
-          <PrivateRoute allowedRoles={['seeker']}>
-            <ProfilePage />
-          </PrivateRoute>
-        } />
-
-        <Route path="/job-applications" element={
-          <PrivateRoute allowedRoles={['seeker']}>
-            <JobApplicationsPage />
-          </PrivateRoute>
-        } />
-
-        <Route path="/account-settings" element={
-          <PrivateRoute allowedRoles={['seeker', 'admin']}>
-            <AccountSettingsPage />
-          </PrivateRoute>
-        } />
-
-        <Route path="/messaging" element={
-          <PrivateRoute allowedRoles={['seeker']}>
-            <SeekerMessagingPage />
-          </PrivateRoute>
-        } />
-        <Route path="/admin/messaging" element={
-          <PrivateRoute allowedRoles={['admin']}>
-            <AdminMessagingPage />
-          </PrivateRoute>
-        } />
-
-      </Routes>
-    </>
+      {/* ✅ Footer shows only for seekers */}
+      {!hideNavbar && user?.role === 'seeker' && <Footer />}
+    </div>
   );
 }
 
