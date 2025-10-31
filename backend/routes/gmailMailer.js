@@ -1,4 +1,3 @@
-// gmailMailer.js
 require('dotenv').config();
 const { google } = require('googleapis');
 
@@ -12,9 +11,28 @@ const oAuth2Client = new google.auth.OAuth2(
 
 oAuth2Client.setCredentials({ refresh_token: process.env.GMAIL_REFRESH_TOKEN });
 
+async function ensureValidAccessToken() {
+  try {
+    // Attempt to get a fresh access token
+    const tokenResponse = await oAuth2Client.getAccessToken();
+    if (!tokenResponse?.token) throw new Error('Failed to refresh access token');
+    return tokenResponse.token;
+  } catch (err) {
+    console.error('⚠️ Failed to refresh Gmail access token:', err.message);
+    throw new Error(
+      'Gmail refresh token may be expired or revoked. Reauthorize the app to get a new one.'
+    );
+  }
+}
+
 async function sendEmail(to, subject, html) {
   try {
-    const gmail = google.gmail({ version: 'v1', auth: oAuth2Client });
+    const accessToken = await ensureValidAccessToken();
+
+    const gmail = google.gmail({
+      version: 'v1',
+      auth: oAuth2Client,
+    });
 
     const messageParts = [
       `From: "Job Portal" <${process.env.GMAIL_USER}>`,
@@ -39,8 +57,13 @@ async function sendEmail(to, subject, html) {
 
     console.log('✅ Email sent successfully via Gmail API');
   } catch (error) {
-    console.error('❌ Error sending email via Gmail API:', error);
-    throw error;
+    if (error.message.includes('invalid_grant')) {
+      console.error(
+        '❌ Gmail refresh token has expired or been revoked. You must reauthorize and update the refresh token.'
+      );
+    } else {
+      console.error('❌ Error sending email via Gmail API:', error);
+    }
   }
 }
 
