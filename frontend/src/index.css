@@ -71,7 +71,7 @@ code {
 /* === FAQ Chat Popup Styles === */
 .faq-popup {
   width: 700px !important;
-  max-height: 70vh !important;
+  max-height: 75vh !important;
   border-radius: 12px;
   background-color: #f9fafb;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);

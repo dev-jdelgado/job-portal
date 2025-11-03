@@ -28,20 +28,52 @@ const Navbar = () => {
 
   const faqs = [
     {
-      q: "How do I apply for a job?",
-      a: "Go to the Jobs page, click on a job, and press 'Apply' to submit your application.",
+      q: "I am a person with disability (PWD). How can I register on SkillLink?",
+      a: "Go to the registration page and fill out your personal details. In the “PWD Category” section, select your disability type and upload your valid PWD ID to verify your status.",
     },
     {
-      q: "Can I update my profile later?",
-      a: "Yes. You can edit your profile anytime in 'My Profile' under the dropdown menu.",
+      q: "What if I don’t have a PWD ID yet?",
+      a: "You can still register, but your account will be marked as “Pending Verification” until you upload your PWD ID or supporting documents verified by the HRMO.",
     },
     {
-      q: "Where can I check my application status?",
-      a: "Visit 'Job Applications' in your account dropdown to see your current status.",
+      q: "Can a family member or guardian register for me?",
+      a: "Yes. A guardian can assist in creating your account, but your personal and employment details must reflect your own information.",
     },
     {
-      q: "I forgot my password. What should I do?",
-      a: "Click on 'Forgot Password?' on the login page to reset your credentials.",
+      q: "Are there jobs specifically for PWDs?",
+      a: "Yes. The system has a dedicated section for PWD-targeted job listings, verified and posted by the Provincial Government of Quezon through HRMO.",
+    },
+    {
+      q: "Can I apply for non-PWD jobs?",
+      a: "Absolutely. SkillLink promotes equal employment opportunities, and you may apply for any job that matches your skills and qualifications.",
+    },
+    {
+      q: "How do I know if my job application was submitted successfully?",
+      a: "Once you submit your application, you’ll receive a confirmation message and can check your “Application Status” on your dashboard.",
+    },
+    {
+      q: "Is SkillLink accessible for visually impaired users?",
+      a: "Yes. The system is designed with accessibility features such as screen reader compatibility, high-contrast mode, and keyboard navigation support.",
+    },
+    {
+      q: "What should I do if I encounter difficulty using the website?",
+      a: "You may contact the SkillLink Support Team or visit the Help Center. The HRMO also provides assistance to PWD applicants who need technical or physical support.",
+    },
+    {
+      q: "Can I request assistance in filling out online forms?",
+      a: "Yes. Assistance is available through the HRMO’s PWD Support Desk, or you can ask a trusted person to help you complete the forms online. Documents & Verification",
+    },
+    {
+      q: "What documents are required for PWD verification?",
+      a: "You’ll need to upload a valid PWD ID issued by your local government unit (LGU) or a medical certification confirming your disability.",
+    },
+    {
+      q: "How long does verification take?",
+      a: "Verification usually takes 1–3 business days. You’ll receive an email or notification once your account is verified.",
+    },
+    {
+      q: "Who reviews my PWD verification?",
+      a: "The Human Resource Management Office (HRMO) of the Provincial Government of Quezon verifies and approves all PWD-related registrations.",
     },
   ];
 
