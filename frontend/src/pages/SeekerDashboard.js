@@ -273,7 +273,6 @@ function SeekerDashboard() {
                       <Card.Body className="job-card-body">
                         <div>
                           <div className="job-header">
-                            <Card.Title className="job-title">{job.title}</Card.Title>
                             <div className="job-badges">
                               {seekerDisability === 'PWD' && job.disability_status === 'PWD' && (
                                 <>
@@ -296,6 +295,7 @@ function SeekerDashboard() {
                               )}
                               {matchBadge}
                             </div>
+                            <Card.Title className="job-title">{job.title}</Card.Title>
                           </div>
                           <Card.Text className="job-description multiline-truncate">{job.description}</Card.Text>
                           <div className="job-details">
