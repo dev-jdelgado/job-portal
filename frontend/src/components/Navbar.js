@@ -504,9 +504,11 @@ const Navbar = () => {
                     <Link to="/profile" style={dropdownItemStyle}>
                       My Profile
                     </Link>
-                    <Link to="/job-applications" style={dropdownItemStyle}>
-                      Job Applications
-                    </Link>
+                    {user.role === "seeker" && (
+                      <Link to="/job-applications" style={dropdownItemStyle}>
+                        Job Applications
+                      </Link>
+                    )}
                     <Link to="/account-settings" style={dropdownItemStyle}>
                       Account Settings
                     </Link>
