@@ -31,7 +31,7 @@ const Engineering_skillOptions = [
 ];
 
 const Universal_skillOptions = [
-  "Communication", "Teamwork", "Time Management", "Problem Solving", "Critical Thinking", "Adaptability", "Leadership", "Work Ethic"
+  "Communication", "Teamwork", "Time Management", "Problem Solving", "Critical Thinking", "Adaptability", "Leadership", "Work Ethic", "Active Listening", "Troubleshooting Skills", "Computer Literacy", "Digital Literacy", "MS Office Proficiency"
 ];
 
 function JobPostModal({ show, handleClose, adminId, onJobPosted, jobToEdit, startStep = 1 }) {

@@ -158,7 +158,7 @@ router.get('/seeker/:id', async (req, res) => {
       // Lowercased universal skill set
       const universalSkillsSet = new Set([
         "communication", "teamwork", "time management", "problem solving",
-        "critical thinking", "adaptability", "leadership", "work ethic"
+        "critical thinking", "adaptability", "leadership", "work ethic", "active listening", "troubleshooting skills", "computer literacy", "digital literacy", "ms office proficiency"
       ]);
 
       const matchedSkills = seekerSkills.filter(skill => jobSkills.includes(skill));

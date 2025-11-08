@@ -50,7 +50,7 @@ function ProfilePage() {
     { title: "Marketing & Communications", options: ["SEO/SEM", "Content Writing/Copywriting", "Social Media Marketing", "Google Ads/Facebook Ads", "Email Marketing", "Analytics", "Brand Management", "Video Editing/Multimedia"] },
     { title: "Finance & Accounting", options: ["Bookkeeping", "Financial Analysis", "Accounting Software", "Tax Preparation", "Auditing", "Payroll Management"] },
     { title: "Engineering & Technical", options: ["AutoCAD/SolidWorks", "Electrical Design", "Civil Engineering Tools", "Mechanical Design", "Process Engineering"] },
-    { title: "Soft Skills (Universal)", options: ["Communication", "Teamwork", "Time Management", "Problem Solving", "Critical Thinking", "Adaptability", "Leadership", "Work Ethic"] },
+    { title: "Soft Skills (Universal)", options: ["Communication", "Teamwork", "Time Management", "Problem Solving", "Critical Thinking", "Adaptability", "Leadership", "Work Ethic", "Active Listening", "Troubleshooting Skills", "Computer Literacy", "Digital Literacy", "MS Office Proficiency"] },
   ];
 
   useEffect(() => {
