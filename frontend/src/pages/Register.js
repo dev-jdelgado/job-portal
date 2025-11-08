@@ -71,12 +71,12 @@ export default function Register() {
           showToast('Registration complete! Redirecting to login...', 'success');
           setTimeout(() => navigate('/login'), 2000);
         } catch (err) {
-          // Check if the error is about duplicate email
-          if (err.response?.data?.message?.toLowerCase().includes('email')) {
-              showToast('This email is already registered. Please use a different email.', 'danger');
-          } else {
-              showToast(err.response?.data?.message || 'Registration failed', 'danger');
-          }
+            const errorMsg = err.response?.data?.msg;
+            if (errorMsg === 'This email is already registered') {
+                showToast('This email is already registered. Please use a different email.', 'danger');
+            } else {
+                showToast(errorMsg || 'Registration failed', 'danger');
+            }
         }
     };
 
