@@ -204,35 +204,50 @@ router.post('/forgot-password', async (req, res) => {
 });
 
 
-// === ROUTE TO PERFORM THE PASSWORD RESET ===
-router.post('/reset-password', async (req, res) => {
-  const { token, newPassword } = req.body;
-  if (!token || !newPassword) {
-    return res.status(400).json({ error: 'Token and new password are required.' });
+// === ROUTE TO REQUEST A PASSWORD RESET (FORGOT PASSWORD) ===
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required.' });
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.id;
+    const [rows] = await db.execute('SELECT id, email FROM users WHERE email = ?', [email]);
+    if (rows.length === 0) {
+      return res.json({ message: 'If a user with that email exists, a password reset link has been sent.' });
+    }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    const user = rows[0];
 
-    await db.execute(
-      'UPDATE users SET password = ? WHERE id = ?',
-      [hashedPassword, userId]
+    const resetToken = jwt.sign(
+      { id: user.id },
+      process.env.JWT_SECRET,
+      { expiresIn: '15m' }
+    );
+    await db.execute('UPDATE users SET reset_token = ? WHERE id = ?', [resetToken, user.id]);
+    const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+    res.json({
+      message: 'If a user with that email exists, a password reset link has been sent.'
+    });
+
+    sendEmail(
+      user.email,
+      'Password Reset Request',
+      `
+        <p>Hello,</p>
+        <p>We received a request to reset your password. Click the link below to set a new one:</p>
+        <a href="${resetUrl}" style="background-color: #007bff; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Reset Password</a>
+        <p>This link will expire in 15 minutes.</p>
+        <p>If you did not request this, please ignore this email.</p>
+      `
     );
 
-    res.json({ message: 'Password has been reset successfully.' });
-
   } catch (error) {
-    if (error instanceof jwt.JsonWebTokenError) {
-      return res.status(401).json({ error: 'Invalid or expired password reset link.' });
-    }
-    console.error('Error resetting password:', error);
+    console.error('Error in forgot-password:', error);
     res.status(500).json({ error: 'Server error.' });
   }
 });
+
 
 // === ROUTE TO DELETE ACCOUNT ===
 router.post('/delete-account', async (req, res) => {
