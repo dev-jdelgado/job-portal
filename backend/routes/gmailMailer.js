@@ -11,60 +11,72 @@ const oAuth2Client = new google.auth.OAuth2(
 
 oAuth2Client.setCredentials({ refresh_token: process.env.GMAIL_REFRESH_TOKEN });
 
+// === Token cache to prevent repeated slow refresh calls ===
+let cachedAccessToken = null;
+let cachedExpiryTime = 0;
+
 async function ensureValidAccessToken() {
-  try {
-    // Attempt to get a fresh access token
-    const tokenResponse = await oAuth2Client.getAccessToken();
-    if (!tokenResponse?.token) throw new Error('Failed to refresh access token');
-    return tokenResponse.token;
-  } catch (err) {
-    console.error('⚠️ Failed to refresh Gmail access token:', err.message);
-    throw new Error(
-      'Gmail refresh token may be expired or revoked. Reauthorize the app to get a new one.'
-    );
-  }
-}
+  const now = Date.now();
+  if (!cachedAccessToken || now >= cachedExpiryTime) {
+    try {
+      const tokenResponse = await oAuth2Client.getAccessToken();
+      if (!tokenResponse?.token) throw new Error('Failed to refresh access token');
 
-async function sendEmail(to, subject, html) {
-  try {
-    const accessToken = await ensureValidAccessToken();
+      cachedAccessToken = tokenResponse.token;
+      // Gmail tokens usually last 3600 seconds (1 hour)
+      cachedExpiryTime = now + 55 * 60 * 1000; // refresh 5 minutes early
 
-    const gmail = google.gmail({
-      version: 'v1',
-      auth: oAuth2Client,
-    });
-
-    const messageParts = [
-      `From: "Job Portal" <${process.env.GMAIL_USER}>`,
-      `To: ${to}`,
-      `Subject: ${subject}`,
-      'Content-Type: text/html; charset=utf-8',
-      '',
-      html,
-    ];
-
-    const message = messageParts.join('\n');
-    const encodedMessage = Buffer.from(message)
-      .toString('base64')
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=+$/, '');
-
-    await gmail.users.messages.send({
-      userId: 'me',
-      requestBody: { raw: encodedMessage },
-    });
-
-    console.log('✅ Email sent successfully via Gmail API');
-  } catch (error) {
-    if (error.message.includes('invalid_grant')) {
-      console.error(
-        '❌ Gmail refresh token has expired or been revoked. You must reauthorize and update the refresh token.'
+      console.log('🔑 Refreshed Gmail access token');
+    } catch (err) {
+      console.error('⚠️ Failed to refresh Gmail access token:', err.message);
+      throw new Error(
+        'Gmail refresh token may be expired or revoked. Reauthorize the app to get a new one.'
       );
-    } else {
-      console.error('❌ Error sending email via Gmail API:', error);
     }
   }
+  return cachedAccessToken;
+}
+
+// === Non-blocking Gmail send ===
+function sendEmail(to, subject, html) {
+  (async () => {
+    try {
+      await ensureValidAccessToken();
+
+      const gmail = google.gmail({ version: 'v1', auth: oAuth2Client });
+
+      const messageParts = [
+        `From: "Job Portal" <${process.env.GMAIL_USER}>`,
+        `To: ${to}`,
+        `Subject: ${subject}`,
+        'Content-Type: text/html; charset=utf-8',
+        '',
+        html,
+      ];
+
+      const message = messageParts.join('\n');
+      const encodedMessage = Buffer.from(message)
+        .toString('base64')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+
+      await gmail.users.messages.send({
+        userId: 'me',
+        requestBody: { raw: encodedMessage },
+      });
+
+      console.log(`✅ Email sent to ${to}`);
+    } catch (error) {
+      if (error.message.includes('invalid_grant')) {
+        console.error(
+          '❌ Gmail refresh token expired or revoked. Please reauthorize and update it.'
+        );
+      } else {
+        console.error('❌ Error sending email via Gmail API:', error);
+      }
+    }
+  })();
 }
 
 module.exports = { sendEmail };
