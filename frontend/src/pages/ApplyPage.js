@@ -248,11 +248,6 @@ function ApplyPage() {
                           onChange={handleFileChange}
                           required
                         />
-                        {/*
-                        <Form.Text className="text-muted">
-                          Accepted formats: PDF, DOC, DOCX (Max size: 5MB)
-                        </Form.Text>
-                        */}
                       </Form.Group>
                     </Col>
 
@@ -267,16 +262,11 @@ function ApplyPage() {
                           onChange={handleFileChange}
                           required
                         />
-                        {/*
-                        <Form.Text className="text-muted">
-                          Accepted formats: PDF, DOC, DOCX (Max size: 5MB)
-                        </Form.Text>
-                        */}
                       </Form.Group>
                     </Col>
                   </Row>
-                  
-                  {/* Performance Rating */}
+
+                  {/* Optional files */}
                   <Form.Group className="mb-3">
                     <Form.Label className="fw-bold">Performance Rating (Last Rating)</Form.Label>
                     <Form.Control
@@ -285,70 +275,46 @@ function ApplyPage() {
                       accept=".pdf,.doc,.docx,.zip,.rar"
                       onChange={handleFileChange}
                     />
-                    {/*
-                    <Form.Text className="text-muted">
-                      Accepted formats: PDF, DOC, DOCX (Max size: 5MB)
-                    </Form.Text>
-                    */}
                   </Form.Group>
 
-                  {/* Authenticated Eligibility */}
                   <Form.Group className="mb-3">
-                    <Form.Label className="fw-bold">Authenticated Eligibility <span className="text-danger">*</span></Form.Label>
-                      <Form.Control
-                          type="file"
-                          name="eligibilityFile"
-                          accept=".pdf,.doc,.docx,.zip,.rar"
-                          onChange={handleFileChange}
-                          required
-                        />
-                      {/*
-                      <Form.Text className="text-muted">
-                        Accepted formats: PDF, DOC, DOCX (Max size: 5MB)
-                      </Form.Text>
-                      */}
+                    <Form.Label className="fw-bold">Authenticated Eligibility</Form.Label>
+                    <Form.Control
+                      type="file"
+                      name="eligibilityFile"
+                      accept=".pdf,.doc,.docx,.zip,.rar"
+                      onChange={handleFileChange}
+                    />
                   </Form.Group>
 
                   <Row className="mb-3">
                     <Col md={6}>
                       {/* Diploma */}
                       <Form.Group className="mb-3">
-                        <Form.Label className="fw-bold">Diploma <span className="text-danger">*</span></Form.Label>
+                        <Form.Label className="fw-bold">Diploma</Form.Label>
                         <Form.Control
                           type="file"
                           name="diplomaFile"
                           accept=".pdf,.doc,.docx,.zip,.rar"
                           onChange={handleFileChange}
-                          required
                         />
-                        {/*
-                        <Form.Text className="text-muted">
-                          Accepted formats: PDF, DOC, DOCX (Max size: 5MB)
-                        </Form.Text>
-                        */}
                       </Form.Group>
                     </Col>
                     <Col md={6}>
                       {/* TOR */}
                       <Form.Group className="mb-3">
-                        <Form.Label className="fw-bold">Transcript of Records (TOR) <span className="text-danger">*</span></Form.Label>
-                          <Form.Control
-                            type="file"
-                            name="torFile"
-                            accept=".pdf,.doc,.docx,.zip,.rar"
-                            onChange={handleFileChange}
-                            required
-                          />
-                          {/*
-                          <Form.Text className="text-muted">
-                            Accepted formats: PDF, DOC, DOCX (Max size: 5MB)
-                          </Form.Text>
-                          */}
+                        <Form.Label className="fw-bold">Transcript of Records (TOR)</Form.Label>
+                        <Form.Control
+                          type="file"
+                          name="torFile"
+                          accept=".pdf,.doc,.docx,.zip,.rar"
+                          onChange={handleFileChange}
+                        />
                       </Form.Group>
                     </Col>
                   </Row>
 
-                  {/* Relevant Trainings Rating */}
+                  {/* Relevant Trainings */}
                   <Form.Group className="mb-3">
                     <Form.Label className="fw-bold">Relevant Trainings</Form.Label>
                     <Form.Control
@@ -357,11 +323,6 @@ function ApplyPage() {
                       accept=".pdf,.doc,.docx,.zip,.rar"
                       onChange={handleFileChange}
                     />
-                      {/*
-                      <Form.Text className="text-muted">
-                        Accepted formats: PDF, DOC, DOCX (Max size: 5MB)
-                      </Form.Text>
-                      */}
                   </Form.Group>
 
                   {/* Error Display */}
