@@ -66,13 +66,29 @@ const JobCard = ({ job, onEdit, onDelete, getBadgeVariant }) => (
                 <Col xs={8} md={3} className="order-2 order-md-4 text-md-end">
                     <div className="d-flex flex-row gap-1 justify-content-end">
                         <Button
-                            className="navy-blue-btn admin-btn"
+                            className="navy-blue-btn admin-btn position-relative"
                             size="sm"
                             as={Link}
                             to={`/admin/job/${job.id}/applicants`}
                             title="View Applicants"
-                        >
+                            >
                             <BsPeopleFill />
+                            {job.new_applicants_count > 0 && (
+                                <span 
+                                className="position-absolute top-0 start-0 translate-middle p-1 bg-danger border border-light rounded-circle"
+                                style={{
+                                    fontSize: '0.60rem',
+                                    minWidth: '1.2rem',
+                                    height: '1.2rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'white',
+                                }}
+                                >
+                                {job.new_applicants_count}
+                                </span>
+                            )}
                         </Button>
                         <Button
                             className="navy-blue-btn admin-btn"

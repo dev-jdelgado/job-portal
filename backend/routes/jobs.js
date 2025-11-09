@@ -127,23 +127,25 @@ router.delete('/:id', async (req, res) => {
 });
 
 
-// GET jobs posted by a specific admin
+// GET jobs posted by a specific admin with unseen applicants count
 router.get('/admin/:adminId', async (req, res) => {
-    const { adminId } = req.params;
-    try {
-      const [rows] = await db.execute(`
-        SELECT j.*, 
-          (SELECT COUNT(*) FROM applications a WHERE a.job_id = j.id) AS applicant_count
-        FROM jobs j
-        WHERE j.admin_id = ?
-        ORDER BY j.created_at DESC
-      `, [adminId]);
-        res.json(rows);
-    } catch (err) {
-        console.error('Error fetching admin jobs:', err);
-        res.status(500).json({ error: 'Server error' });
-    }
-});0 
+  const { adminId } = req.params;
+  try {
+    const [rows] = await db.execute(`
+      SELECT j.*, 
+        (SELECT COUNT(*) FROM applications a WHERE a.job_id = j.id) AS applicant_count,
+        (SELECT COUNT(*) FROM applications a WHERE a.job_id = j.id AND a.seen_by_admin = 0) AS new_applicants_count
+      FROM jobs j
+      WHERE j.admin_id = ?
+      ORDER BY j.created_at DESC
+    `, [adminId]);
+
+    res.json(rows);
+  } catch (err) {
+    console.error('Error fetching admin jobs:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 
 // JOB SKILLS MATCHING
@@ -498,7 +500,14 @@ router.get('/applicants/:jobId', async (req, res) => {
   const { jobId } = req.params;
 
   try {
-    // 1. Get job's requirements
+    // 1. Mark all unseen applicants for this job as seen
+    await db.execute(`
+      UPDATE applications
+      SET seen_by_admin = 1
+      WHERE job_id = ? AND seen_by_admin = 0
+    `, [jobId]);
+
+    // 2. Get job's requirements
     const [jobRows] = await db.execute('SELECT * FROM jobs WHERE id = ?', [jobId]);
     if (jobRows.length === 0) {
       return res.status(404).json({ error: 'Job not found' });
@@ -508,7 +517,7 @@ router.get('/applicants/:jobId', async (req, res) => {
     const jobEducation = job.education?.toLowerCase() || '';
     const jobDisabilityStatus = job.disability_status || 'Non-PWD';
 
-    // 2. Fetch applicants including all file URLs
+    // 3. Fetch applicants including all file URLs
     const [applicants] = await db.execute(`
       SELECT 
         u.id, u.name, u.email, u.education, u.skills, u.disability_status, 
@@ -525,7 +534,7 @@ router.get('/applicants/:jobId', async (req, res) => {
       WHERE a.job_id = ?
     `, [jobId]);
 
-    // 3. Calculate match score and age for each applicant
+    // 4. Calculate match score and age for each applicant
     const rankedApplicants = applicants.map(applicant => {
       const seekerSkills = applicant.skills?.split(',').map(s => s.trim().toLowerCase()) || [];
       const seekerEducation = applicant.education?.toLowerCase() || '';
@@ -558,12 +567,12 @@ router.get('/applicants/:jobId', async (req, res) => {
     });
 
     res.json(rankedApplicants);
+
   } catch (err) {
     console.error("Error fetching applicants:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
-
 
 
 // GET total number of applications across all jobs by an admin
