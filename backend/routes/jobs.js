@@ -95,19 +95,31 @@ router.put('/:id', async (req, res) => {
 // DELETE Job Post
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
+  const { force } = req.query; // e.g., /jobs/:id?force=true
 
   try {
     // Check if there are applicants
-    const [applications] = await db.execute('SELECT COUNT(*) as count FROM applications WHERE job_id = ?', [id]);
-    const applicantCount = applications[0].count;
+    const [applications] = await db.execute(
+      'SELECT COUNT(*) AS total FROM applications WHERE job_id = ?',
+      [id]
+    );
+    const applicantCount = applications[0].total;
 
-    if (applicantCount > 0) {
-      return res.status(400).json({ error: 'Cannot delete job with applicants.' });
+    if (applicantCount > 0 && force !== 'true') {
+      // Job has applicants — require confirmation
+      return res.status(409).json({
+        error: `This job has ${applicantCount} applicant(s). Confirm deletion to proceed.`,
+        applicants: applicantCount,
+      });
     }
 
-    // Proceed to delete
+    // Delete applicants (if any)
+    await db.execute('DELETE FROM applications WHERE job_id = ?', [id]);
+
+    // Delete the job itself
     await db.execute('DELETE FROM jobs WHERE id = ?', [id]);
-    res.json({ message: 'Job deleted successfully' });
+
+    res.json({ message: 'Job and related applications deleted successfully.' });
   } catch (err) {
     console.error('Error deleting job:', err);
     res.status(500).json({ error: 'Server error' });

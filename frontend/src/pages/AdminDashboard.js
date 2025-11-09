@@ -173,29 +173,47 @@ function AdminDashboard() {
         setShowModal(true)
       }
     
-      const handleDeleteJob = async () => {
+      const handleDeleteJob = async (forceDelete = false) => {
         if (!jobToDelete) return;
+      
         try {
-          await axios.delete(`${API_URL}/jobs/${jobToDelete.id}`);
-          
-          setAdminJobs((prev) => prev.filter((job) => job.id !== jobToDelete.id));
+          const url = `${API_URL}/jobs/${jobToDelete.id}${forceDelete ? '?force=true' : ''}`;
+          await axios.delete(url);
+      
+          setAdminJobs(prev => prev.filter(job => job.id !== jobToDelete.id));
           setToastMessage("Job deleted successfully!");
           setToastVariant("danger");
           setToastIconType("exclamation");
           setShowToast(true);
       
-          setJobStats((prev) => ({
+          setJobStats(prev => ({
             ...prev,
             totalJobs: prev.totalJobs - 1,
             activeJobs: prev.activeJobs - 1,
           }));
+      
         } catch (err) {
           console.error("Error deleting job:", err);
+      
+          // ⚠️ If the backend says "confirmation needed"
+          if (err.response?.status === 409) {
+            const confirmDelete = window.confirm(
+              `⚠️ ${err.response.data.error}\n\nDo you want to delete this job and all its applicants?`
+            );
+            if (confirmDelete) {
+              // Retry deletion with force=true
+              return handleDeleteJob(true);
+            } else {
+              return;
+            }
+          }
+      
           const msg = err.response?.data?.error || "Failed to delete job. Please try again.";
           setToastMessage(msg);
           setToastVariant("danger");
           setToastIconType("exclamation");
           setShowToast(true);
+      
         } finally {
           setShowDeleteModal(false);
           setJobToDelete(null);
@@ -293,12 +311,35 @@ function AdminDashboard() {
                 <Modal.Header closeButton className="modal-header">
                     <Modal.Title className="modal-title">Confirm Deletion</Modal.Title>
                 </Modal.Header>
+
                 <Modal.Body>
-                    Are you sure you want to delete the job posting for <strong>{jobToDelete?.title}</strong>? This action cannot be undone.
+                    {jobToDelete?.applicant_count > 0 ? (
+                    <>
+                        <p>
+                        <strong>Warning:</strong> This job has{" "}
+                        <strong>{jobToDelete.applicant_count}</strong>{" "}
+                        {jobToDelete.applicant_count === 1 ? "applicant" : "applicants"}.
+                        </p>
+                        <p>
+                        Deleting this job will also <strong>remove all associated applications</strong>. 
+                        Are you sure you want to continue?
+                        </p>
+                    </>
+                    ) : (
+                    <p>
+                        Are you sure you want to delete the job posting for{" "}
+                        <strong>{jobToDelete?.title}</strong>? This action cannot be undone.
+                    </p>
+                    )}
                 </Modal.Body>
+
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>Cancel</Button>
-                    <Button variant="danger" onClick={handleDeleteJob}>Yes, Delete</Button>
+                    <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+                    Cancel
+                    </Button>
+                    <Button variant="danger" onClick={handleDeleteJob}>
+                    {jobToDelete?.applicant_count > 0 ? "Yes, Delete Anyway" : "Yes, Delete"}
+                    </Button>
                 </Modal.Footer>
             </Modal>
 
