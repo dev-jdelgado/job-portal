@@ -45,30 +45,27 @@ router.post('/send-verification', async (req, res) => {
   if (!userId) return res.status(400).json({ error: 'User ID is required.' });
 
   try {
-    const [rows] = await db.execute('SELECT email FROM users WHERE id = ?', [userId]);
+    const [rows] = await db.execute('SELECT email, name FROM users WHERE id = ?', [userId]);
     if (rows.length === 0) return res.status(404).json({ error: 'User not found.' });
 
-    const userEmail = rows[0].email;
+    const user = rows[0];
     const verificationToken = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
     await db.execute('UPDATE users SET verification_token = ? WHERE id = ?', [verificationToken, userId]);
 
     const verificationUrl = `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
 
-    // ✅ Fully await email send
-    await sendEmail(
-      userEmail,
-      'Verify Your Email Address',
-      `
-        <p>Hello,</p>
-        <p>Thank you for registering. Please click the link below to verify your email address:</p>
-        <a href="${verificationUrl}" style="background-color: #007bff; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Verify Email</a>
-        <p>This link will expire in 1 hour.</p>
-      `
-    );
+    const htmlContent = `
+      <p>Hello ${user.name},</p>
+      <p>Thank you for registering. Please click the link below to verify your email address:</p>
+      <a href="${verificationUrl}" style="background-color: #007bff; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Verify Email</a>
+      <p>This link will expire in 1 hour.</p>
+    `;
+
+    const plainText = `Hello ${user.name},\nPlease verify your email: ${verificationUrl}\nThis link will expire in 1 hour.`;
+
+    await sendEmail(user.email, 'Verify Your Email Address', htmlContent, plainText);
 
     res.json({ message: 'Verification email sent successfully.' });
-
   } catch (error) {
     console.error('Error sending verification email:', error);
     res.status(500).json({ error: 'Server error while sending verification email.' });
@@ -163,33 +160,30 @@ router.post('/forgot-password', async (req, res) => {
   if (!email) return res.status(400).json({ error: 'Email is required.' });
 
   try {
-    const [rows] = await db.execute('SELECT id, email FROM users WHERE email = ?', [email]);
+    const [rows] = await db.execute('SELECT id, name, email FROM users WHERE email = ?', [email]);
     if (rows.length === 0) {
       return res.json({ message: 'If a user with that email exists, a password reset link has been sent.' });
     }
 
     const user = rows[0];
     const resetToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '15m' });
-
     await db.execute('UPDATE users SET reset_token = ? WHERE id = ?', [resetToken, user.id]);
 
     const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
-    // ✅ Fully await email send
-    await sendEmail(
-      user.email,
-      'Password Reset Request',
-      `
-        <p>Hello,</p>
-        <p>We received a request to reset your password. Click the link below to set a new one:</p>
-        <a href="${resetUrl}" style="background-color: #007bff; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Reset Password</a>
-        <p>This link will expire in 15 minutes.</p>
-        <p>If you did not request this, please ignore this email.</p>
-      `
-    );
+    const htmlContent = `
+      <p>Hello ${user.name},</p>
+      <p>We received a request to reset your password. Click the link below to set a new one:</p>
+      <a href="${resetUrl}" style="background-color: #007bff; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Reset Password</a>
+      <p>This link will expire in 15 minutes.</p>
+      <p>If you did not request this, please ignore this email.</p>
+    `;
+
+    const plainText = `Hello ${user.name},\nReset your password here: ${resetUrl}\nThis link will expire in 15 minutes.\nIf you did not request this, ignore this email.`;
+
+    await sendEmail(user.email, 'Password Reset Request', htmlContent, plainText);
 
     res.json({ message: 'If a user with that email exists, a password reset link has been sent.' });
-
   } catch (error) {
     console.error('Error in forgot-password:', error);
     res.status(500).json({ error: 'Server error.' });

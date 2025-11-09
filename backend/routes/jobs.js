@@ -322,7 +322,8 @@ router.post(
           <p>Your application for "<strong>${job.title}</strong>" has been received. Thank you for applying!</p>
           <p>Our HR Team will review your application and contact you for the next steps.</p>
           <p>Warm Regards,<br/>HR Team</p>
-        `
+        `,
+        `Hi ${seeker.name},\nYour application for "${job.title}" has been received. Our HR Team will review it and contact you for next steps.`
       );
 
       res.status(201).json({ message: "Application submitted successfully!" });
@@ -670,7 +671,12 @@ router.put('/applications/:applicationId/status', async (req, res) => {
     }
 
     // ✅ Fully await email send
-    await sendEmail(applicant.email, subject, html);
+    await sendEmail(
+      applicant.email,
+      subject,
+      html,
+      html.replace(/<[^>]+>/g, '') // fallback plain text by stripping HTML
+    );
 
     await db.execute(
       'INSERT INTO notifications (user_id, message) VALUES (?, ?)',
