@@ -38,45 +38,43 @@ async function ensureValidAccessToken() {
 }
 
 // === Non-blocking Gmail send ===
-function sendEmail(to, subject, html) {
-  (async () => {
-    try {
-      await ensureValidAccessToken();
+async function sendEmail(to, subject, html) {
+  try {
+    await ensureValidAccessToken();
 
-      const gmail = google.gmail({ version: 'v1', auth: oAuth2Client });
+    const gmail = google.gmail({ version: 'v1', auth: oAuth2Client });
 
-      const messageParts = [
-        `From: "Job Portal" <${process.env.GMAIL_USER}>`,
-        `To: ${to}`,
-        `Subject: ${subject}`,
-        'Content-Type: text/html; charset=utf-8',
-        '',
-        html,
-      ];
+    const messageParts = [
+      `From: "Job Portal" <${process.env.GMAIL_USER}>`,
+      `To: ${to}`,
+      `Subject: ${subject}`,
+      'Content-Type: text/html; charset=utf-8',
+      '',
+      html,
+    ];
 
-      const message = messageParts.join('\n');
-      const encodedMessage = Buffer.from(message)
-        .toString('base64')
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=+$/, '');
+    const message = messageParts.join('\n');
+    const encodedMessage = Buffer.from(message)
+      .toString('base64')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
 
-      await gmail.users.messages.send({
-        userId: 'me',
-        requestBody: { raw: encodedMessage },
-      });
+    await gmail.users.messages.send({
+      userId: 'me',
+      requestBody: { raw: encodedMessage },
+    });
 
-      console.log(`✅ Email sent to ${to}`);
-    } catch (error) {
-      if (error.message.includes('invalid_grant')) {
-        console.error(
-          '❌ Gmail refresh token expired or revoked. Please reauthorize and update it.'
-        );
-      } else {
-        console.error('❌ Error sending email via Gmail API:', error);
-      }
+    console.log(`✅ Email sent to ${to}`);
+  } catch (error) {
+    if (error.message.includes('invalid_grant')) {
+      console.error(
+        '❌ Gmail refresh token expired or revoked. Please reauthorize and update it.'
+      );
+    } else {
+      console.error('❌ Error sending email via Gmail API:', error);
     }
-  })();
+  }
 }
 
 module.exports = { sendEmail };

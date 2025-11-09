@@ -303,34 +303,30 @@ router.post(
         ]
       );
 
-    // 2. Get seeker info
-    const [[seeker]] = await db.execute('SELECT name, email, phone_number FROM users WHERE id = ?', [seeker_id]);
+      const [[seeker]] = await db.execute(
+        'SELECT name, email FROM users WHERE id = ?', [seeker_id]
+      );
+      const [[job]] = await db.execute('SELECT title FROM jobs WHERE id = ?', [job_id]);
 
-    // 3. Get job title
-    const [[job]] = await db.execute('SELECT title FROM jobs WHERE id = ?', [job_id]);
+      await db.execute(
+        'INSERT INTO notifications (user_id, message) VALUES (?, ?)',
+        [seeker_id, `You successfully applied for "${job.title}".`]
+      );
 
-    // 4. Insert in-app notification
-    await db.execute('INSERT INTO notifications (user_id, message) VALUES (?, ?)', [
-      seeker_id,
-      `You successfully applied for "${job.title}".`
-    ]);
+      // ✅ Fully await email send
+      await sendEmail(
+        seeker.email,
+        'Application Confirmation',
+        `
+          <p>Hi <strong>${seeker.name}</strong>,</p>
+          <p>Your application for "<strong>${job.title}</strong>" has been received. Thank you for applying!</p>
+          <p>Our HR Team will review your application and contact you for the next steps.</p>
+          <p>Warm Regards,<br/>HR Team</p>
+        `
+      );
 
-    // 5. Send email
-    await sendEmail(
-      seeker.email,
-      'Application Confirmation',
-      `
-        <p style="margin: 0;">Hi <strong>${seeker.name}</strong>,</p><br>
-        <p style="margin: 0;">Your application for the position "<strong>${job.title}</strong>" has been received. Thank you so much for applying with us! We truly appreciate the time and effort you’ve put into it.</p><br>
-        <p style="margin: 0;">Our HR Team will be reviewing your application soon, and you can expect to hear from one of our team members via email or a phone call to guide you through the next steps.</p><br>
-        <p style="margin: 0;">We truly appreciate your interest in applying, and we can’t wait to learn more about you!</p><br>
-        <p style="margin: 0;">Warm Regards,</p>
-        <p style="margin: 0;">HR</p>
-      `
-    );
-    
+      res.status(201).json({ message: "Application submitted successfully!" });
 
-    res.status(201).json({ message: "Application submitted successfully!" });
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "Server error" });
@@ -589,30 +585,22 @@ router.get('/admin/:adminId/applications/count', async (req, res) => {
 });
 
 
-// UPDATE application status (shortlist/reject)
+// Update application status
 router.put('/applications/:applicationId/status', async (req, res) => {
   const { applicationId } = req.params;
   const { status, interviewTime } = req.body;
   const { createMeetEvent } = require('../services/googleCalendarService');
 
-
   const validStatuses = ['shortlisted', 'interviewed', 'selected', 'rejected'];
-  if (!validStatuses.includes(status)) {
-    return res.status(400).json({ error: 'Invalid status value.' });
-  }
+  if (!validStatuses.includes(status)) return res.status(400).json({ error: 'Invalid status value.' });
 
   try {
-    // 1. Update application status
     const [updateResult] = await db.execute(
       'UPDATE applications SET status = ? WHERE id = ?',
       [status, applicationId]
     );
+    if (updateResult.affectedRows === 0) return res.status(404).json({ error: 'Application not found.' });
 
-    if (updateResult.affectedRows === 0) {
-      return res.status(404).json({ error: 'Application not found.' });
-    }
-
-    // 2. Get applicant and job info
     const [[applicant]] = await db.execute(`
       SELECT a.seeker_id, u.name, u.email, j.title AS job_title
       FROM applications a
@@ -621,17 +609,13 @@ router.put('/applications/:applicationId/status', async (req, res) => {
       WHERE a.id = ?
     `, [applicationId]);
 
-    if (!applicant) {
-      return res.status(404).json({ error: 'Applicant not found.' });
-    }
+    if (!applicant) return res.status(404).json({ error: 'Applicant not found.' });
 
-    // 3. Send email
     let meetLink = null;
-
     let subject = '';
     let html = '';
     let notificationMessage = '';
-    
+
     if (status === 'shortlisted') {
       const eventTime = interviewTime ? new Date(interviewTime) : new Date();
       meetLink = await createMeetEvent(
@@ -640,7 +624,7 @@ router.put('/applications/:applicationId/status', async (req, res) => {
         applicant.email,
         eventTime
       );
-    
+
       const formattedDateTime = eventTime.toLocaleString('en-PH', {
         timeZone: 'Asia/Manila',
         weekday: 'long',
@@ -650,7 +634,7 @@ router.put('/applications/:applicationId/status', async (req, res) => {
         hour: '2-digit',
         minute: '2-digit',
       });
-    
+
       subject = `You're shortlisted for ${applicant.job_title}`;
       html = `
         <p>Hi <strong>${applicant.name}</strong>,</p>
@@ -660,54 +644,41 @@ router.put('/applications/:applicationId/status', async (req, res) => {
         <p>Best regards,<br/>HR Team</p>
       `;
       notificationMessage = `You have been shortlisted for "${applicant.job_title}". Check your email for the interview schedule.`;
-    
+
     } else if (status === 'interviewed') {
       subject = `Interview Update - ${applicant.job_title}`;
-      html = `
-        <p>Hi <strong>${applicant.name}</strong>,</p>
+      html = `<p>Hi <strong>${applicant.name}</strong>,</p>
         <p>Thank you for attending the interview for the <strong>${applicant.job_title}</strong> position.</p>
-        <p>We appreciate your time and interest. We'll contact you about the next steps.</p>
-        <p>If you have any concerns or question, feel free to message the HR via the messaging feature on the SkillLink Website or send us an email.</p>
-        <p>Best regards,<br/>HR Team</p>
-      `;
+        <p>We'll contact you about the next steps.</p>
+        <p>Best regards,<br/>HR Team</p>`;
       notificationMessage = `You were marked as interviewed for "${applicant.job_title}".`;
-    
+
     } else if (status === 'selected') {
-      subject = `Congratulations! You're selected for the position ${applicant.job_title}`;
-      html = `
-        <p>Hi <strong>${applicant.name}</strong>,</p>
-        <p>We're thrilled to inform you that you’ve been <strong>selected</strong> for the <strong>${applicant.job_title}</strong> position.</p>
-        <p>Please view the application status on the SkillLink Website and upload the additional requirements there.</p>
-        <p>We will be reaching out with further instructions shortly.</p>
-        <p>Congratulations again!</p>
-        <p>Best regards,<br/>HR Team</p>
-      `;
+      subject = `Congratulations! You're selected for ${applicant.job_title}`;
+      html = `<p>Hi <strong>${applicant.name}</strong>,</p>
+        <p>We’re thrilled to inform you that you’ve been <strong>selected</strong> for the <strong>${applicant.job_title}</strong> position.</p>
+        <p>Check the SkillLink Website for next steps.</p>
+        <p>Best regards,<br/>HR Team</p>`;
       notificationMessage = `🎉 Congratulations! You’ve been selected for "${applicant.job_title}".`;
-    
+
     } else if (status === 'rejected') {
       subject = `Application Update - ${applicant.job_title}`;
-      html = `
-        <p>Hi <strong>${applicant.name}</strong>,</p>
+      html = `<p>Hi <strong>${applicant.name}</strong>,</p>
         <p>Thank you for applying for <strong>${applicant.job_title}</strong>. Unfortunately, you were not selected at this time.</p>
-        <p>We wish you the best in your job search.</p>
-        <p>Best regards,<br/>HR Team</p>
-      `;
+        <p>Best regards,<br/>HR Team</p>`;
       notificationMessage = `Your application for "${applicant.job_title}" was rejected.`;
     }
 
-    await sendEmail(
-      applicant.email,
-      subject, 
-      html 
-    );
+    // ✅ Fully await email send
+    await sendEmail(applicant.email, subject, html);
 
     await db.execute(
-      'INSERT INTO notifications (user_id, message) VALUES (?, ?)', 
+      'INSERT INTO notifications (user_id, message) VALUES (?, ?)',
       [applicant.seeker_id, notificationMessage]
     );
 
-
     res.json({ message: 'Status updated, email and notification sent.' });
+
   } catch (err) {
     console.error('Error updating application status:', err);
     res.status(500).json({ error: 'Server error' });
