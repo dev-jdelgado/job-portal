@@ -7,31 +7,210 @@ import config from '../config';
 const API_URL = config.API_URL;
 
 const IT_skillOptions = [
-  "HTML/CSS", "JavaScript", "React.js/Angular/Vue.js", "Node.js/Express", "Python/Django / Flask", "Java/Spring",
-  "C#/.NET", "SQL/MySQL/PostgreSQL", "MongoDB", "Git/GitHub", "DevOps", "AWS/Azure/GCP", "Cybersecurity",
-  "UI/UX Design", "Mobile Development"
+  "HTML/CSS", 
+  "JavaScript", 
+  "React.js/Angular/Vue.js", 
+  "Node.js/Express", 
+  "Python/Django / Flask", 
+  "Java/Spring", 
+  "C#/.NET", 
+  "SQL/MySQL/PostgreSQL", 
+  "MongoDB", 
+  "Git/GitHub", 
+  "DevOps", 
+  "AWS/Azure/GCP", 
+  "Cybersecurity", 
+  "UI/UX Design", 
+  "Mobile Development"
 ];
 
 const Business_skillOptions = [
-  "Project Management", "Business Analysis", "Marketing Strategy", "Budgeting & Forecasting", "Customer Relationship Management", "Sales & Lead Generation",
-  "Human Resources Management", "Operations Management"
+  "Project Management", 
+  "Business Analysis", 
+  "Marketing Strategy", 
+  "Budgeting & Forecasting", 
+  "Customer Relationship Management", 
+  "Sales & Lead Generation", 
+  "Human Resources Management", 
+  "Operations Management"
 ];
 
 const Marketing_skillOptions = [
-  "SEO/SEM", "Content Writing/Copywriting", "Social Media Marketing", "Google Ads/Facebook Ads", "Email Marketing", "Analytics", "Brand Management",
+  "SEO/SEM", 
+  "Content Writing/Copywriting", 
+  "Social Media Marketing", 
+  "Google Ads/Facebook Ads", 
+  "Email Marketing", 
+  "Analytics", 
+  "Brand Management", 
   "Video Editing/Multimedia"
 ];
 
 const Finance_skillOptions = [
-  "Bookkeeping", "Financial Analysis", "Accounting Software", "Tax Preparation", "Auditing", "Payroll Management"
+  "Bookkeeping", 
+  "Financial Analysis", 
+  "Accounting Software", 
+  "Tax Preparation", 
+  "Auditing", 
+  "Payroll Management"
 ];
 
 const Engineering_skillOptions = [
-  "AutoCAD/SolidWorks", "Electrical Design", "Civil Engineering Tools", "Mechanical Design", "Process Engineering"
+  "AutoCAD/SolidWorks", 
+  "Electrical Design", 
+  "Civil Engineering Tools", 
+  "Mechanical Design", 
+  "Process Engineering"
 ];
 
 const Universal_skillOptions = [
-  "Communication", "Teamwork", "Time Management", "Problem Solving", "Critical Thinking", "Adaptability", "Leadership", "Work Ethic", "Active Listening", "Troubleshooting Skills", "Computer Literacy", "Digital Literacy", "MS Office Proficiency"
+  "Communication", 
+  "Teamwork", 
+  "Time Management", 
+  "Problem Solving", 
+  "Critical Thinking", 
+  "Adaptability", 
+  "Leadership", 
+  "Work Ethic", 
+  "Active Listening", 
+  "Troubleshooting Skills", 
+  "Computer Literacy", 
+  "Digital Literacy", 
+  "MS Office Proficiency"
+];
+
+// --------------------------------------
+// NEWLY ADDED — LGU / Government Skill Sets
+// --------------------------------------
+
+const MunicipalTreasurer_skillOptions = [
+  "Cash flow monitoring",
+  "Revenue forecasting",
+  "Local tax collection procedures",
+  "Handling government fees & permits",
+  "Financial audit preparation",
+  "Official receipt management",
+  "Barangay remittance reconciliation"
+];
+
+const MunicipalAccountant_skillOptions = [
+  "Government accounting standards (NGAS)",
+  "Journal entry preparation",
+  "Financial statement consolidation",
+  "Payroll accounting",
+  "Voucher validation",
+  "LGU fund management",
+  "COA report compliance"
+];
+
+const MunicipalAssessor_skillOptions = [
+  "Real property appraisal",
+  "Tax mapping",
+  "Zoning interpretation",
+  "Property classification",
+  "Assessment roll management",
+  "Title verification",
+  "Field inspection documentation"
+];
+
+const BudgetOffice_skillOptions = [
+  "Annual budget formulation",
+  "Budget proposal evaluation",
+  "Fund allocation monitoring",
+  "Supplemental budget preparation",
+  "Work & Financial Plan (WFP) creation",
+  "Budget utilization analysis"
+];
+
+const PlanningDevelopment_skillOptions = [
+  "Community development planning",
+  "Project feasibility analysis",
+  "GIS mapping",
+  "Development plan drafting",
+  "Data profiling & surveys",
+  "Urban & rural planning research"
+];
+
+const GovernmentEngineering_skillOptions = [
+  "Construction plan review",
+  "Structural assessment",
+  "Building permit evaluation",
+  "Quality assurance on public works",
+  "Site inspection reporting",
+  "Cost estimating"
+];
+
+const MunicipalHealth_skillOptions = [
+  "Health program coordination",
+  "Basic medical assessment",
+  "Vaccination management",
+  "Disease surveillance",
+  "Environmental sanitation monitoring",
+  "Patient record handling"
+];
+
+const CivilRegistry_skillOptions = [
+  "Birth/Marriage/Death registration",
+  "Certificate issuance",
+  "Document verification",
+  "Record coding & archiving",
+  "Encoding civil status changes",
+  "Data confidentiality handling"
+];
+
+const AdministrationOffice_skillOptions = [
+  "Office operations oversight",
+  "Policy implementation",
+  "Document routing",
+  "Inter-department coordination",
+  "Staffing supervision",
+  "Internal communication management"
+];
+
+const LegalOffice_skillOptions = [
+  "Drafting legal opinions",
+  "Reviewing municipal ordinances",
+  "Preparing contracts and MOAs",
+  "Case documentation",
+  "Legal research for LGU matters",
+  "Advising officials on legal compliance",
+  "Summaries for administrative cases"
+];
+
+const Agriculture_skillOptions = [
+  "Crop monitoring",
+  "Soil testing interpretation",
+  "Farmer training facilitation",
+  "Agricultural project planning",
+  "Livestock management basics",
+  "Distribution of farming inputs"
+];
+
+const SocialWelfare_skillOptions = [
+  "Casework documentation",
+  "Community assistance profiling",
+  "Program implementation (4Ps, AICS, etc.)",
+  "Home visitation reporting",
+  "Crisis intervention support",
+  "Beneficiary evaluation"
+];
+
+const DisasterRiskReduction_skillOptions = [
+  "Emergency response coordination",
+  "Hazard mapping",
+  "DRRM plan creation",
+  "Incident reporting",
+  "First aid & basic rescue",
+  "Public safety communication"
+];
+
+const Tourism_skillOptions = [
+  "Tourism program development",
+  "Event planning",
+  "Tourist assistance handling",
+  "Cultural site documentation",
+  "Marketing of local attractions",
+  "Coordination with local enterprises"
 ];
 
 function JobPostModal({ show, handleClose, adminId, onJobPosted, jobToEdit, startStep = 1 }) {
@@ -319,6 +498,234 @@ function JobPostModal({ show, handleClose, adminId, onJobPosted, jobToEdit, star
                 </div>
               </div>
 
+              {/* -------------------------------------- */}
+              {/* NEW GOVERNMENT CATEGORY GROUPS */}
+              {/* -------------------------------------- */}
+            
+              <div className='mb-4'>
+                <label className="fw-semibold">Municipal Treasurer</label>
+                  <div className="row">
+                    {MunicipalTreasurer_skillOptions.map((skill, idx) => (
+                      <Col md={4} key={idx}>
+                        <Form.Check
+                          type="checkbox"
+                          label={skill}
+                          checked={formData.skills.includes(skill)}
+                          onChange={() => handleSkillToggle(skill)}
+                        />
+                      </Col>
+                    ))}
+                  </div>
+              </div>
+            
+              <div className='mb-4'>
+                <label className="fw-semibold">Municipal Accountant</label>
+                  <div className="row">
+                    {MunicipalAccountant_skillOptions.map((skill, idx) => (
+                      <Col md={4} key={idx}>
+                        <Form.Check
+                          type="checkbox"
+                          label={skill}
+                          checked={formData.skills.includes(skill)}
+                          onChange={() => handleSkillToggle(skill)}
+                        />
+                      </Col>
+                    ))}
+                  </div>
+              </div>
+            
+              <div className='mb-4'>
+                <label className="fw-semibold">Municipal Assessor</label>
+                  <div className="row">
+                    {MunicipalAssessor_skillOptions.map((skill, idx) => (
+                      <Col md={4} key={idx}>
+                        <Form.Check
+                          type="checkbox"
+                          label={skill}
+                          checked={formData.skills.includes(skill)}
+                          onChange={() => handleSkillToggle(skill)}
+                        />
+                      </Col>
+                    ))}
+                  </div>
+              </div>
+            
+              <div className='mb-4'>
+                <label className="fw-semibold">Budget Office</label>
+                  <div className="row">
+                    {BudgetOffice_skillOptions.map((skill, idx) => (
+                      <Col md={4} key={idx}>
+                        <Form.Check
+                          type="checkbox"
+                          label={skill}
+                          checked={formData.skills.includes(skill)}
+                          onChange={() => handleSkillToggle(skill)}
+                        />
+                      </Col>
+                    ))}
+                  </div>
+              </div>
+            
+              <div className='mb-4'>
+                <label className="fw-semibold">Planning & Development Office</label>
+                  <div className="row">
+                    {PlanningDevelopment_skillOptions.map((skill, idx) => (
+                      <Col md={4} key={idx}>
+                        <Form.Check
+                          type="checkbox"
+                          label={skill}
+                          checked={formData.skills.includes(skill)}
+                          onChange={() => handleSkillToggle(skill)}
+                        />
+                      </Col>
+                    ))}
+                  </div>
+              </div>
+            
+              <div className='mb-4'>
+                <label className="fw-semibold">Engineering Office (LGU)</label>
+                  <div className="row">
+                    {GovernmentEngineering_skillOptions.map((skill, idx) => (
+                      <Col md={4} key={idx}>
+                        <Form.Check
+                          type="checkbox"
+                          label={skill}
+                          checked={formData.skills.includes(skill)}
+                          onChange={() => handleSkillToggle(skill)}
+                        />
+                      </Col>
+                    ))}
+                  </div>
+              </div>
+            
+              <div className='mb-4'>
+                <label className="fw-semibold">Municipal Health Office</label>
+                  <div className="row">
+                    {MunicipalHealth_skillOptions.map((skill, idx) => (
+                      <Col md={4} key={idx}>
+                        <Form.Check
+                          type="checkbox"
+                          label={skill}
+                          checked={formData.skills.includes(skill)}
+                          onChange={() => handleSkillToggle(skill)}
+                        />
+                      </Col>
+                    ))}
+                  </div>
+              </div>
+            
+              <div className='mb-4'>
+                <label className="fw-semibold">Local Civil Registry Office</label>
+                  <div className="row">
+                    {CivilRegistry_skillOptions.map((skill, idx) => (
+                      <Col md={4} key={idx}>
+                        <Form.Check
+                          type="checkbox"
+                          label={skill}
+                          checked={formData.skills.includes(skill)}
+                          onChange={() => handleSkillToggle(skill)}
+                        />
+                      </Col>
+                    ))}
+                  </div>
+              </div>
+            
+              <div className='mb-4'>
+                <label className="fw-semibold">Municipal Administrator's Office</label>
+                  <div className="row">
+                    {AdministrationOffice_skillOptions.map((skill, idx) => (
+                      <Col md={4} key={idx}>
+                        <Form.Check
+                          type="checkbox"
+                          label={skill}
+                          checked={formData.skills.includes(skill)}
+                          onChange={() => handleSkillToggle(skill)}
+                        />
+                      </Col>
+                    ))}
+                  </div>
+              </div>
+            
+              <div className='mb-4'>
+                <label className="fw-semibold">Legal Services / Municipal Legal Office</label>
+                  <div className="row">
+                    {LegalOffice_skillOptions.map((skill, idx) => (
+                      <Col md={4} key={idx}>
+                        <Form.Check
+                          type="checkbox"
+                          label={skill}
+                          checked={formData.skills.includes(skill)}
+                          onChange={() => handleSkillToggle(skill)}
+                        />
+                      </Col>
+                    ))}
+                  </div>
+              </div>
+            
+              <div className='mb-4'>
+                <label className="fw-semibold">Agricultural Office</label>
+                  <div className="row">
+                    {Agriculture_skillOptions.map((skill, idx) => (
+                      <Col md={4} key={idx}>
+                        <Form.Check
+                          type="checkbox"
+                          label={skill}
+                          checked={formData.skills.includes(skill)}
+                          onChange={() => handleSkillToggle(skill)}
+                        />
+                      </Col>
+                    ))}
+                  </div>
+              </div>
+            
+              <div className='mb-4'>
+                <label className="fw-semibold">Social Welfare & Development Office</label>
+                  <div className="row">
+                    {SocialWelfare_skillOptions.map((skill, idx) => (
+                      <Col md={4} key={idx}>
+                        <Form.Check
+                          type="checkbox"
+                          label={skill}
+                          checked={formData.skills.includes(skill)}
+                          onChange={() => handleSkillToggle(skill)}
+                        />
+                      </Col>
+                    ))}
+                  </div>
+              </div>
+            
+              <div className='mb-4'>
+                <label className="fw-semibold">Disaster Risk Reduction & Management Office</label>
+                  <div className="row">
+                    {DisasterRiskReduction_skillOptions.map((skill, idx) => (
+                      <Col md={4} key={idx}>
+                        <Form.Check
+                          type="checkbox"
+                          label={skill}
+                          checked={formData.skills.includes(skill)}
+                          onChange={() => handleSkillToggle(skill)}
+                        />
+                      </Col>
+                    ))}
+                  </div>
+              </div>
+            
+              <div className='mb-4'>
+                <label className="fw-semibold">Tourism Office</label>
+                  <div className="row">
+                    {Tourism_skillOptions.map((skill, idx) => (
+                      <Col md={4} key={idx}>
+                        <Form.Check
+                          type="checkbox"
+                          label={skill}
+                          checked={formData.skills.includes(skill)}
+                          onChange={() => handleSkillToggle(skill)}
+                        />
+                      </Col>
+                    ))}
+                  </div>
+              </div>
+
               <div className='mb-4'>
                 <label className="fw-semibold">Soft Skills (Universal)</label>
                   <div className="row">
@@ -334,8 +741,8 @@ function JobPostModal({ show, handleClose, adminId, onJobPosted, jobToEdit, star
                     ))}
                 </div>
               </div>
-
-            </Form.Group>
+          
+          </Form.Group>          
           )}
         </Modal.Body>
 

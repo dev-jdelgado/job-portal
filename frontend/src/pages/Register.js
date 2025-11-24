@@ -4,14 +4,220 @@ import { register as registerAPI } from '../services/API';
 import { Toast, ToastContainer } from 'react-bootstrap';
 
 // --- DATA (No Changes) ---
-const education = ["High School", "Associate Degree", "Bachelors Degree", "Masters Degree", "PhD"];
-const IT_skillOptions = ["HTML/CSS", "JavaScript", "React.js/Angular/Vue.js", "Node.js/Express", "Python/Django / Flask", "Java/Spring", "C#/.NET", "SQL/MySQL/PostgreSQL", "MongoDB", "Git/GitHub", "DevOps", "AWS/Azure/GCP", "Cybersecurity", "UI/UX Design", "Mobile Development"];
-const Business_skillOptions = ["Project Management", "Business Analysis", "Marketing Strategy", "Budgeting & Forecasting", "Customer Relationship Management", "Sales & Lead Generation", "Human Resources Management", "Operations Management"];
-const Marketing_skillOptions = ["SEO/SEM", "Content Writing/Copywriting", "Social Media Marketing", "Google Ads/Facebook Ads", "Email Marketing", "Analytics", "Brand Management", "Video Editing/Multimedia"];
-const Finance_skillOptions = ["Bookkeeping", "Financial Analysis", "Accounting Software", "Tax Preparation", "Auditing", "Payroll Management"];
-const Engineering_skillOptions = ["AutoCAD/SolidWorks", "Electrical Design", "Civil Engineering Tools", "Mechanical Design", "Process Engineering"];
-const Universal_skillOptions = ["Communication", "Teamwork", "Time Management", "Problem Solving", "Critical Thinking", "Adaptability", "Leadership", "Work Ethic", "Active Listening", "Troubleshooting Skills", "Computer Literacy", "Digital Literacy", "MS Office Proficiency"];
+const education = [
+    "High School", 
+    "Associate Degree", 
+    "Bachelors Degree", 
+    "Masters Degree", 
+    "PhD"
+];
 
+const IT_skillOptions = [
+    "HTML/CSS", 
+    "JavaScript", 
+    "React.js/Angular/Vue.js", 
+    "Node.js/Express", 
+    "Python/Django / Flask", 
+    "Java/Spring", 
+    "C#/.NET", 
+    "SQL/MySQL/PostgreSQL", 
+    "MongoDB", 
+    "Git/GitHub", 
+    "DevOps", 
+    "AWS/Azure/GCP", 
+    "Cybersecurity", 
+    "UI/UX Design", 
+    "Mobile Development"
+];
+
+const Business_skillOptions = [
+    "Project Management", 
+    "Business Analysis", 
+    "Marketing Strategy", 
+    "Budgeting & Forecasting", 
+    "Customer Relationship Management", 
+    "Sales & Lead Generation", 
+    "Human Resources Management", 
+    "Operations Management"
+];
+
+const Marketing_skillOptions = [
+    "SEO/SEM", 
+    "Content Writing/Copywriting", 
+    "Social Media Marketing", 
+    "Google Ads/Facebook Ads", 
+    "Email Marketing", 
+    "Analytics", 
+    "Brand Management", 
+    "Video Editing/Multimedia"
+];
+
+const Finance_skillOptions = [
+    "Bookkeeping", 
+    "Financial Analysis", 
+    "Accounting Software", 
+    "Tax Preparation", 
+    "Auditing", 
+    "Payroll Management"
+];
+
+const Engineering_skillOptions = [
+    "AutoCAD/SolidWorks", 
+    "Electrical Design", 
+    "Civil Engineering Tools", 
+    "Mechanical Design", 
+    "Process Engineering"
+];
+
+const Universal_skillOptions = [
+    "Communication", 
+    "Teamwork", 
+    "Time Management", 
+    "Problem Solving", 
+    "Critical Thinking", 
+    "Adaptability", 
+    "Leadership", 
+    "Work Ethic", 
+    "Active Listening", 
+    "Troubleshooting Skills", 
+    "Computer Literacy", 
+    "Digital Literacy", 
+    "MS Office Proficiency"
+];
+
+// --------------------------------------
+// NEWLY ADDED — LGU / Government Skill Sets
+// --------------------------------------
+
+const MunicipalTreasurer_skillOptions = [
+    "Cash flow monitoring",
+    "Revenue forecasting",
+    "Local tax collection procedures",
+    "Handling government fees & permits",
+    "Financial audit preparation",
+    "Official receipt management",
+    "Barangay remittance reconciliation"
+];
+
+const MunicipalAccountant_skillOptions = [
+    "Government accounting standards (NGAS)",
+    "Journal entry preparation",
+    "Financial statement consolidation",
+    "Payroll accounting",
+    "Voucher validation",
+    "LGU fund management",
+    "COA report compliance"
+];
+
+const MunicipalAssessor_skillOptions = [
+    "Real property appraisal",
+    "Tax mapping",
+    "Zoning interpretation",
+    "Property classification",
+    "Assessment roll management",
+    "Title verification",
+    "Field inspection documentation"
+];
+
+const BudgetOffice_skillOptions = [
+    "Annual budget formulation",
+    "Budget proposal evaluation",
+    "Fund allocation monitoring",
+    "Supplemental budget preparation",
+    "Work & Financial Plan (WFP) creation",
+    "Budget utilization analysis"
+];
+
+const PlanningDevelopment_skillOptions = [
+    "Community development planning",
+    "Project feasibility analysis",
+    "GIS mapping",
+    "Development plan drafting",
+    "Data profiling & surveys",
+    "Urban & rural planning research"
+];
+
+const GovernmentEngineering_skillOptions = [
+    "Construction plan review",
+    "Structural assessment",
+    "Building permit evaluation",
+    "Quality assurance on public works",
+    "Site inspection reporting",
+    "Cost estimating"
+];
+
+const MunicipalHealth_skillOptions = [
+    "Health program coordination",
+    "Basic medical assessment",
+    "Vaccination management",
+    "Disease surveillance",
+    "Environmental sanitation monitoring",
+    "Patient record handling"
+];
+
+const CivilRegistry_skillOptions = [
+    "Birth/Marriage/Death registration",
+    "Certificate issuance",
+    "Document verification",
+    "Record coding & archiving",
+    "Encoding civil status changes",
+    "Data confidentiality handling"
+];
+
+const AdministrationOffice_skillOptions = [
+    "Office operations oversight",
+    "Policy implementation",
+    "Document routing",
+    "Inter-department coordination",
+    "Staffing supervision",
+    "Internal communication management"
+];
+
+const LegalOffice_skillOptions = [
+    "Drafting legal opinions",
+    "Reviewing municipal ordinances",
+    "Preparing contracts and MOAs",
+    "Case documentation",
+    "Legal research for LGU matters",
+    "Advising officials on legal compliance",
+    "Summaries for administrative cases"
+];
+
+const Agriculture_skillOptions = [
+    "Crop monitoring",
+    "Soil testing interpretation",
+    "Farmer training facilitation",
+    "Agricultural project planning",
+    "Livestock management basics",
+    "Distribution of farming inputs"
+];
+
+const SocialWelfare_skillOptions = [
+    "Casework documentation",
+    "Community assistance profiling",
+    "Program implementation (4Ps, AICS, etc.)",
+    "Home visitation reporting",
+    "Crisis intervention support",
+    "Beneficiary evaluation"
+];
+
+const DisasterRiskReduction_skillOptions = [
+    "Emergency response coordination",
+    "Hazard mapping",
+    "DRRM plan creation",
+    "Incident reporting",
+    "First aid & basic rescue",
+    "Public safety communication"
+];
+
+const Tourism_skillOptions = [
+    "Tourism program development",
+    "Event planning",
+    "Tourist assistance handling",
+    "Cultural site documentation",
+    "Marketing of local attractions",
+    "Coordination with local enterprises"
+];
 
 export default function Register() {
     // --- STATE AND LOGIC (No Changes) ---
@@ -145,15 +351,38 @@ export default function Register() {
                                     { title: "Marketing & Communications", options: Marketing_skillOptions },
                                     { title: "Finance & Accounting", options: Finance_skillOptions },
                                     { title: "Engineering & Technical", options: Engineering_skillOptions },
-                                    { title: "Soft Skills (Universal)", options: Universal_skillOptions },
+
+                                    // New government / LGU categories:
+                                    { title: "Municipal Treasurer", options: MunicipalTreasurer_skillOptions },
+                                    { title: "Municipal Accountant", options: MunicipalAccountant_skillOptions },
+                                    { title: "Municipal Assessor", options: MunicipalAssessor_skillOptions },
+                                    { title: "Budget Office", options: BudgetOffice_skillOptions },
+                                    { title: "Planning & Development Office", options: PlanningDevelopment_skillOptions },
+                                    { title: "Engineering Office (LGU)", options: GovernmentEngineering_skillOptions },
+                                    { title: "Municipal Health Office", options: MunicipalHealth_skillOptions },
+                                    { title: "Local Civil Registry Office", options: CivilRegistry_skillOptions },
+                                    { title: "Municipal Administrator's Office", options: AdministrationOffice_skillOptions },
+                                    { title: "Legal Services / Municipal Legal Office", options: LegalOffice_skillOptions },
+                                    { title: "Agricultural Office", options: Agriculture_skillOptions },
+                                    { title: "Social Welfare & Development Office", options: SocialWelfare_skillOptions },
+                                    { title: "Disaster Risk Reduction & Management Office", options: DisasterRiskReduction_skillOptions },
+                                    { title: "Tourism Office", options: Tourism_skillOptions },
+                                    { title: "Soft Skills (Universal)", options: Universal_skillOptions }
                                 ].map(category => (
-                                    <div key={category.title} style={{marginBottom: '1rem'}}>
+                                    <div key={category.title} style={{ marginBottom: '1rem' }}>
                                         <h4 style={styles.skillCategoryTitle}>{category.title}</h4>
                                         <div style={styles.skillGrid}>
                                             {category.options.map(skill => (
                                                 <div key={skill} style={styles.checkboxWrapper}>
-                                                    <input type="checkbox" id={skill} value={skill} checked={form.skills.includes(skill)} onChange={handleSkillCheckbox} style={{marginRight: '8px'}}/>
-                                                    <label htmlFor={skill} style={{fontSize: '0.9rem'}}>{skill}</label>
+                                                    <input
+                                                        type="checkbox"
+                                                        id={skill}
+                                                        value={skill}
+                                                        checked={form.skills.includes(skill)}
+                                                        onChange={handleSkillCheckbox}
+                                                        style={{ marginRight: '8px' }}
+                                                    />
+                                                    <label htmlFor={skill} style={{ fontSize: '0.9rem' }}>{skill}</label>
                                                 </div>
                                             ))}
                                         </div>

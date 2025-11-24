@@ -50,8 +50,27 @@ function ProfilePage() {
     { title: "Marketing & Communications", options: ["SEO/SEM", "Content Writing/Copywriting", "Social Media Marketing", "Google Ads/Facebook Ads", "Email Marketing", "Analytics", "Brand Management", "Video Editing/Multimedia"] },
     { title: "Finance & Accounting", options: ["Bookkeeping", "Financial Analysis", "Accounting Software", "Tax Preparation", "Auditing", "Payroll Management"] },
     { title: "Engineering & Technical", options: ["AutoCAD/SolidWorks", "Electrical Design", "Civil Engineering Tools", "Mechanical Design", "Process Engineering"] },
+
+
+    // -------------------------------
+    // New LGU / Government Categories
+    // -------------------------------
+    { title: "Municipal Treasurer", options: ["Cash flow monitoring", "Revenue forecasting", "Local tax collection procedures", "Handling government fees & permits", "Financial audit preparation", "Official receipt management", "Barangay remittance reconciliation"] },
+    { title: "Municipal Accountant", options: ["Government accounting standards (NGAS)", "Journal entry preparation", "Financial statement consolidation", "Payroll accounting", "Voucher validation", "LGU fund management", "COA report compliance"] },
+    { title: "Municipal Assessor", options: ["Real property appraisal", "Tax mapping", "Zoning interpretation", "Property classification", "Assessment roll management", "Title verification", "Field inspection documentation"] },
+    { title: "Budget Office", options: ["Annual budget formulation", "Budget proposal evaluation", "Fund allocation monitoring", "Supplemental budget preparation", "Work & Financial Plan (WFP) creation", "Budget utilization analysis"] },
+    { title: "Planning & Development Office", options: ["Community development planning", "Project feasibility analysis", "GIS mapping", "Development plan drafting", "Data profiling & surveys", "Urban & rural planning research"] },
+    { title: "Engineering Office (LGU)", options: ["Construction plan review", "Structural assessment", "Building permit evaluation", "Quality assurance on public works", "Site inspection reporting", "Cost estimating"] },
+    { title: "Municipal Health Office", options: ["Health program coordination", "Basic medical assessment", "Vaccination management", "Disease surveillance", "Environmental sanitation monitoring", "Patient record handling"] },
+    { title: "Local Civil Registry Office", options: ["Birth/Marriage/Death registration", "Certificate issuance", "Document verification", "Record coding & archiving", "Encoding civil status changes", "Data confidentiality handling"] },
+    { title: "Municipal Administrator's Office", options: ["Office operations oversight", "Policy implementation", "Document routing", "Inter-department coordination", "Staffing supervision", "Internal communication management"] },
+    { title: "Legal Services / Municipal Legal Office", options: ["Drafting legal opinions", "Reviewing municipal ordinances", "Preparing contracts and MOAs", "Case documentation", "Legal research for LGU matters", "Advising officials on legal compliance", "Summaries for administrative cases"] },
+    { title: "Agricultural Office", options: ["Crop monitoring", "Soil testing interpretation", "Farmer training facilitation", "Agricultural project planning", "Livestock management basics", "Distribution of farming inputs"] },
+    { title: "Social Welfare & Development Office", options: ["Casework documentation", "Community assistance profiling", "Program implementation (4Ps, AICS, etc.)", "Home visitation reporting", "Crisis intervention support", "Beneficiary evaluation"] },
+    { title: "Disaster Risk Reduction & Management Office", options: ["Emergency response coordination", "Hazard mapping", "DRRM plan creation", "Incident reporting", "First aid & basic rescue", "Public safety communication"] },
+    { title: "Tourism Office", options: ["Tourism program development", "Event planning", "Tourist assistance handling", "Cultural site documentation", "Marketing of local attractions", "Coordination with local enterprises"] },
     { title: "Soft Skills (Universal)", options: ["Communication", "Teamwork", "Time Management", "Problem Solving", "Critical Thinking", "Adaptability", "Leadership", "Work Ethic", "Active Listening", "Troubleshooting Skills", "Computer Literacy", "Digital Literacy", "MS Office Proficiency"] },
-  ];
+];
 
   useEffect(() => {
     const fetchProfile = async () => {
