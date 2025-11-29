@@ -7,6 +7,8 @@ import PrivateRoute from './components/PrivateRoute';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import AdminFooter from './components/AdminFooter';
+import AdminPrivacyPolicy from "./pages/AdminPrivacyPolicy";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import { Navigate } from 'react-router-dom';
 import AdminCreateUser from './pages/AdminCreateUser';
@@ -139,11 +141,20 @@ function AppRoutes() {
             }
           />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route
+            path="/admin/privacy-policy"
+            element={
+              <PrivateRoute allowedRoles={['admin']}>
+                <AdminPrivacyPolicy />
+              </PrivateRoute>
+            }
+          />
         </Routes>
       </div>
 
       {/* ✅ Footer shows only for seekers */}
       {!hideNavbar && user?.role === 'seeker' && <Footer />}
+      {!hideNavbar && user?.role === 'admin' && <AdminFooter />}
     </div>
   );
 }
