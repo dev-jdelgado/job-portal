@@ -527,6 +527,8 @@ router.get('/applicants/:jobId', async (req, res) => {
         a.sss_url, a.pagibig_url, a.philhealth_url, 
         a.applied_at, a.id AS applicationId, a.status,
         a.job_id AS jobId,
+        a.scoreEducation, a.scoreExperience, a.scoreSkills,
+        a.scoreInterview, a.scoreEthics, a.totalScore,
         j.title AS job_title
       FROM applications a
       JOIN users u ON a.seeker_id = u.id
@@ -700,6 +702,31 @@ router.put('/applications/:applicationId/status', async (req, res) => {
   }
 });
 
+// ADMIN SCORING — SAVE SCORE FOR AN APPLICANT
+router.put('/applications/:applicationId/score', async (req, res) => {
+  const { applicationId } = req.params;
+  const {
+    education,
+    experience,
+    skills,
+    interview,
+    ethics,
+    totalScore
+  } = req.body;
 
+  try {
+    await db.execute(
+      `UPDATE applications
+       SET scoreEducation=?, scoreExperience=?, scoreSkills=?, scoreInterview=?, scoreEthics=?, totalScore=?
+       WHERE id=?`,
+      [education, experience, skills, interview, ethics, totalScore, applicationId]
+    );
+
+    res.json({ message: "Scores saved successfully!" });
+  } catch (err) {
+    console.error("Error saving score:", err);
+    res.status(500).json({ error: "Server error saving score" });
+  }
+});
 
 module.exports = router;

@@ -5,7 +5,7 @@ import { Card, Button, ButtonGroup, Row, Col, Spinner, Form, Modal } from 'react
 // The Icon component remains the same
 const Icon = ({ className }) => <i className={className} style={{ marginRight: '8px' }}></i>;
 
-export const ApplicantCard = ({ applicant, onStatusUpdate, onViewDetails, isLoading }) => {
+export const ApplicantCard = ({ applicant, onStatusUpdate, onViewDetails, onScoreApplicant, isLoading, currentTab }) => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [pendingAction, setPendingAction] = useState({ applicationId: null, status: '' });
 
@@ -44,6 +44,19 @@ export const ApplicantCard = ({ applicant, onStatusUpdate, onViewDetails, isLoad
             <Col sm={4} md={3} as="strong"><Icon className="bi bi-envelope"/>Applied:</Col>
             <Col sm={8} md={9}>{new Date(applicant.applied_at).toLocaleDateString()}</Col>
           </Row>
+
+          {/* Show scores ONLY if the applicant is interviewed AND the current tab is "interviewed" */}
+          {applicant.status === "interviewed" && currentTab === "interviewed" && (
+            <Row className="mb-1">
+              <Col sm={4} md={3} as="strong">
+                <Icon className="bi bi-bar-chart-fill"/> Score
+              </Col>
+              <Col sm={8} md={9}>
+                <span className="fw-bold text-primary">{applicant.totalScore ?? "Not scored yet"}</span>
+                <span className="text-secondary"> / 100</span>
+              </Col>
+            </Row>
+          )}
         </Card.Body>
 
         <Card.Footer className="d-flex justify-content-between align-items-center bg-white">
@@ -76,13 +89,24 @@ export const ApplicantCard = ({ applicant, onStatusUpdate, onViewDetails, isLoad
               {isLoading && <Spinner animation="border" size="sm" className="ms-2" />}
             </div>
           ) : applicant.status === 'interviewed' ? (
+
             <div className="d-flex align-items-center gap-2">
-              <span className="text-success fw-semibold">
+              {/* NEW BUTTON */}
+              {applicant.status === "interviewed" && currentTab === "interviewed" && (
+                <Button
+                  size="sm"
+                  variant="outline-primary"
+                  onClick={() => onScoreApplicant(applicant)}
+                >
+                  Score
+                </Button>
+              )}
+
+              <span className="text-success fw-semibold ms-2">
                 <Icon className="bi bi-check-circle-fill" /> Interviewed
               </span>
               <Form.Select
                 size="sm"
-                value={applicant.nextStatus || ''}
                 disabled={isLoading}
                 onChange={(e) => {
                   const selectedStatus = e.target.value;
@@ -99,6 +123,7 @@ export const ApplicantCard = ({ applicant, onStatusUpdate, onViewDetails, isLoad
               </Form.Select>
               {isLoading && <Spinner animation="border" size="sm" className="ms-2" />}
             </div>
+
           ) : applicant.status === 'selected' ? (
             <div className="d-flex align-items-center gap-2">
               <span className="text-success fw-semibold">

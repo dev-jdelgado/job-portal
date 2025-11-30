@@ -5,6 +5,8 @@ import axios from "axios";
 import { ApplicantCard } from "../components/ApplicantCard";
 import { ApplicantDetailsModal } from "../components/ApplicantDetailsModal";
 import { InterviewScheduleModal } from "../components/InterviewScheduleModal";
+import { ApplicantScoreModal } from "../components/ApplicantScoreModal";
+import { Toast, ToastContainer } from 'react-bootstrap';
 import config from '../config';
 import '../pages/AdminDashboard.css';
 
@@ -24,6 +26,8 @@ function JobApplicantsPage() {
   const [selectedAppId, setSelectedAppId] = useState(null);
   const [statusLoadingId, setStatusLoadingId] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 767);
+  const [showScoreModal, setShowScoreModal] = useState(false);
+  const [selectedScoreApplicant, setSelectedScoreApplicant] = useState(null); 
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 767);
@@ -52,6 +56,67 @@ function JobApplicantsPage() {
         fetchData();
       }, [jobId]);
 
+      const handleScoreApplicant = (applicant) => {
+        setSelectedScoreApplicant(applicant);
+        setShowScoreModal(true);
+      };
+      
+      const [toast, setToast] = useState({
+        show: false,
+        message: "",
+        variant: "success", // can be 'success' or 'danger'
+      });      
+
+      const showToast = (message, variant = "success") => {
+        setToast({ show: true, message, variant });
+        setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000); // auto-hide after 3s
+      };
+
+      const handleSaveScore = async (applicationId, scores, total) => {
+        try {
+          await axios.put(`${API_URL}/jobs/applications/${applicationId}/score`, {
+            ...scores,
+            totalScore: total
+          });
+        
+          const updatedApplicants = applicants.map(app =>
+            app.applicationId === applicationId
+              ? { 
+                  ...app, 
+                  scoreEducation: scores.education,
+                  scoreExperience: scores.experience,
+                  scoreSkills: scores.skills,
+                  scoreInterview: scores.interview,
+                  scoreEthics: scores.ethics,
+                  totalScore: total
+                }
+              : app
+          );
+        
+          setApplicants(updatedApplicants);
+        
+          setSelectedScoreApplicant(prev =>
+            prev?.applicationId === applicationId
+              ? { 
+                  ...prev,
+                  scoreEducation: scores.education,
+                  scoreExperience: scores.experience,
+                  scoreSkills: scores.skills,
+                  scoreInterview: scores.interview,
+                  scoreEthics: scores.ethics,
+                  totalScore: total
+                }
+              : prev
+          );
+        
+          showToast("Score saved!", "success");
+        } catch (err) {
+          showToast("Failed to save score.", "danger");
+        } finally {
+          setShowScoreModal(false);
+        }
+      };
+
       const handleStatusUpdate = async (applicationId, newStatus) => {
         if (newStatus === 'shortlisted') {
           setSelectedAppId(applicationId); //
@@ -67,7 +132,7 @@ function JobApplicantsPage() {
             app.applicationId === applicationId ? { ...app, status: newStatus } : app
           )); //
         } catch (err) {
-          alert("Failed to update status."); //
+          showToast("Failed to update status.", "danger");
         } finally {
           setStatusLoadingId(null); //
         }
@@ -86,7 +151,7 @@ function JobApplicantsPage() {
             app.applicationId === selectedAppId ? { ...app, status: 'shortlisted' } : app
           )); //
         } catch (err) {
-          alert("Failed to schedule interview."); //
+          showToast("Failed to schedule interview.", "danger");
         } finally {
           setStatusLoadingId(null); //
           setShowScheduleModal(false); //
@@ -104,11 +169,19 @@ function JobApplicantsPage() {
       };
     
 
-    const filteredAndSortedApplicants = useMemo(() => {
-        return applicants
-            .filter(app => filterStatus === 'all' || app.status === filterStatus)
-            .sort((a, b) => b.matchScore - a.matchScore);
-    }, [applicants, filterStatus]); //
+      const filteredAndSortedApplicants = useMemo(() => {
+        let list = applicants
+          .filter(app => filterStatus === 'all' || app.status === filterStatus);
+      
+        if (filterStatus === "interviewed") {
+          // Sort by totalScore desc (undefined scores go last)
+          return list.sort((a, b) => (b.totalScore ?? -1) - (a.totalScore ?? -1));
+        }
+      
+        // Default sort by matchScore desc
+        return list.sort((a, b) => b.matchScore - a.matchScore);
+      }, [applicants, filterStatus]);
+      
 
     // Helper to get counts for each tab
     const getCount = (status) => {
@@ -168,12 +241,14 @@ function JobApplicantsPage() {
                             {filteredAndSortedApplicants.length > 0 ? (
                                 filteredAndSortedApplicants.map((applicant) => (
                                     <Col md={12} key={applicant.applicationId}>
-                                        <ApplicantCard
-                                            applicant={applicant}
-                                            onStatusUpdate={handleStatusUpdate}
-                                            onViewDetails={handleShowModal}
-                                            isLoading={statusLoadingId === applicant.applicationId}
-                                        />
+                                      <ApplicantCard
+                                        applicant={applicant}
+                                        onStatusUpdate={handleStatusUpdate}
+                                        onViewDetails={handleShowModal}
+                                        onScoreApplicant={handleScoreApplicant}
+                                        isLoading={statusLoadingId === applicant.applicationId}
+                                        currentTab={filterStatus} 
+                                      />
                                     </Col>
                                 ))
                             ) : (
@@ -199,6 +274,18 @@ function JobApplicantsPage() {
                 onHide={() => setShowScheduleModal(false)}
                 onConfirm={handleConfirmSchedule}
             />
+            <ApplicantScoreModal
+              show={showScoreModal}
+              onHide={() => setShowScoreModal(false)}
+              applicant={selectedScoreApplicant}
+              onSave={handleSaveScore}
+            />
+            <ToastContainer position="top-end" className="p-3">
+              <Toast show={toast.show} bg={toast.variant} onClose={() => setToast(prev => ({ ...prev, show: false }))} delay={3000} autohide>
+                <Toast.Body className="text-white">{toast.message}</Toast.Body>
+              </Toast>
+            </ToastContainer>
+
         </>
     );
 }
